@@ -29,6 +29,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: "Dashboard", path: "/admin", icon: ChartBar },
     { name: "Clients", path: "/admin/clients", icon: UserCheck },
     { name: "Appointments", path: "/admin/appointments", icon: Calendar },
+    { name: "Calendar", path: "/admin/calendar", icon: Calendar },
     { name: "Payments", path: "/admin/payments", icon: CreditCard },
     { name: "Insights", path: "/admin/insights", icon: ChartBar },
   ];

@@ -15,6 +15,7 @@ import AdminAppointments from "./pages/admin/Appointments";
 import AdminPayments from "./pages/admin/Payments";
 import AdminInsights from "./pages/admin/Insights";
 import AdminLogin from "./pages/admin/Login";
+import AdminCalendarView from "./pages/admin/CalendarView";
 import ResetPassword from "./pages/admin/ResetPassword";
 import UpdatePassword from "./pages/admin/UpdatePassword";
 import ClientPortal from "./pages/client/Portal";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/clients" element={<AdminClients />} />
             <Route path="/admin/appointments" element={<AdminAppointments />} />
+            <Route path="/admin/calendar" element={<AdminCalendarView />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/insights" element={<AdminInsights />} />
             
