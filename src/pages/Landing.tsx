@@ -10,10 +10,13 @@ const Landing = () => {
         <div className="beauty-container flex items-center justify-between">
           <div className="font-bold text-2xl">Bellevo</div>
           <div className="flex items-center space-x-2">
-            <Link to="/signup">
-              <Button variant="outline">Sign Up</Button>
+            <Link to="/client/auth">
+              <Button variant="outline">כניסת לקוחות</Button>
             </Link>
-            <Button>Login</Button>
+            <Link to="/signup">
+              <Button variant="outline">הרשמת עסקים</Button>
+            </Link>
+            <Button>התחברות</Button>
           </div>
         </div>
       </header>
@@ -89,11 +92,18 @@ const Landing = () => {
           <p className="text-xl text-muted-foreground max-w-[600px] mb-8">
             Join thousands of beauty professionals who are streamlining their business with Bellevo.
           </p>
-          <Link to="/signup">
-            <Button size="lg" className="beauty-button">
-              Start Your Free Trial
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link to="/signup">
+              <Button size="lg" className="beauty-button">
+                Start Your Free Trial
+              </Button>
+            </Link>
+            <Link to="/client/auth">
+              <Button size="lg" variant="outline" className="beauty-button">
+                כניסת לקוחות
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
       

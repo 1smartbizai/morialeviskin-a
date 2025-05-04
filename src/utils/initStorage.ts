@@ -25,4 +25,18 @@ export const initStorage = async () => {
       console.error('Error setting up storage:', error);
     }
   }
+  
+  // Check if the client_photos bucket exists, create if not
+  if (!buckets?.find(bucket => bucket.name === 'client_photos')) {
+    try {
+      await supabase.storage.createBucket('client_photos', {
+        public: false,
+        fileSizeLimit: 1024 * 1024 * 5, // 5MB limit
+      });
+      
+      console.log('Created client_photos storage bucket');
+    } catch (error) {
+      console.error('Error setting up client_photos storage:', error);
+    }
+  }
 };

@@ -66,6 +66,54 @@ export type Database = {
         }
         Relationships: []
       }
+      clients: {
+        Row: {
+          birthdate: string | null
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+          marketing_consent: boolean | null
+          phone: string
+          photo_url: string | null
+          skin_goals: string | null
+          status: string | null
+          terms_accepted: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthdate?: string | null
+          created_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          marketing_consent?: boolean | null
+          phone: string
+          photo_url?: string | null
+          skin_goals?: string | null
+          status?: string | null
+          terms_accepted?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthdate?: string | null
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          marketing_consent?: boolean | null
+          phone?: string
+          photo_url?: string | null
+          skin_goals?: string | null
+          status?: string | null
+          terms_accepted?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
