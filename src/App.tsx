@@ -14,6 +14,9 @@ import AdminClients from "./pages/admin/Clients";
 import AdminAppointments from "./pages/admin/Appointments";
 import AdminPayments from "./pages/admin/Payments";
 import AdminInsights from "./pages/admin/Insights";
+import AdminLogin from "./pages/admin/Login";
+import ResetPassword from "./pages/admin/ResetPassword";
+import UpdatePassword from "./pages/admin/UpdatePassword";
 import ClientPortal from "./pages/client/Portal";
 import ClientAppointments from "./pages/client/Appointments";
 import ClientTreatments from "./pages/client/Treatments";
@@ -36,6 +39,11 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/signup" element={<BusinessOwnerSignup />} />
             <Route path="/client/auth" element={<ClientAuth />} />
+            
+            {/* Admin Auth routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
+            <Route path="/admin/update-password" element={<UpdatePassword />} />
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminDashboard />} />

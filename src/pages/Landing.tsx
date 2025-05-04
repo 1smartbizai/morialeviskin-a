@@ -16,7 +16,9 @@ const Landing = () => {
             <Link to="/signup">
               <Button variant="outline">הרשמת עסקים</Button>
             </Link>
-            <Button>התחברות</Button>
+            <Link to="/admin/login">
+              <Button>כניסת בעל עסק</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -98,9 +100,9 @@ const Landing = () => {
                 Start Your Free Trial
               </Button>
             </Link>
-            <Link to="/client/auth">
+            <Link to="/admin/login">
               <Button size="lg" variant="outline" className="beauty-button">
-                כניסת לקוחות
+                כניסת בעל עסק
               </Button>
             </Link>
           </div>
