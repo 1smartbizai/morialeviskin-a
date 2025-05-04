@@ -168,12 +168,14 @@ const AdminPayments = () => {
   };
 
   const handleMarkPaid = (paymentId: string | number) => {
-    // Update the payment status
+    // Update the payment status and ensure it has an invoiceId when marked as completed
     const updatedPayments = filteredPayments.map(payment => {
       if (payment.id === paymentId) {
         return {
           ...payment,
           status: "completed" as const,
+          // Generate a placeholder invoiceId for manually completed payments
+          invoiceId: `manual-${Math.floor(Math.random() * 1000)}`,
         };
       }
       return payment;
