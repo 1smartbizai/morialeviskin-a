@@ -11,6 +11,7 @@ import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminClients from "./pages/admin/Clients";
+import ClientManagement from "./pages/admin/ClientManagement";
 import AdminAppointments from "./pages/admin/Appointments";
 import AdminPayments from "./pages/admin/Payments";
 import AdminInsights from "./pages/admin/Insights";
@@ -49,6 +50,7 @@ const App = () => (
             {/* Admin routes */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/clients" element={<AdminClients />} />
+            <Route path="/admin/client-management" element={<ClientManagement />} />
             <Route path="/admin/appointments" element={<AdminAppointments />} />
             <Route path="/admin/calendar" element={<AdminCalendarView />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
