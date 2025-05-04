@@ -3,10 +3,10 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
-import { PaymentFormData } from "@/components/payments/types";
+import { PaymentFormValues } from "@/components/payments/types";
 
 interface PaymentAmountFieldProps {
-  form: UseFormReturn<PaymentFormData>;
+  form: UseFormReturn<PaymentFormValues>;
 }
 
 export const PaymentAmountField = ({ form }: PaymentAmountFieldProps) => {

@@ -1,7 +1,8 @@
 
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import { PaymentFormData } from "./types";
+import { PaymentFormValues, paymentFormSchema } from "./types";
 import { PaymentClientField } from "./form/PaymentClientField";
 import { PaymentAmountField } from "./form/PaymentAmountField";
 import { PaymentServiceField } from "./form/PaymentServiceField";
@@ -13,17 +14,20 @@ import { PaymentFormActions } from "./form/PaymentFormActions";
 interface CreatePaymentFormProps {
   clients: { id: string; name: string }[];
   services: string[];
-  onSubmit: (data: PaymentFormData) => void;
+  onSubmit: (data: PaymentFormValues) => void;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
 export const CreatePaymentForm = ({
   clients,
   services,
   onSubmit,
-  onCancel
+  onCancel,
+  isSubmitting = false
 }: CreatePaymentFormProps) => {
-  const form = useForm<PaymentFormData>({
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       clientId: "",
       amount: "",
@@ -43,7 +47,7 @@ export const CreatePaymentForm = ({
         <PaymentDateField form={form} />
         <PaymentNotesField form={form} />
         <PaymentInvoiceCheckbox form={form} />
-        <PaymentFormActions onCancel={onCancel} />
+        <PaymentFormActions onCancel={onCancel} isSubmitting={isSubmitting} />
       </form>
     </Form>
   );

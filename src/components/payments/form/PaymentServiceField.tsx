@@ -3,10 +3,10 @@ import React from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
-import { PaymentFormData } from "@/components/payments/types";
+import { PaymentFormValues } from "@/components/payments/types";
 
 interface PaymentServiceFieldProps {
-  form: UseFormReturn<PaymentFormData>;
+  form: UseFormReturn<PaymentFormValues>;
   services: string[];
 }
 
