@@ -190,7 +190,7 @@ const ProductForm = ({ product, onClose }: ProductFormProps) => {
                   <FormItem>
                     <FormLabel>מק"ט (אופציונלי)</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="מק"ט" value={field.value || ''} />
+                      <Input {...field} placeholder={'מק"ט'} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
