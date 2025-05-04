@@ -10,11 +10,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { User, CalendarDays, Heart } from "lucide-react";
 
+// Define the schema to match the UserData in Auth.tsx
 const personalInfoSchema = z.object({
   first_name: z.string().min(2, "שם פרטי נדרש"),
   last_name: z.string().min(2, "שם משפחה נדרש"),
   birthdate: z.string().optional(),
   skin_goals: z.string().optional(),
+  photo_url: z.string().optional(),
 });
 
 type PersonalInfoFormValues = z.infer<typeof personalInfoSchema>;
@@ -41,6 +43,7 @@ const PersonalInfoStep = ({ onSubmit, initialData }: PersonalInfoStepProps) => {
       last_name: initialData?.last_name || "",
       birthdate: initialData?.birthdate || "",
       skin_goals: initialData?.skin_goals || "",
+      photo_url: initialData?.photo_url || "",
     },
   });
 

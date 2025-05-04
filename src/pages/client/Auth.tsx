@@ -1,24 +1,24 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import PhoneStep from "@/components/client-auth/PhoneStep";
 import OtpStep from "@/components/client-auth/OtpStep";
 import PersonalInfoStep from "@/components/client-auth/PersonalInfoStep";
 import ConsentStep from "@/components/client-auth/ConsentStep";
 import WelcomeStep from "@/components/client-auth/WelcomeStep";
+
+// Define the user data interface to help with type consistency
+interface UserData {
+  first_name: string;
+  last_name: string;
+  birthdate: string;
+  skin_goals: string;
+  photo_url?: string;
+}
 
 // Define steps for the authentication flow
 type AuthStep = 'phone' | 'otp' | 'personal-info' | 'consent' | 'welcome';
@@ -27,13 +27,7 @@ const ClientAuth = () => {
   const [currentStep, setCurrentStep] = useState<AuthStep>('phone');
   const [phone, setPhone] = useState('');
   const [isNewUser, setIsNewUser] = useState(false);
-  const [userData, setUserData] = useState<{
-    first_name: string;
-    last_name: string;
-    birthdate: string;
-    skin_goals: string;
-    photo_url?: string;
-  }>({
+  const [userData, setUserData] = useState<UserData>({
     first_name: '',
     last_name: '',
     birthdate: '',
@@ -76,11 +70,11 @@ const ClientAuth = () => {
   };
   
   // Check user profile on component mount
-  useState(() => {
+  useEffect(() => {
     if (!loading) {
       checkUserProfile();
     }
-  });
+  }, [loading, user]); // Added user dependency
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
@@ -123,7 +117,13 @@ const ClientAuth = () => {
           {currentStep === 'personal-info' && (
             <PersonalInfoStep
               onSubmit={(data) => {
-                setUserData(data);
+                setUserData({
+                  first_name: data.first_name || '',
+                  last_name: data.last_name || '',
+                  birthdate: data.birthdate || '',
+                  skin_goals: data.skin_goals || '',
+                  photo_url: data.photo_url,
+                });
                 setCurrentStep('consent');
               }}
               initialData={userData}
