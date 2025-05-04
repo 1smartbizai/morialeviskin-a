@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { User, CalendarDays, Heart } from "lucide-react";
 
-// Define the schema to match the UserData in Auth.tsx
+// Define the schema to match the UserData interface in Auth.tsx
 const personalInfoSchema = z.object({
   first_name: z.string().min(2, "שם פרטי נדרש"),
   last_name: z.string().min(2, "שם משפחה נדרש"),
@@ -50,7 +50,16 @@ const PersonalInfoStep = ({ onSubmit, initialData }: PersonalInfoStepProps) => {
   const handleSubmit = async (values: PersonalInfoFormValues) => {
     setIsLoading(true);
     try {
-      onSubmit(values);
+      // Ensure all values have default values to match expected types
+      const formattedValues = {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        birthdate: values.birthdate || "",
+        skin_goals: values.skin_goals || "",
+        photo_url: values.photo_url,
+      };
+      
+      onSubmit(formattedValues);
     } catch (error) {
       toast({
         variant: "destructive",

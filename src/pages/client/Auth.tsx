@@ -56,8 +56,8 @@ const ClientAuth = () => {
         // If client has started but not finished registration
         setCurrentStep('consent');
         setUserData({
-          first_name: client.first_name,
-          last_name: client.last_name,
+          first_name: client.first_name || '',
+          last_name: client.last_name || '',
           birthdate: client.birthdate || '',
           skin_goals: client.skin_goals || '',
           photo_url: client.photo_url,
@@ -117,13 +117,17 @@ const ClientAuth = () => {
           {currentStep === 'personal-info' && (
             <PersonalInfoStep
               onSubmit={(data) => {
-                setUserData({
+                // Ensure we always have all required fields with default values
+                const updatedData: UserData = {
                   first_name: data.first_name || '',
                   last_name: data.last_name || '',
                   birthdate: data.birthdate || '',
                   skin_goals: data.skin_goals || '',
-                  photo_url: data.photo_url,
-                });
+                  // Only include photo_url if it exists
+                  ...(data.photo_url ? { photo_url: data.photo_url } : {})
+                };
+                
+                setUserData(updatedData);
                 setCurrentStep('consent');
               }}
               initialData={userData}
