@@ -9,7 +9,63 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      business_owners: {
+        Row: {
+          accent_color: string | null
+          business_name: string
+          created_at: string
+          first_name: string
+          google_calendar_connected: boolean | null
+          id: string
+          last_name: string
+          logo_url: string | null
+          phone: string
+          primary_color: string | null
+          subscription_active: boolean | null
+          subscription_end_date: string | null
+          subscription_level: string | null
+          updated_at: string
+          user_id: string
+          working_hours: Json | null
+        }
+        Insert: {
+          accent_color?: string | null
+          business_name: string
+          created_at?: string
+          first_name: string
+          google_calendar_connected?: boolean | null
+          id?: string
+          last_name: string
+          logo_url?: string | null
+          phone: string
+          primary_color?: string | null
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_level?: string | null
+          updated_at?: string
+          user_id: string
+          working_hours?: Json | null
+        }
+        Update: {
+          accent_color?: string | null
+          business_name?: string
+          created_at?: string
+          first_name?: string
+          google_calendar_connected?: boolean | null
+          id?: string
+          last_name?: string
+          logo_url?: string | null
+          phone?: string
+          primary_color?: string | null
+          subscription_active?: boolean | null
+          subscription_end_date?: string | null
+          subscription_level?: string | null
+          updated_at?: string
+          user_id?: string
+          working_hours?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

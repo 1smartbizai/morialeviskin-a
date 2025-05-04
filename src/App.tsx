@@ -18,6 +18,7 @@ import ClientAppointments from "./pages/client/Appointments";
 import ClientTreatments from "./pages/client/Treatments";
 import ClientRewards from "./pages/client/Rewards";
 import ClientPayments from "./pages/client/Payments";
+import BusinessOwnerSignup from "./pages/BusinessOwnerSignup";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Landing />} />
+          <Route path="/signup" element={<BusinessOwnerSignup />} />
           
           {/* Admin routes */}
           <Route path="/admin" element={<AdminDashboard />} />

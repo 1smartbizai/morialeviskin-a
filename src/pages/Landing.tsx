@@ -1,107 +1,115 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, UserCheck, BarChart as ChartBar } from "lucide-react";
 
 const Landing = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-beauty-accent to-beauty-neutral">
-      <header className="beauty-container py-4 md:py-6">
-        <div className="flex justify-between items-center">
-          <div className="text-beauty-dark">
-            <h1 className="text-2xl md:text-3xl font-bold">GlowUp Hub</h1>
-            <p className="text-sm text-muted-foreground">Beauty Business Management</p>
-          </div>
-          <div className="flex space-x-2">
-            <Button asChild variant="ghost">
-              <Link to="/admin">Admin Login</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/client">Client Login</Link>
-            </Button>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="px-4 py-6 md:px-6 md:py-8">
+        <div className="beauty-container flex items-center justify-between">
+          <div className="font-bold text-2xl">Bellevo</div>
+          <div className="flex items-center space-x-2">
+            <Link to="/signup">
+              <Button variant="outline">Sign Up</Button>
+            </Link>
+            <Button>Login</Button>
           </div>
         </div>
       </header>
       
-      <main className="flex-grow flex flex-col items-center justify-center beauty-container py-10">
-        <div className="text-center max-w-3xl mx-auto mb-8 md:mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold text-beauty-dark mb-4 animate-fade-in">
-            Elevate Your Beauty Business
+      {/* Hero section */}
+      <section className="px-4 md:px-6 py-12 md:py-24 lg:py-32">
+        <div className="beauty-container flex flex-col items-center text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter mb-4">
+            הפלטפורמה שמעצימה את העסק שלך
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            The all-in-one platform for independent beauty professionals to manage appointments, clients, and grow their business
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-[800px] mb-8">
+            Streamline appointments, payments, and client management for your beauty business.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            <Button asChild size="lg" className="bg-beauty-primary hover:bg-opacity-90">
-              <Link to="/admin">Business Owner Login</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-beauty-primary text-beauty-dark">
-              <Link to="/client">Client Login</Link>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link to="/signup">
+              <Button size="lg" className="beauty-button">Start Free Trial</Button>
+            </Link>
+            <Button size="lg" variant="outline" className="beauty-button">
+              Book a Demo
             </Button>
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-8">
-          <Card className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <CardHeader>
-              <CardTitle className="text-beauty-dark flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-beauty-primary" />
-                Simplified Scheduling
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Easy appointment management for your beauty business, with automated reminders and online booking.
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <CardHeader>
-              <CardTitle className="text-beauty-dark flex items-center gap-2">
-                <UserCheck className="h-5 w-5 text-beauty-primary" />
-                Client Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Build lasting relationships with detailed client profiles, preferences, and treatment history.
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card className="animate-fade-in" style={{ animationDelay: "0.5s" }}>
-            <CardHeader>
-              <CardTitle className="text-beauty-dark flex items-center gap-2">
-                <ChartBar className="h-5 w-5 text-beauty-primary" />
-                Business Insights
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Make data-driven decisions with analytics on appointments, revenue, and client retention.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+      </section>
       
-      <footer className="bg-beauty-dark text-white py-8">
+      {/* Features section */}
+      <section className="px-4 md:px-6 py-12 md:py-24 bg-muted/50">
+        <div className="beauty-container">
+          <h2 className="text-3xl font-bold tracking-tight text-center mb-12">
+            Everything you need to run your beauty business
+          </h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Feature cards */}
+            <div className="beauty-card p-6">
+              <h3 className="text-xl font-semibold mb-3">Smart Scheduling</h3>
+              <p className="text-muted-foreground">Intelligent appointment booking system that prevents double-bookings.</p>
+            </div>
+            
+            <div className="beauty-card p-6">
+              <h3 className="text-xl font-semibold mb-3">Client Management</h3>
+              <p className="text-muted-foreground">Keep track of client preferences, history, and communications.</p>
+            </div>
+            
+            <div className="beauty-card p-6">
+              <h3 className="text-xl font-semibold mb-3">Payment Processing</h3>
+              <p className="text-muted-foreground">Accept payments online and in-person with integrated payment solutions.</p>
+            </div>
+            
+            <div className="beauty-card p-6">
+              <h3 className="text-xl font-semibold mb-3">Marketing Tools</h3>
+              <p className="text-muted-foreground">Send targeted promotions and automated reminders to clients.</p>
+            </div>
+            
+            <div className="beauty-card p-6">
+              <h3 className="text-xl font-semibold mb-3">Business Analytics</h3>
+              <p className="text-muted-foreground">Gain insights into your business performance and client trends.</p>
+            </div>
+            
+            <div className="beauty-card p-6">
+              <h3 className="text-xl font-semibold mb-3">Client Portal</h3>
+              <p className="text-muted-foreground">Give clients a personalized interface to book and manage appointments.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* CTA section */}
+      <section className="px-4 md:px-6 py-12 md:py-24">
+        <div className="beauty-container flex flex-col items-center text-center">
+          <h2 className="text-3xl font-bold tracking-tight mb-4">
+            Ready to grow your beauty business?
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-[600px] mb-8">
+            Join thousands of beauty professionals who are streamlining their business with Bellevo.
+          </p>
+          <Link to="/signup">
+            <Button size="lg" className="beauty-button">
+              Start Your Free Trial
+            </Button>
+          </Link>
+        </div>
+      </section>
+      
+      {/* Footer */}
+      <footer className="px-4 md:px-6 py-12 bg-muted">
         <div className="beauty-container">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h2 className="text-xl font-bold">GlowUp Hub</h2>
-              <p className="text-sm text-gray-300">Empowering beauty professionals</p>
-            </div>
-            <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-              <Link to="#" className="text-sm text-gray-300 hover:text-white">Contact Us</Link>
-              <Link to="#" className="text-sm text-gray-300 hover:text-white">Privacy Policy</Link>
-              <Link to="#" className="text-sm text-gray-300 hover:text-white">Terms of Service</Link>
+            <div className="font-bold mb-4 md:mb-0">Bellevo</div>
+            <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 text-center">
+              <a href="#" className="text-muted-foreground hover:text-foreground">Terms of Service</a>
+              <a href="#" className="text-muted-foreground hover:text-foreground">Privacy Policy</a>
+              <a href="#" className="text-muted-foreground hover:text-foreground">Contact Us</a>
             </div>
           </div>
-          <div className="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
-            &copy; 2025 GlowUp Hub. All rights reserved.
+          <div className="mt-8 text-center text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Bellevo. All rights reserved.
           </div>
         </div>
       </footer>
