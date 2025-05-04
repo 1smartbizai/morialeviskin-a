@@ -3,8 +3,19 @@ import AdminLayout from "@/components/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AreaChart, BarChart } from "@/components/ui/chart";
 import { Calendar, TrendingUp } from "lucide-react";
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip,
+  Legend 
+} from "recharts";
 
 // Mock data for insights
 const revenueData = [
@@ -88,14 +99,27 @@ const AdminInsights = () => {
               <CardTitle className="text-lg font-medium">Revenue Over Time</CardTitle>
             </CardHeader>
             <CardContent>
-              <AreaChart
-                data={revenueData}
-                index="name"
-                categories={["total"]}
-                colors={["#F672A5"]}
-                yAxisWidth={60}
-                className="h-72"
-              />
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#F672A5" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#F672A5" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <Tooltip />
+                  <Area 
+                    type="monotone" 
+                    dataKey="total" 
+                    stroke="#F672A5" 
+                    fillOpacity={1} 
+                    fill="url(#colorTotal)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
           
@@ -104,14 +128,15 @@ const AdminInsights = () => {
               <CardTitle className="text-lg font-medium">Clients by Service Type</CardTitle>
             </CardHeader>
             <CardContent>
-              <BarChart
-                data={clientsByServiceData}
-                index="name"
-                categories={["total"]}
-                colors={["#F672A5"]}
-                yAxisWidth={48}
-                className="h-72"
-              />
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={clientsByServiceData}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <Tooltip />
+                  <Bar dataKey="total" fill="#F672A5" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
