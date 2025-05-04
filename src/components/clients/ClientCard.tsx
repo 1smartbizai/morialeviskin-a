@@ -1,7 +1,7 @@
 
 import { formatDistanceToNow } from "date-fns";
 import { he } from "date-fns/locale";
-import { Calendar, User, Tag } from "lucide-react";
+import { Calendar, User, Tag, Star } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
