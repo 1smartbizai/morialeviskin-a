@@ -8,10 +8,10 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { he } from "date-fns/locale";
 import { format } from "date-fns";
 import { UseFormReturn } from "react-hook-form";
-import { PaymentFormData } from "@/components/payments/types";
+import { PaymentFormValues } from "@/components/payments/types";
 
 interface PaymentDateFieldProps {
-  form: UseFormReturn<PaymentFormData>;
+  form: UseFormReturn<PaymentFormValues>;
 }
 
 export const PaymentDateField = ({ form }: PaymentDateFieldProps) => {

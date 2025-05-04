@@ -1,22 +1,6 @@
 
 import { z } from "zod";
 
-// Form data type
-export interface PaymentFormValues {
-  clientId: string;
-  amount: string;
-  service: string;
-  date: Date;
-  notes?: string;
-  generateInvoice: boolean;
-}
-
-// Client interface
-export interface Client {
-  id: string;
-  name: string;
-}
-
 // Zod validation schema for payment form
 export const paymentFormSchema = z.object({
   clientId: z.string({
@@ -41,4 +25,11 @@ export const paymentFormSchema = z.object({
   generateInvoice: z.boolean().default(false),
 });
 
+// Export the type from the schema
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
+
+// Client interface
+export interface Client {
+  id: string;
+  name: string;
+}
