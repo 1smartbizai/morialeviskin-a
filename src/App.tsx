@@ -15,7 +15,7 @@ import ClientManagement from "./pages/admin/ClientManagement";
 import AdminAppointments from "./pages/admin/Appointments";
 import AdminPayments from "./pages/admin/Payments";
 import AdminInsights from "./pages/admin/Insights";
-import AIInsightsPage from "./pages/admin/AIInsights"; // Add this import
+import AIInsightsPage from "./pages/admin/AIInsights";
 import AdminLogin from "./pages/admin/Login";
 import AdminCalendarView from "./pages/admin/CalendarView";
 import ResetPassword from "./pages/admin/ResetPassword";
@@ -27,6 +27,7 @@ import ClientRewards from "./pages/client/Rewards";
 import ClientPayments from "./pages/client/Payments";
 import ClientAuth from "./pages/client/Auth";
 import BusinessOwnerSignup from "./pages/BusinessOwnerSignup";
+import BusinessManagement from "./pages/admin/BusinessManagement";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +57,8 @@ const App = () => (
             <Route path="/admin/calendar" element={<AdminCalendarView />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/insights" element={<AdminInsights />} />
-            <Route path="/admin/ai-insights" element={<AIInsightsPage />} /> {/* Add this route */}
+            <Route path="/admin/ai-insights" element={<AIInsightsPage />} />
+            <Route path="/admin/business-management" element={<BusinessManagement />} />
             
             {/* Client routes */}
             <Route path="/client" element={<ClientPortal />} />

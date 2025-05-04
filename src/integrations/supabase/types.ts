@@ -114,6 +114,189 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          in_stock: boolean | null
+          is_visible: boolean | null
+          name: string
+          price: number
+          sku: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          in_stock?: boolean | null
+          is_visible?: boolean | null
+          name: string
+          price: number
+          sku?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          in_stock?: boolean | null
+          is_visible?: boolean | null
+          name?: string
+          price?: number
+          sku?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      treatment_plan_treatments: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: string
+          treatment_id: string | null
+          treatment_plan_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order: number
+          id?: string
+          treatment_id?: string | null
+          treatment_plan_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          treatment_id?: string | null
+          treatment_plan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_plan_treatments_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "treatments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_treatments_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_plans: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_visible: boolean | null
+          name: string
+          price: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_visible?: boolean | null
+          name: string
+          price?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_visible?: boolean | null
+          name?: string
+          price?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      treatment_product_recommendations: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string | null
+          treatment_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          treatment_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+          treatment_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_product_recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_product_recommendations_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "treatments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatments: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration: number
+          id: string
+          is_visible: boolean | null
+          name: string
+          price: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration: number
+          id?: string
+          is_visible?: boolean | null
+          name: string
+          price: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration?: number
+          id?: string
+          is_visible?: boolean | null
+          name?: string
+          price?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
