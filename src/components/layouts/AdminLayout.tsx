@@ -8,7 +8,8 @@ import {
   Settings, 
   CreditCard,
   BellRing,
-  MessageSquare
+  MessageSquare,
+  Lightbulb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: "Calendar", path: "/admin/calendar", icon: Calendar },
     { name: "Payments", path: "/admin/payments", icon: CreditCard },
     { name: "Insights", path: "/admin/insights", icon: ChartBar },
+    { name: "AI Insights", path: "/admin/ai-insights", icon: Lightbulb }, // Add this item
   ];
 
   const toggleSidebar = () => {
