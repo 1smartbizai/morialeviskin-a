@@ -1,15 +1,13 @@
 
-import { useState, useEffect } from "react";
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { Calendar, Plus } from "lucide-react";
-import { format, addDays, startOfWeek, parseISO } from "date-fns";
+import { useState } from "react";
+import { DragEndEvent } from "@dnd-kit/core";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import AppointmentCard, { Appointment } from "./AppointmentCard";
-import StaffFilter, { Staff } from "./StaffFilter";
-import { formatDate, getWeekDays, isToday, getTimeslots } from "@/utils/calendarUtils";
-
-const weekDays = ["יום א׳", "יום ב׳", "יום ג׳", "יום ד׳", "יום ה׳", "יום ו׳", "שבת"];
+import { Appointment } from "./AppointmentCard";
+import { Staff } from "./StaffFilter";
+import CalendarHeader from "./CalendarHeader";
+import CalendarGrid from "./CalendarGrid";
+import { useCalendarState } from "@/hooks/useCalendarState";
 
 // Mock staff data
 const mockStaff: Staff[] = [
@@ -63,33 +61,17 @@ interface CalendarViewProps {
 }
 
 const CalendarView = ({ onCreateAppointment, onEditAppointment }: CalendarViewProps) => {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
-  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>(mockAppointments);
   const [isGoogleSynced, setIsGoogleSynced] = useState<boolean>(false);
   
-  const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
-  const weekDaysFormatted = getWeekDays(currentDate);
-  const timeSlots = getTimeslots();
-  
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 10, // 10px of movement before drag starts
-      },
-    })
-  );
-
-  useEffect(() => {
-    // Filter appointments by staff if staff is selected
-    if (selectedStaffId && selectedStaffId !== 'all') {
-      setFilteredAppointments(
-        mockAppointments.filter((appt) => appt.staffId === selectedStaffId)
-      );
-    } else {
-      setFilteredAppointments(mockAppointments);
-    }
-  }, [selectedStaffId]);
+  const {
+    weekStart,
+    weekDaysFormatted,
+    timeSlots,
+    selectedStaffId,
+    navigateWeek,
+    setSelectedStaffId,
+    getAppointmentsForTimeSlot
+  } = useCalendarState(mockAppointments);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -100,111 +82,26 @@ const CalendarView = ({ onCreateAppointment, onEditAppointment }: CalendarViewPr
     // In a real implementation, we would update the appointment details
     // and make an API call to save the changes
   };
-
-  const navigateWeek = (direction: 'next' | 'prev') => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
-    setCurrentDate(newDate);
-  };
   
-  const handleAppointmentClick = (appointmentId: string) => {
-    onEditAppointment(appointmentId);
-  };
-
-  const getAppointmentsForTimeSlot = (day: Date, time: string) => {
-    const dayStr = format(day, 'yyyy-MM-dd');
-    return filteredAppointments.filter(appt => {
-      // In a real app, this would compare the full datetime
-      return appt.time === time;
-    });
-  };
-
   return (
     <div className="flex flex-col h-full">
       {/* Calendar Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigateWeek('prev')}
-          >
-            <Calendar className="h-4 w-4" />
-          </Button>
-          <div className="text-sm font-medium">
-            {formatDate(weekStart, "MMM d")} - {formatDate(addDays(weekStart, 6), "MMM d, yyyy")}
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigateWeek('next')}
-          >
-            <Calendar className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        <StaffFilter 
-          staff={mockStaff}
-          selectedStaffId={selectedStaffId}
-          onStaffChange={(staffId) => setSelectedStaffId(staffId)}
-        />
-      </div>
+      <CalendarHeader
+        weekStart={weekStart}
+        selectedStaffId={selectedStaffId}
+        staff={mockStaff}
+        onNavigateWeek={navigateWeek}
+        onStaffChange={setSelectedStaffId}
+      />
 
       {/* Calendar Grid */}
-      <div className="grow overflow-auto border rounded-md bg-white">
-        <div className="min-w-[900px]"> {/* Ensure minimum width for small screens */}
-          {/* Days header */}
-          <div className="grid grid-cols-8 bg-beauty-accent border-b">
-            <div className="p-2 text-sm font-medium border-l"></div>
-            {weekDaysFormatted.map((day, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "p-2 text-sm font-medium text-center border-l",
-                  isToday(day) && "bg-beauty-primary bg-opacity-20"
-                )}
-              >
-                <div>{weekDays[index]}</div>
-                <div>{formatDate(day, "d MMM")}</div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Time grid */}
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            {timeSlots.map((time) => (
-              <div key={time} className="grid grid-cols-8 border-b">
-                {/* Time column */}
-                <div className="p-2 text-sm text-muted-foreground border-l">
-                  {time}
-                </div>
-                
-                {/* Day columns */}
-                {weekDaysFormatted.map((day, dayIndex) => {
-                  const dayAppointments = getAppointmentsForTimeSlot(day, time);
-                  return (
-                    <div
-                      key={`${time}-${dayIndex}`}
-                      className={cn(
-                        "p-1 border-l min-h-[80px]",
-                        isToday(day) && "bg-beauty-primary bg-opacity-5"
-                      )}
-                    >
-                      {dayAppointments.map((appointment) => (
-                        <AppointmentCard
-                          key={appointment.id}
-                          appointment={appointment}
-                          onClick={handleAppointmentClick}
-                        />
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </DndContext>
-        </div>
-      </div>
+      <CalendarGrid
+        weekDaysFormatted={weekDaysFormatted}
+        timeSlots={timeSlots}
+        onDragEnd={handleDragEnd}
+        getAppointmentsForTimeSlot={getAppointmentsForTimeSlot}
+        onAppointmentClick={onEditAppointment}
+      />
       
       {/* Sync Status */}
       <div className="mt-2 text-xs text-muted-foreground">
