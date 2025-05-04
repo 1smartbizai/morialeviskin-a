@@ -2,7 +2,7 @@
 import { z } from "zod";
 
 // Form data type
-export interface PaymentFormData {
+export interface PaymentFormValues {
   clientId: string;
   amount: string;
   service: string;

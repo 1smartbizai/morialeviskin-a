@@ -2,10 +2,10 @@
 import React from "react";
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { PaymentFormData } from "@/components/payments/types";
+import { PaymentFormValues } from "@/components/payments/types";
 
 interface PaymentInvoiceCheckboxProps {
-  form: UseFormReturn<PaymentFormData>;
+  form: UseFormReturn<PaymentFormValues>;
 }
 
 export const PaymentInvoiceCheckbox = ({ form }: PaymentInvoiceCheckboxProps) => {
