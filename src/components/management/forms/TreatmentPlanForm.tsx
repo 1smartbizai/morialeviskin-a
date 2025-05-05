@@ -83,11 +83,12 @@ const TreatmentPlanForm = ({ treatmentPlan, onClose }: TreatmentPlanFormProps) =
         .order('display_order');
       
       if (error) throw error;
-      // Cast the data to make TypeScript happy - it has the correct shape but needs treatment_plan_id property
+      
+      // Transform and add missing properties to match TreatmentPlanTreatment type
       return data.map(item => ({
         ...item,
         treatment_plan_id: treatmentPlan.id,
-        created_at: item.created_at || new Date().toISOString()
+        created_at: new Date().toISOString() // Default value since it might be missing
       })) as TreatmentPlanTreatment[];
     },
     enabled: !!treatmentPlan?.id,
@@ -107,7 +108,7 @@ const TreatmentPlanForm = ({ treatmentPlan, onClose }: TreatmentPlanFormProps) =
       // Insert treatment plan with required fields
       const treatmentPlanData = {
         ...values,
-        name: values.name, // Ensure name is present (required by the schema)
+        name: values.name, // Explicitly include required field
         user_id: user.id,
       };
 

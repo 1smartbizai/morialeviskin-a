@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,6 +54,9 @@ const TreatmentForm = ({ treatment, onClose }: TreatmentFormProps) => {
       // Ensure all required fields are present
       const treatmentData = {
         ...values,
+        name: values.name, // Explicitly include required fields
+        price: values.price, 
+        duration: values.duration,
         user_id: user.id,
       };
 
