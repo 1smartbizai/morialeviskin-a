@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -84,7 +83,12 @@ const TreatmentPlanForm = ({ treatmentPlan, onClose }: TreatmentPlanFormProps) =
         .order('display_order');
       
       if (error) throw error;
-      return data as TreatmentPlanTreatment[];
+      // Cast the data to make TypeScript happy - it has the correct shape but needs treatment_plan_id property
+      return data.map(item => ({
+        ...item,
+        treatment_plan_id: treatmentPlan.id,
+        created_at: item.created_at || new Date().toISOString()
+      })) as TreatmentPlanTreatment[];
     },
     enabled: !!treatmentPlan?.id,
   });
@@ -100,15 +104,16 @@ const TreatmentPlanForm = ({ treatmentPlan, onClose }: TreatmentPlanFormProps) =
     mutationFn: async (values: TreatmentPlanFormValues) => {
       if (!user) throw new Error('User not authenticated');
 
-      // Insert treatment plan
+      // Insert treatment plan with required fields
+      const treatmentPlanData = {
+        ...values,
+        name: values.name, // Ensure name is present (required by the schema)
+        user_id: user.id,
+      };
+
       const { data, error } = await supabase
         .from('treatment_plans')
-        .insert([
-          {
-            ...values,
-            user_id: user.id,
-          },
-        ])
+        .insert(treatmentPlanData)
         .select()
         .single();
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Treatment } from '@/types/management';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,14 +50,15 @@ const TreatmentForm = ({ treatment, onClose }: TreatmentFormProps) => {
     mutationFn: async (values: TreatmentFormValues) => {
       if (!user) throw new Error('User not authenticated');
 
+      // Ensure all required fields are present
+      const treatmentData = {
+        ...values,
+        user_id: user.id,
+      };
+
       const { data, error } = await supabase
         .from('treatments')
-        .insert([
-          {
-            ...values,
-            user_id: user.id,
-          },
-        ])
+        .insert(treatmentData)
         .select()
         .single();
 

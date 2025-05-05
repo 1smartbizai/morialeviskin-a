@@ -53,14 +53,15 @@ const ProductForm = ({ product, onClose }: ProductFormProps) => {
     mutationFn: async (values: ProductFormValues) => {
       if (!user) throw new Error('User not authenticated');
 
+      // Ensure all required fields are present
+      const productData = {
+        ...values,
+        user_id: user.id,
+      };
+
       const { data, error } = await supabase
         .from('products')
-        .insert([
-          {
-            ...values,
-            user_id: user.id,
-          },
-        ])
+        .insert(productData)
         .select()
         .single();
 
