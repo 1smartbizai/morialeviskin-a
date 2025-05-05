@@ -85,12 +85,18 @@ const LoyaltyRules = () => {
     mutationFn: async (values: LoyaltyRuleFormValues) => {
       if (!user) throw new Error("User not authenticated");
 
+      // Fix: Ensure all required fields are explicitly provided
       const { data, error } = await supabase
         .from("loyalty_rules")
         .insert({
-          ...values,
-          name: values.name,
           user_id: user.id,
+          name: values.name,
+          description: values.description,
+          rule_type: values.rule_type,
+          threshold: values.threshold,
+          reward_type: values.reward_type,
+          reward_value: values.reward_value,
+          is_active: values.is_active
         })
         .select()
         .single();

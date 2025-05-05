@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -68,11 +67,14 @@ const LoyaltySettings = () => {
         points_expiry_days: 365,
       };
     },
-    onSuccess: (data) => {
-      if (data) {
-        form.reset(data);
+    // Fix: Move onSuccess to the correct location in TanStack Query v5
+    meta: {
+      onSuccess: (data: any) => {
+        if (data) {
+          form.reset(data);
+        }
       }
-    },
+    }
   });
 
   const updateSettings = useMutation({
