@@ -28,6 +28,7 @@ import ClientPayments from "./pages/client/Payments";
 import ClientAuth from "./pages/client/Auth";
 import BusinessOwnerSignup from "./pages/BusinessOwnerSignup";
 import BusinessManagement from "./pages/admin/BusinessManagement";
+import AdminLoyalty from "./pages/admin/Loyalty";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/admin/insights" element={<AdminInsights />} />
             <Route path="/admin/ai-insights" element={<AIInsightsPage />} />
             <Route path="/admin/business-management" element={<BusinessManagement />} />
+            <Route path="/admin/loyalty" element={<AdminLoyalty />} />
             
             {/* Client routes */}
             <Route path="/client" element={<ClientPortal />} />

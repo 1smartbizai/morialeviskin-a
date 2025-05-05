@@ -66,6 +66,47 @@ export type Database = {
         }
         Relationships: []
       }
+      client_loyalty: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          total_points: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+          visits_count: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          total_points?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+          visits_count?: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          total_points?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+          visits_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_loyalty_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           birthdate: string | null
@@ -114,6 +155,125 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_rewards: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          point_cost: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          point_cost: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          point_cost?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_rules: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          reward_type: string
+          reward_value: number
+          rule_type: string
+          threshold: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          reward_type: string
+          reward_value: number
+          rule_type: string
+          threshold: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          reward_type?: string
+          reward_value?: number
+          rule_type?: string
+          threshold?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_transactions: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          source: string
+          source_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points: number
+          source: string
+          source_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          source?: string
+          source_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           created_at: string | null
@@ -152,6 +312,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      redeemed_rewards: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          loyalty_reward_id: string
+          points_used: number
+          redeemed_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          loyalty_reward_id: string
+          points_used: number
+          redeemed_at?: string | null
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          loyalty_reward_id?: string
+          points_used?: number
+          redeemed_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redeemed_rewards_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redeemed_rewards_loyalty_reward_id_fkey"
+            columns: ["loyalty_reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       treatment_plan_treatments: {
         Row: {
