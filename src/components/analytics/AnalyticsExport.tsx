@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckIcon, ChartLine, FileText, FileExcel } from "lucide-react";
+import { CheckIcon, FileText, FileDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
@@ -127,7 +127,7 @@ export const AnalyticsExport = ({
                   className="space-x-2 space-x-reverse" 
                   disabled={isExporting}
                 >
-                  <FileExcel className="h-4 w-4" />
+                  <FileDown className="h-4 w-4" />
                   <span>ייצא Excel</span>
                   {isExporting && exportType === "excel" && (
                     <div className="w-4 h-4 rounded-full border-2 border-t-transparent border-primary animate-spin" />
