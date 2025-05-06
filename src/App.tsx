@@ -30,6 +30,7 @@ import BusinessOwnerSignup from "./pages/BusinessOwnerSignup";
 import BusinessManagement from "./pages/admin/BusinessManagement";
 import AdminLoyalty from "./pages/admin/Loyalty";
 import ClientInsights from "./pages/admin/ClientInsights";
+import Analytics from "./pages/admin/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/insights" element={<AdminInsights />} />
             <Route path="/admin/ai-insights" element={<AIInsightsPage />} />
+            <Route path="/admin/analytics" element={<Analytics />} />
             <Route path="/admin/business-management" element={<BusinessManagement />} />
             <Route path="/admin/loyalty" element={<AdminLoyalty />} />
             

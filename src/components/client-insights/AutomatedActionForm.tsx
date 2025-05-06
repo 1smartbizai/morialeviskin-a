@@ -151,10 +151,7 @@ export const AutomatedActionForm: React.FC<AutomatedActionFormProps> = ({
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => {
-                      // Fix: Use a proper type for the date comparison instead of string
-                      return date < new Date();
-                    }}
+                    disabled={(date) => date < new Date()}
                     initialFocus
                     className="p-3"
                   />
