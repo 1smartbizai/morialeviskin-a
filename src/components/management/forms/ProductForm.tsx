@@ -53,13 +53,15 @@ const ProductForm = ({ product, onClose }: ProductFormProps) => {
     mutationFn: async (values: ProductFormValues) => {
       if (!user) throw new Error('User not authenticated');
 
-      // Ensure all required fields are present and properly typed
-      // name and price are required by the schema
+      // Fix: Ensure all required fields are explicitly provided with their proper types
       const productData = {
-        ...values,
-        name: values.name, // Ensure name is explicitly included
-        price: values.price, // Ensure price is explicitly included
         user_id: user.id,
+        name: values.name, // Explicitly include as it's required
+        price: values.price, // Explicitly include as it's required
+        description: values.description,
+        sku: values.sku || null,
+        in_stock: values.in_stock,
+        is_visible: values.is_visible,
       };
 
       const { data, error } = await supabase

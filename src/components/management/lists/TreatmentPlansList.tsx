@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TreatmentPlan, TreatmentPlanTreatment } from '@/types/management';
@@ -111,10 +110,11 @@ const TreatmentPlansList = ({ treatmentPlans, onEdit }: TreatmentPlansListProps)
         if (error) throw error;
         
         // Transform the data to match the TreatmentPlanTreatment type
+        // Fix: Always ensure created_at property is included
         return data.map(item => ({
           ...item,
           treatment_plan_id: planId,
-          created_at: new Date().toISOString() // Add missing property with default value
+          created_at: new Date().toISOString() // Ensure created_at is always provided
         })) as TreatmentPlanTreatment[];
       },
     });

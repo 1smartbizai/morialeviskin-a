@@ -51,13 +51,14 @@ const TreatmentForm = ({ treatment, onClose }: TreatmentFormProps) => {
     mutationFn: async (values: TreatmentFormValues) => {
       if (!user) throw new Error('User not authenticated');
 
-      // Ensure all required fields are present
+      // Fix: Ensure all required fields are explicitly provided with their proper types
       const treatmentData = {
-        ...values,
-        name: values.name, // Explicitly include required fields
-        price: values.price, 
-        duration: values.duration,
         user_id: user.id,
+        name: values.name, // Explicitly include as it's required
+        price: values.price, // Explicitly include as it's required
+        duration: values.duration, // Explicitly include as it's required
+        description: values.description,
+        is_visible: values.is_visible,
       };
 
       const { data, error } = await supabase

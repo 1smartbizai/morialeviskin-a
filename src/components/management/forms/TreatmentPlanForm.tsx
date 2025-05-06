@@ -220,13 +220,14 @@ const TreatmentPlanForm = ({ treatmentPlan, onClose }: TreatmentPlanFormProps) =
     }
   };
 
+  // Fix: Update the structure of the selectedTreatments state to include treatment_plan_id and created_at
   const addTreatmentToSelected = (treatment: Treatment) => {
     const newTreatment: TreatmentPlanTreatment = {
       id: `temp-${Date.now()}`,
       treatment_id: treatment.id,
       treatment_plan_id: treatmentPlan?.id || '',
       display_order: selectedTreatments.length + 1,
-      created_at: new Date().toISOString(),
+      created_at: new Date().toISOString(), // Always provide created_at field
       treatment,
     };
     
