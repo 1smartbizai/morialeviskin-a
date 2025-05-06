@@ -29,6 +29,7 @@ import ClientAuth from "./pages/client/Auth";
 import BusinessOwnerSignup from "./pages/BusinessOwnerSignup";
 import BusinessManagement from "./pages/admin/BusinessManagement";
 import AdminLoyalty from "./pages/admin/Loyalty";
+import ClientInsights from "./pages/admin/ClientInsights";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/clients" element={<AdminClients />} />
             <Route path="/admin/client-management" element={<ClientManagement />} />
+            <Route path="/admin/client-insights" element={<ClientInsights />} />
             <Route path="/admin/appointments" element={<AdminAppointments />} />
             <Route path="/admin/calendar" element={<AdminCalendarView />} />
             <Route path="/admin/payments" element={<AdminPayments />} />

@@ -66,6 +66,100 @@ export type Database = {
         }
         Relationships: []
       }
+      client_automated_actions: {
+        Row: {
+          action_type: string
+          client_id: string
+          content: string | null
+          created_at: string
+          executed_at: string | null
+          id: string
+          scheduled_for: string | null
+          source_id: string
+          source_type: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          client_id: string
+          content?: string | null
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          scheduled_for?: string | null
+          source_id: string
+          source_type: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          client_id?: string
+          content?: string | null
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          scheduled_for?: string | null
+          source_id?: string
+          source_type?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_automated_actions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_emotional_logs: {
+        Row: {
+          client_id: string
+          content: string
+          created_at: string
+          id: string
+          sentiment: string | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          content: string
+          created_at?: string
+          id?: string
+          sentiment?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          sentiment?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_emotional_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_loyalty: {
         Row: {
           client_id: string
@@ -100,6 +194,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "client_loyalty_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_risk_assessments: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          last_action_date: string | null
+          reasons: string[] | null
+          risk_score: number
+          status: string | null
+          suggested_actions: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          last_action_date?: string | null
+          reasons?: string[] | null
+          risk_score: number
+          status?: string | null
+          suggested_actions?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          last_action_date?: string | null
+          reasons?: string[] | null
+          risk_score?: number
+          status?: string | null
+          suggested_actions?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
