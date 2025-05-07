@@ -21,6 +21,7 @@ import AdminCalendarView from "./pages/admin/CalendarView";
 import ResetPassword from "./pages/admin/ResetPassword";
 import UpdatePassword from "./pages/admin/UpdatePassword";
 import ClientPortal from "./pages/client/Portal";
+import ClientDashboard from "./pages/client/Dashboard";
 import ClientAppointments from "./pages/client/Appointments";
 import ClientTreatments from "./pages/client/Treatments";
 import ClientRewards from "./pages/client/Rewards";
@@ -72,6 +73,7 @@ const App = () => (
             
             {/* Client routes */}
             <Route path="/client" element={<ClientPortal />} />
+            <Route path="/client/dashboard" element={<ClientDashboard />} />
             <Route path="/client/appointments" element={<ClientAppointments />} />
             <Route path="/client/treatments" element={<ClientTreatments />} />
             <Route path="/client/rewards" element={<ClientRewards />} />

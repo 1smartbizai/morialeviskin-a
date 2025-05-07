@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, UserCheck, CreditCard, Settings } from "lucide-react";
+import { Calendar, UserCheck, CreditCard, Settings, Award, BookOpen, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,11 +22,12 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
   const isMobile = useIsMobile();
   
   const navigationItems = [
-    { name: "Home", path: "/client", icon: UserCheck },
-    { name: "Treatments", path: "/client/treatments", icon: Settings },
-    { name: "Appointments", path: "/client/appointments", icon: Calendar },
-    { name: "Rewards", path: "/client/rewards", icon: Settings },
-    { name: "Payments", path: "/client/payments", icon: CreditCard },
+    { name: "דף הבית", path: "/client/dashboard", icon: Home },
+    { name: "הפרופיל שלי", path: "/client", icon: UserCheck },
+    { name: "תורים", path: "/client/appointments", icon: Calendar },
+    { name: "טיפולים", path: "/client/treatments", icon: BookOpen },
+    { name: "הטבות", path: "/client/rewards", icon: Award },
+    { name: "תשלומים", path: "/client/payments", icon: CreditCard },
   ];
 
   const toggleNav = () => {
@@ -34,7 +35,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-beauty-neutral">
+    <div className="min-h-screen bg-beauty-neutral" dir="rtl">
       {/* Top Navigation */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="px-4 py-4 flex items-center justify-between">
@@ -44,7 +45,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
                 variant="ghost" 
                 size="icon" 
                 onClick={toggleNav}
-                className="mr-2"
+                className="ml-2"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -53,7 +54,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
             )}
             <div>
               <h1 className="text-xl font-medium text-beauty-dark">{businessName}</h1>
-              <p className="text-sm text-gray-500">Welcome, {clientName}</p>
+              <p className="text-sm text-gray-500">שלום, {clientName}</p>
             </div>
           </div>
           <Button 
@@ -61,7 +62,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
             size="icon" 
             className="h-9 w-9 rounded-full bg-beauty-primary text-white"
           >
-            {clientName.charAt(0)}
+            {clientName ? clientName.charAt(0) : "ל"}
           </Button>
         </div>
         
@@ -74,12 +75,13 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
                   key={item.name}
                   to={item.path}
                   className={cn(
-                    "px-3 py-2 text-sm font-medium rounded-md",
+                    "px-3 py-2 text-sm font-medium rounded-md flex items-center",
                     location.pathname === item.path
                       ? "text-white bg-beauty-primary"
                       : "text-beauty-dark hover:bg-beauty-accent"
                   )}
                 >
+                  <item.icon className="ml-1.5 h-4 w-4" />
                   {item.name}
                 </Link>
               ))}
@@ -95,8 +97,8 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
           navOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}>
           <div className={cn(
-            "fixed inset-y-0 left-0 w-64 bg-white transform transition-transform duration-300 ease-in-out",
-            navOpen ? "translate-x-0" : "-translate-x-full"
+            "fixed inset-y-0 right-0 w-64 bg-white transform transition-transform duration-300 ease-in-out",
+            navOpen ? "translate-x-0" : "translate-x-full"
           )}>
             <div className="p-4 border-b border-beauty-accent">
               <div className="flex items-center justify-between">
@@ -123,7 +125,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
                     onClick={toggleNav}
                   >
                     <div className="flex items-center">
-                      <item.icon className="mr-3 h-5 w-5" />
+                      <item.icon className="ml-3 h-5 w-5" />
                       {item.name}
                     </div>
                   </Link>

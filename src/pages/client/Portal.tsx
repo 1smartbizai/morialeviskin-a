@@ -2,9 +2,10 @@
 import ClientLayout from "@/components/layouts/ClientLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, CreditCard, Settings } from "lucide-react";
+import { Calendar, CreditCard, Settings, BookOpen, Award, Home } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 // Mock data for client portal
 const upcomingAppointments = [
@@ -25,9 +26,15 @@ const treatments = [
 ];
 
 const ClientPortal = () => {
+  const navigate = useNavigate();
   const clientName = "Sarah";
   const businessName = "GlowUp Salon";
   const rewardPoints = 230;
+  
+  // Redirect to the new dashboard page
+  useEffect(() => {
+    navigate('/client/dashboard');
+  }, [navigate]);
   
   return (
     <ClientLayout businessName={businessName} clientName={clientName}>
@@ -131,6 +138,12 @@ const ClientPortal = () => {
           <h3 className="text-xl font-bold text-beauty-dark">Quick Actions</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Button asChild variant="outline" className="h-20 flex flex-col items-center justify-center">
+              <Link to="/client/dashboard">
+                <Home className="h-5 w-5 mb-2" />
+                <span>Dashboard</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-20 flex flex-col items-center justify-center">
               <Link to="/client/appointments">
                 <Calendar className="h-5 w-5 mb-2" />
                 <span>Appointments</span>
@@ -138,20 +151,14 @@ const ClientPortal = () => {
             </Button>
             <Button asChild variant="outline" className="h-20 flex flex-col items-center justify-center">
               <Link to="/client/treatments">
-                <Settings className="h-5 w-5 mb-2" />
+                <BookOpen className="h-5 w-5 mb-2" />
                 <span>Treatments</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-20 flex flex-col items-center justify-center">
               <Link to="/client/rewards">
-                <Settings className="h-5 w-5 mb-2" />
+                <Award className="h-5 w-5 mb-2" />
                 <span>Rewards</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-20 flex flex-col items-center justify-center">
-              <Link to="/client/payments">
-                <CreditCard className="h-5 w-5 mb-2" />
-                <span>Payments</span>
               </Link>
             </Button>
           </div>
