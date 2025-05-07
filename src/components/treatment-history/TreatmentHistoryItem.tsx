@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
@@ -14,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/formatters";
-import { TreatmentHistoryItem as TreatmentHistoryItemType } from "@/hooks/useTreatmentHistory";
+import { TreatmentHistoryItem as TreatmentHistoryItemType } from "@/types/treatmentHistory";
 
 interface TreatmentHistoryItemProps {
   item: TreatmentHistoryItemType;

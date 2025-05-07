@@ -1,5 +1,5 @@
 
-import { TreatmentFilter } from "@/hooks/useTreatmentHistory";
+import { TreatmentFilter } from "@/types/treatmentHistory";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarIcon, Filter, X } from "lucide-react";
