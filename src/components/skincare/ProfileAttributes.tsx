@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SkinAttribute } from "@/types/skincare";
-import { Droplet, Sun, Heart, SkinIcon } from "lucide-react";
+import { Droplet, Sun, Heart, DropletIcon } from "lucide-react";
 
 interface ProfileAttributesProps {
   attributes: SkinAttribute[];
@@ -9,7 +9,7 @@ interface ProfileAttributesProps {
 }
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  "skin_type": <SkinIcon className="w-5 h-5" />,
+  "skin_type": <DropletIcon className="w-5 h-5" />,
   "hydration": <Droplet className="w-5 h-5" />,
   "sensitivity": <Heart className="w-5 h-5" />,
   "sun_exposure": <Sun className="w-5 h-5" />

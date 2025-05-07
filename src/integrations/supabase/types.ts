@@ -315,6 +315,45 @@ export type Database = {
           },
         ]
       }
+      client_product_suggestions: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          product_id: string
+          reason: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          product_id: string
+          reason: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_product_suggestions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_product_suggestions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_risk_assessments: {
         Row: {
           client_id: string
@@ -358,6 +397,125 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_skin_answers: {
+        Row: {
+          answer: string
+          answered_at: string
+          client_id: string
+          id: string
+          question_id: string
+        }
+        Insert: {
+          answer: string
+          answered_at?: string
+          client_id: string
+          id?: string
+          question_id: string
+        }
+        Update: {
+          answer?: string
+          answered_at?: string
+          client_id?: string
+          id?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_skin_answers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_skin_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "skin_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_skin_attributes: {
+        Row: {
+          attribute: string
+          category: string
+          client_id: string
+          confidence: number
+          created_at: string
+          id: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          attribute: string
+          category: string
+          client_id: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          attribute?: string
+          category?: string
+          client_id?: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_skin_attributes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_treatment_suggestions: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          reason: string
+          treatment_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          treatment_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          treatment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_treatment_suggestions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_treatment_suggestions_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "treatments"
             referencedColumns: ["id"]
           },
         ]
@@ -618,6 +776,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      skin_questions: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          options: string[] | null
+          order: number
+          question: string
+          question_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: string[] | null
+          order?: number
+          question: string
+          question_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          options?: string[] | null
+          order?: number
+          question?: string
+          question_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       treatment_plan_treatments: {
         Row: {

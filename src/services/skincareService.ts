@@ -23,19 +23,19 @@ export const fetchClientSkinProfile = async (clientId: string): Promise<SkinProf
 
     // Format the data
     const formattedAttributes: SkinAttribute[] = attributes?.map(attr => ({
-      category: attr.category,
-      attribute: attr.attribute,
-      value: attr.value,
-      confidence: attr.confidence,
-      updatedAt: new Date(attr.updated_at)
+      category: attr.category as string,
+      attribute: attr.attribute as string,
+      value: attr.value as string,
+      confidence: attr.confidence as number,
+      updatedAt: new Date(attr.updated_at as string)
     })) || [];
 
     const formattedAnswers: SkinAnswer[] = answers?.map(ans => ({
-      id: ans.id,
-      questionId: ans.question_id,
-      clientId: ans.client_id,
-      answer: ans.answer,
-      answeredAt: new Date(ans.answered_at)
+      id: ans.id as string,
+      questionId: ans.question_id as string,
+      clientId: ans.client_id as string,
+      answer: ans.answer as string,
+      answeredAt: new Date(ans.answered_at as string)
     })) || [];
 
     const lastQuestionDate = formattedAnswers.length > 0 
@@ -73,10 +73,10 @@ export const fetchNextQuestion = async (clientId: string): Promise<SkinQuestion 
     
     if (answersError) throw answersError;
     
-    const answeredQuestionIds = new Set(answers?.map(a => a.question_id));
+    const answeredQuestionIds = new Set(answers?.map(a => a.question_id as string));
     
     // Find first unanswered question
-    const nextQuestion = questions?.find(q => !answeredQuestionIds.has(q.id));
+    const nextQuestion = questions?.find(q => !answeredQuestionIds.has(q.id as string));
     
     // If all questions have been answered, pick the oldest one to ask again
     const oldestQuestion = answers && answers.length > 0 && !nextQuestion
@@ -99,8 +99,7 @@ export const saveAnswer = async (answer: Omit<SkinAnswer, "id" | "answeredAt">):
       .insert({
         question_id: answer.questionId,
         client_id: answer.clientId,
-        answer: answer.answer,
-        answered_at: new Date().toISOString()
+        answer: answer.answer
       })
       .select("*")
       .single();
@@ -110,11 +109,11 @@ export const saveAnswer = async (answer: Omit<SkinAnswer, "id" | "answeredAt">):
     if (!data) return null;
     
     return {
-      id: data.id,
-      questionId: data.question_id,
-      clientId: data.client_id,
-      answer: data.answer,
-      answeredAt: new Date(data.answered_at)
+      id: data.id as string,
+      questionId: data.question_id as string,
+      clientId: data.client_id as string,
+      answer: data.answer as string,
+      answeredAt: new Date(data.answered_at as string)
     };
   } catch (error) {
     console.error("Error saving answer:", error);
@@ -142,11 +141,11 @@ export const fetchProductSuggestions = async (clientId: string) => {
     if (error) throw error;
     
     return data?.map(item => ({
-      id: item.product_id,
-      name: item.products.name,
-      description: item.products.description,
-      imageUrl: item.products.image_url,
-      reason: item.reason
+      id: item.product_id as string,
+      name: (item.products as any).name as string,
+      description: (item.products as any).description as string,
+      imageUrl: (item.products as any).image_url as string,
+      reason: item.reason as string
     })) || [];
   } catch (error) {
     console.error("Error fetching product suggestions:", error);
@@ -173,10 +172,10 @@ export const fetchTreatmentSuggestions = async (clientId: string) => {
     if (error) throw error;
     
     return data?.map(item => ({
-      id: item.treatment_id,
-      name: item.treatments.name,
-      description: item.treatments.description,
-      reason: item.reason
+      id: item.treatment_id as string,
+      name: (item.treatments as any).name as string,
+      description: (item.treatments as any).description as string,
+      reason: item.reason as string
     })) || [];
   } catch (error) {
     console.error("Error fetching treatment suggestions:", error);
@@ -187,11 +186,11 @@ export const fetchTreatmentSuggestions = async (clientId: string) => {
 // Helper function to format question from database to our type
 const formatQuestion = (question: any): SkinQuestion => {
   return {
-    id: question.id,
-    question: question.question,
-    questionType: question.question_type,
-    options: question.options,
-    order: question.order,
-    isActive: question.is_active
+    id: question.id as string,
+    question: question.question as string,
+    questionType: question.question_type as 'multiple_choice' | 'scale' | 'text',
+    options: question.options as string[] | undefined,
+    order: question.order as number,
+    isActive: question.is_active as boolean
   };
 };
