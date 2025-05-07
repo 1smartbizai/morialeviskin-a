@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -132,6 +131,27 @@ export const useTreatmentHistory = () => {
           ? `${businessOwner.first_name} ${businessOwner.last_name}`
           : undefined;
         
+        // Process attachments to ensure they match the expected format
+        const formattedAttachments = Array.isArray(appointment.attachments) 
+          ? appointment.attachments.map((attachment: any) => {
+              // If attachment is already in the correct format, use it
+              if (attachment && typeof attachment === 'object' && 'name' in attachment && 'type' in attachment && 'url' in attachment) {
+                return {
+                  name: attachment.name,
+                  type: attachment.type,
+                  url: attachment.url
+                };
+              }
+              // Otherwise, create a placeholder or extract information if possible
+              return {
+                name: typeof attachment === 'object' && attachment?.name ? attachment.name : 'Attachment',
+                type: typeof attachment === 'object' && attachment?.type ? attachment.type : 'unknown',
+                url: typeof attachment === 'string' ? attachment : 
+                     (typeof attachment === 'object' && attachment?.url ? attachment.url : '')
+              };
+            })
+          : [];
+        
         return {
           id: appointment.id,
           treatmentName: appointment.treatment_name,
@@ -140,7 +160,7 @@ export const useTreatmentHistory = () => {
           businessOwnerName,
           therapistNotes: appointment.therapist_notes,
           price: treatment?.price || 0,
-          attachments: Array.isArray(appointment.attachments) ? appointment.attachments : []
+          attachments: formattedAttachments
         };
       });
       
