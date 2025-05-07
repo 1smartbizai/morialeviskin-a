@@ -53,7 +53,7 @@ export default function ProfileAttributes({ attributes, className }: ProfileAttr
               <div key={category} className="bg-muted/20 p-4 rounded-lg">
                 <div className="flex items-center space-x-2 space-x-reverse mb-3">
                   <div className="text-primary">
-                    {CATEGORY_ICONS[category] || <SkinIcon className="w-5 h-5" />}
+                    {CATEGORY_ICONS[category] || <DropletIcon className="w-5 h-5" />}
                   </div>
                   <h4 className="font-medium">{CATEGORY_NAMES[category] || category}</h4>
                 </div>
