@@ -9,6 +9,114 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          appointment_date: string
+          business_owner_id: string
+          cancelled_at: string | null
+          cancelled_reason: string | null
+          client_id: string
+          created_at: string
+          end_time: string
+          id: string
+          notes: string | null
+          status: string
+          treatment_id: string | null
+          treatment_name: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          business_owner_id: string
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          client_id: string
+          created_at?: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          status?: string
+          treatment_id?: string | null
+          treatment_name: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          business_owner_id?: string
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          client_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          treatment_id?: string | null
+          treatment_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_business_owner_id_fkey"
+            columns: ["business_owner_id"]
+            isOneToOne: false
+            referencedRelation: "business_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_treatment_id_fkey"
+            columns: ["treatment_id"]
+            isOneToOne: false
+            referencedRelation: "treatments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      available_timeslots: {
+        Row: {
+          business_owner_id: string
+          created_at: string
+          end_time: string
+          id: string
+          is_available: boolean
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          business_owner_id: string
+          created_at?: string
+          end_time: string
+          id?: string
+          is_available?: boolean
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          business_owner_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_available?: boolean
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "available_timeslots_business_owner_id_fkey"
+            columns: ["business_owner_id"]
+            isOneToOne: false
+            referencedRelation: "business_owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_owners: {
         Row: {
           accent_color: string | null

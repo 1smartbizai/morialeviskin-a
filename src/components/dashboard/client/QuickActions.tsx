@@ -13,7 +13,7 @@ const QuickActions = () => {
         <Button
           variant="outline"
           className="h-auto py-6 flex flex-col items-center text-beauty-dark hover:bg-beauty-accent/20"
-          onClick={() => navigate("/client/appointments")}
+          onClick={() => navigate("/client/book")}
         >
           <Calendar className="h-7 w-7 mb-2 text-beauty-primary" />
           <span>קביעת תור</span>

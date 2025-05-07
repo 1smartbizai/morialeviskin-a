@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 // Mock data for client appointments
 const upcomingAppointments = [
@@ -39,12 +40,18 @@ const pastAppointments = [
 ];
 
 const ClientAppointments = () => {
+  const navigate = useNavigate();
+  
+  const handleBookAppointment = () => {
+    navigate("/client/book");
+  };
+  
   return (
     <ClientLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold text-beauty-dark">My Appointments</h1>
-          <Button className="bg-beauty-primary">+ Book New Appointment</Button>
+          <Button className="bg-beauty-primary" onClick={handleBookAppointment}>+ Book New Appointment</Button>
         </div>
         
         <Tabs defaultValue="upcoming">
@@ -94,7 +101,7 @@ const ClientAppointments = () => {
                 <Card>
                   <CardContent className="p-6 text-center">
                     <p className="text-muted-foreground mb-4">You don't have any upcoming appointments</p>
-                    <Button className="bg-beauty-primary">Book Now</Button>
+                    <Button className="bg-beauty-primary" onClick={handleBookAppointment}>Book Now</Button>
                   </CardContent>
                 </Card>
               )}
@@ -116,7 +123,7 @@ const ClientAppointments = () => {
                       </div>
                     </CardContent>
                     <div className="bg-beauty-accent h-full flex items-center p-4">
-                      <Button variant="outline" size="sm">Book Again</Button>
+                      <Button variant="outline" size="sm" onClick={handleBookAppointment}>Book Again</Button>
                     </div>
                   </div>
                 </Card>
