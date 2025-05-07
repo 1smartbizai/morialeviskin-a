@@ -597,6 +597,7 @@ export type Database = {
       clients: {
         Row: {
           birthdate: string | null
+          communication_preferences: Json | null
           created_at: string
           first_name: string
           id: string
@@ -612,6 +613,7 @@ export type Database = {
         }
         Insert: {
           birthdate?: string | null
+          communication_preferences?: Json | null
           created_at?: string
           first_name: string
           id?: string
@@ -627,6 +629,7 @@ export type Database = {
         }
         Update: {
           birthdate?: string | null
+          communication_preferences?: Json | null
           created_at?: string
           first_name?: string
           id?: string

@@ -4,33 +4,25 @@ import { Card, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { FileText, Trash2 } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
 
 const PrivacyTab = () => {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState<string>("");
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  // Export user data
-  const exportUserData = async () => {
+  // Handle data export
+  const handleExportData = async () => {
     setIsExporting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -46,52 +38,53 @@ const PrivacyTab = () => {
         .eq("id", user.id)
         .single();
       
-      // Fetch treatment history
-      const { data: treatments } = await supabase
+      // Fetch treatments history
+      const { data: treatmentsData } = await supabase
         .from("appointments")
         .select("*")
         .eq("client_id", user.id);
       
-      // Fetch payment history (mock data for now)
-      const paymentHistory = []; // This would come from a real table in a full implementation
+      // Fetch payments history
+      const { data: paymentsData } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("client_id", user.id);
       
-      // Prepare export data
+      // Prepare download data
       const exportData = {
         personalInfo: clientData,
-        treatments: treatments || [],
-        paymentHistory: paymentHistory || [],
-        exportDate: new Date().toISOString(),
+        treatments: treatmentsData || [],
+        payments: paymentsData || []
       };
       
       // Create and download file
       const dataStr = JSON.stringify(exportData, null, 2);
       const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
       
-      const exportFileDefaultName = `user-data-export-${new Date().toISOString().slice(0,10)}.json`;
-      
+      const exportFileDefaultName = `data-export-${new Date().toISOString()}.json`;
       const linkElement = document.createElement("a");
       linkElement.setAttribute("href", dataUri);
       linkElement.setAttribute("download", exportFileDefaultName);
       linkElement.click();
       
       toast({
-        title: "ייצוא הושלם",
-        description: "הנתונים שלך יוצאו בהצלחה",
+        title: "הנתונים יוצאו בהצלחה",
+        description: "קובץ היצוא נשמר במחשב שלך",
       });
     } catch (error) {
-      console.error("Error exporting user data:", error);
+      console.error("Error exporting data:", error);
       toast({
         variant: "destructive",
         title: "שגיאה",
-        description: "לא ניתן לייצא את הנתונים",
+        description: "לא ניתן לייצא את הנתונים, נסו שוב מאוחר יותר",
       });
     } finally {
       setIsExporting(false);
     }
   };
 
-  // Delete account
-  const deleteAccount = async () => {
+  // Handle account deletion
+  const handleDeleteAccount = async () => {
     setIsDeleting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -99,35 +92,41 @@ const PrivacyTab = () => {
       if (!user) {
         throw new Error("לא מחובר");
       }
-
-      // In a real application, you'd want to:
-      // 1. Delete all user data from tables with relations
-      // 2. Finally delete the user account itself
-      // 3. Handle this logic in a Supabase Edge Function for security
       
-      // For this demo, we'll simulate success
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Delete user data from clients table
+      const { error: deleteClientError } = await supabase
+        .from("clients")
+        .delete()
+        .eq("id", user.id);
+        
+      if (deleteClientError) {
+        throw deleteClientError;
+      }
       
-      // Sign out the user
-      await supabase.auth.signOut();
+      // Delete user authentication
+      const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (deleteAuthError) {
+        throw deleteAuthError;
+      }
       
       toast({
-        title: "חשבון נמחק",
-        description: "החשבון שלך נמחק בהצלחה",
+        title: "החשבון נמחק",
+        description: "כל הנתונים שלך נמחקו בהצלחה",
       });
       
-      // Redirect to home page
-      navigate("/");
+      // Redirect to login page after successful deletion
+      setTimeout(() => {
+        window.location.href = "/client/auth";
+      }, 2000);
     } catch (error) {
       console.error("Error deleting account:", error);
       toast({
         variant: "destructive",
         title: "שגיאה",
-        description: "לא ניתן למחוק את החשבון",
+        description: "לא ניתן למחוק את החשבון, נסו שוב מאוחר יותר",
       });
-    } finally {
       setIsDeleting(false);
-      setDeleteDialogOpen(false);
     }
   };
 
@@ -135,79 +134,59 @@ const PrivacyTab = () => {
     <Card>
       <CardContent className="pt-6 space-y-6">
         <CardDescription>
-          נהל את המידע האישי שלך וכלי פרטיות בהתאם לדרישות GDPR
+          הפרטיות שלך חשובה לנו. אנחנו מאפשרים לך לייצא את הנתונים שלך או למחוק את החשבון לחלוטין
         </CardDescription>
         
         <div className="space-y-4">
-          {/* Export Data Section */}
-          <div className="border-b pb-4">
-            <h3 className="text-lg font-medium mb-2 flex items-center">
-              <FileText className="mr-2 h-5 w-5" />
-              ייצוא מידע אישי
-            </h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              הורד את כל המידע האישי שלך, כולל היסטוריית טיפולים ותשלומים
+          <div className="p-4 border rounded-lg">
+            <h3 className="text-lg font-medium mb-2">ייצוא נתונים</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              ניתן לייצא את כל המידע האישי שלך, כולל היסטורית טיפולים ותשלומים
             </p>
             <Button 
               variant="outline" 
-              onClick={exportUserData}
+              onClick={handleExportData}
               disabled={isExporting}
-              className="w-full"
+              className="w-full flex items-center justify-center"
             >
-              {isExporting ? "מייצא..." : "ייצא את המידע שלי"}
+              <Download className="ml-2 h-4 w-4" />
+              {isExporting ? "מייצא..." : "ייצוא כל הנתונים"}
             </Button>
           </div>
           
-          {/* Delete Account Section */}
-          <div>
-            <h3 className="text-lg font-medium mb-2 flex items-center text-destructive">
-              <Trash2 className="mr-2 h-5 w-5" />
-              מחיקת חשבון
-            </h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              מחק את החשבון שלך ואת כל המידע האישי הקשור אליו
+          <div className="p-4 border rounded-lg border-destructive/20">
+            <h3 className="text-lg font-medium mb-2 text-destructive">מחיקת חשבון</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              פעולה זו תמחק לצמיתות את כל הנתונים שלך ואת החשבון שלך מהמערכת
             </p>
-            
-            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <Dialog>
               <DialogTrigger asChild>
-                <Button variant="destructive" className="w-full">
-                  מחק את החשבון שלי
+                <Button 
+                  variant="destructive" 
+                  className="w-full flex items-center justify-center"
+                >
+                  <Trash2 className="ml-2 h-4 w-4" />
+                  מחיקת חשבון
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-destructive">מחיקת חשבון</DialogTitle>
+                  <DialogTitle>מחיקת חשבון</DialogTitle>
                   <DialogDescription>
-                    זוהי פעולה בלתי הפיכה. כל הנתונים שלך יימחקו לצמיתות.
+                    האם אתה בטוח שברצונך למחוק את החשבון שלך? לא ניתן לשחזר פעולה זו.
+                    כל הנתונים והמידע האישי שלך יימחקו לצמיתות.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
-                  <Alert variant="destructive" className="mb-4">
-                    <AlertTitle>אזהרה</AlertTitle>
-                    <AlertDescription>
-                      מחיקה זו היא סופית ובלתי הפיכה. כל הנתונים שלך יאבדו לנצח.
-                    </AlertDescription>
-                  </Alert>
-                  
-                  <p className="mb-2">הקלד "מחק את החשבון שלי" כדי לאשר:</p>
-                  <input 
-                    type="text" 
-                    className="w-full border-2 border-red-300 rounded-md p-2"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    dir="rtl"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-                    ביטול
-                  </Button>
+                <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline">ביטול</Button>
+                  </DialogClose>
                   <Button 
                     variant="destructive" 
-                    onClick={deleteAccount}
-                    disabled={isDeleting || deleteConfirmText !== "מחק את החשבון שלי"}
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
                   >
-                    {isDeleting ? "מוחק..." : "מחק לצמיתות"}
+                    {isDeleting ? "מוחק..." : "כן, מחק את החשבון שלי"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
