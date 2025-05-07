@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,7 +29,7 @@ import ClientPayments from "./pages/client/Payments";
 import ClientAuth from "./pages/client/Auth";
 import BookAppointment from "./pages/client/BookAppointment"; 
 import TreatmentHistory from "./pages/client/TreatmentHistory";
-import SkinProfile from "./pages/client/SkinProfile"; // Add this import
+import SkinProfile from "./pages/client/SkinProfile";
 import BusinessOwnerSignup from "./pages/BusinessOwnerSignup";
 import BusinessManagement from "./pages/admin/BusinessManagement";
 import AdminLoyalty from "./pages/admin/Loyalty";
@@ -36,7 +37,8 @@ import ClientInsights from "./pages/admin/ClientInsights";
 import Analytics from "./pages/admin/Analytics";
 import BusinessSettings from "./pages/admin/BusinessSettings";
 import MessagesAndAutomations from "./pages/admin/MessagesAndAutomations";
-import ClientMessages from "./pages/client/Messages"; // Add this import
+import ClientMessages from "./pages/client/Messages";
+import FeedbackSurvey from "./pages/client/FeedbackSurvey"; // Add this import
 
 const queryClient = new QueryClient();
 
@@ -80,11 +82,12 @@ const App = () => (
             <Route path="/client/appointments" element={<ClientAppointments />} />
             <Route path="/client/treatments" element={<ClientTreatments />} />
             <Route path="/client/treatment-history" element={<TreatmentHistory />} />
-            <Route path="/client/skin-profile" element={<SkinProfile />} /> {/* Add this new route */}
+            <Route path="/client/skin-profile" element={<SkinProfile />} />
             <Route path="/client/rewards" element={<ClientRewards />} />
             <Route path="/client/payments" element={<ClientPayments />} />
             <Route path="/client/book" element={<BookAppointment />} /> 
-            <Route path="/client/messages" element={<ClientMessages />} /> {/* Add this new route */}
+            <Route path="/client/messages" element={<ClientMessages />} />
+            <Route path="/client/feedback" element={<FeedbackSurvey />} /> {/* Add this new route */}
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

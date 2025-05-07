@@ -1,48 +1,68 @@
 
 import { Button } from "@/components/ui/button";
-import { Award, Calendar, BookOpen, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Calendar, MessageSquare, Award, Droplet } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useFeedbackSurvey } from "@/hooks/useFeedbackSurvey";
 
-const QuickActions = () => {
-  const navigate = useNavigate();
+interface QuickActionsProps {
+  hasPendingFeedback?: boolean;
+}
 
+const QuickActions = ({ hasPendingFeedback = false }: QuickActionsProps) => {
+  const { isEligibleForSurvey } = useFeedbackSurvey();
+  
   return (
-    <div className="space-y-3">
-      <h2 className="text-lg font-bold text-beauty-dark">פעולות מהירות</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 gap-3 mt-4">
+      <Link to="/client/appointments">
         <Button
           variant="outline"
-          className="h-auto py-6 flex flex-col items-center text-beauty-dark hover:bg-beauty-accent/20"
-          onClick={() => navigate("/client/book")}
+          className="w-full h-auto py-4 flex flex-col items-center"
         >
-          <Calendar className="h-7 w-7 mb-2 text-beauty-primary" />
-          <span>קביעת תור</span>
+          <Calendar className="h-5 w-5 mb-2" />
+          <span>תורים</span>
         </Button>
+      </Link>
+      
+      <Link to="/client/messages">
         <Button
           variant="outline"
-          className="h-auto py-6 flex flex-col items-center text-beauty-dark hover:bg-beauty-accent/20"
-          onClick={() => navigate("/client/treatments")}
+          className="w-full h-auto py-4 flex flex-col items-center"
         >
-          <BookOpen className="h-7 w-7 mb-2 text-beauty-primary" />
-          <span>טיפולים</span>
+          <MessageSquare className="h-5 w-5 mb-2" />
+          <span>הודעות</span>
         </Button>
+      </Link>
+      
+      <Link to="/client/rewards">
         <Button
           variant="outline"
-          className="h-auto py-6 flex flex-col items-center text-beauty-dark hover:bg-beauty-accent/20"
-          onClick={() => navigate("/client/treatment-history")}
+          className="w-full h-auto py-4 flex flex-col items-center"
         >
-          <FileText className="h-7 w-7 mb-2 text-beauty-primary" />
-          <span>היסטורית טיפולים</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto py-6 flex flex-col items-center text-beauty-dark hover:bg-beauty-accent/20"
-          onClick={() => navigate("/client/rewards")}
-        >
-          <Award className="h-7 w-7 mb-2 text-beauty-primary" />
+          <Award className="h-5 w-5 mb-2" />
           <span>הטבות</span>
         </Button>
-      </div>
+      </Link>
+      
+      <Link to="/client/skin-profile">
+        <Button
+          variant="outline"
+          className="w-full h-auto py-4 flex flex-col items-center"
+        >
+          <Droplet className="h-5 w-5 mb-2" />
+          <span>פרופיל העור</span>
+        </Button>
+      </Link>
+      
+      {isEligibleForSurvey && (
+        <Link to="/client/feedback" className="col-span-2">
+          <Button
+            variant="secondary"
+            className="w-full h-auto py-3 flex items-center justify-center gap-2 bg-beauty-accent/30"
+          >
+            <span className="text-sm">✨ שתפי אותנו במשוב קצר ✨</span>
+          </Button>
+        </Link>
+      )}
     </div>
   );
 };
