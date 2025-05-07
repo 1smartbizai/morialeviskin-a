@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Automation } from '@/types/messaging';
-import { WhatsApp, MessageSquare, Smartphone, Clock, Calendar, Edit, Trash2 } from 'lucide-react';
+import { MessageSquare, Smartphone, Clock, Calendar, Edit, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -25,7 +25,7 @@ export const AutomationsList: React.FC<AutomationsListProps> = ({
   isLoading
 }) => {
   const channelIcons = {
-    whatsapp: <WhatsApp className="h-4 w-4" />,
+    whatsapp: <MessageSquare className="h-4 w-4 text-green-600" />,
     sms: <Smartphone className="h-4 w-4" />,
     'in-app': <MessageSquare className="h-4 w-4" />
   };
@@ -156,3 +156,38 @@ export const AutomationsList: React.FC<AutomationsListProps> = ({
     </Card>
   );
 };
+
+function getTriggerTypeIcon(type: string) {
+  switch (type) {
+    case 'no_visit':
+      return <Calendar className="h-4 w-4" />;
+    case 'birthday':
+      return <Calendar className="h-4 w-4" />;
+    case 'appointment_reminder':
+      return <Clock className="h-4 w-4" />;
+    default:
+      return <Clock className="h-4 w-4" />;
+  }
+}
+
+function getTriggerTypeLabel(type: string, days: number) {
+  switch (type) {
+    case 'no_visit':
+      return `אין ביקור במשך ${days} ימים`;
+    case 'birthday':
+      return `יום הולדת (${days} ימים לפני)`;
+    case 'appointment_reminder':
+      return `תזכורת לפגישה (${days} שעות לפני)`;
+    default:
+      return type;
+  }
+}
+
+function formatTime(dateString?: string) {
+  if (!dateString) return 'אף פעם';
+  try {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: he });
+  } catch (e) {
+    return dateString;
+  }
+}

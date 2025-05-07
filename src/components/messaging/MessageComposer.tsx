@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { MessageTemplate } from '@/types/messaging';
-import { WhatsApp, MessageSquare, Smartphone } from 'lucide-react';
+import { MessageSquare, Smartphone } from 'lucide-react';
 
 interface MessageComposerProps {
   templates: MessageTemplate[];
@@ -39,7 +39,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   };
 
   const channelIcons = {
-    whatsapp: <WhatsApp className="h-4 w-4" />,
+    whatsapp: <MessageSquare className="h-4 w-4 text-green-600" />,
     sms: <Smartphone className="h-4 w-4" />,
     'in-app': <MessageSquare className="h-4 w-4" />
   };

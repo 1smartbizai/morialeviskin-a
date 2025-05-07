@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Message } from '@/types/messaging';
-import { WhatsApp, MessageSquare, Smartphone, Send, Check, CheckCheck, Clock, XCircle } from 'lucide-react';
+import { MessageSquare, Smartphone, Send, Check, CheckCheck, Clock, XCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -20,7 +20,7 @@ export const MessageLog: React.FC<MessageLogProps> = ({
   isLoading
 }) => {
   const channelIcons = {
-    whatsapp: <WhatsApp className="h-4 w-4" />,
+    whatsapp: <MessageSquare className="h-4 w-4 text-green-600" />,
     sms: <Smartphone className="h-4 w-4" />,
     'in-app': <MessageSquare className="h-4 w-4" />
   };
@@ -153,3 +153,48 @@ export const MessageLog: React.FC<MessageLogProps> = ({
     </Card>
   );
 };
+
+function getStatusColor(status: Message['status']) {
+  switch (status) {
+    case 'pending':
+      return 'bg-amber-100 text-amber-800';
+    case 'sent':
+      return 'bg-blue-100 text-blue-800';
+    case 'delivered':
+      return 'bg-green-100 text-green-800';
+    case 'read':
+      return 'bg-green-700 text-white';
+    case 'failed':
+      return 'bg-red-100 text-red-800';
+    default:
+      return '';
+  }
+}
+
+function getStatusLabel(status: Message['status']) {
+  const labels = {
+    pending: 'ממתין',
+    sent: 'נשלח',
+    delivered: 'נמסר',
+    read: 'נקרא',
+    failed: 'נכשל'
+  };
+  return labels[status] || status;
+}
+
+function getChannelLabel(channel: 'whatsapp' | 'sms' | 'in-app') {
+  const labels = {
+    whatsapp: 'וואטסאפ',
+    sms: 'SMS',
+    'in-app': 'באפליקציה'
+  };
+  return labels[channel] || channel;
+}
+
+function formatTime(dateString: string) {
+  try {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: he });
+  } catch (e) {
+    return dateString;
+  }
+}

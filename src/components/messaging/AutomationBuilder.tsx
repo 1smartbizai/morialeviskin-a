@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Automation, MessageTemplate } from '@/types/messaging';
-import { WhatsApp, MessageSquare, Smartphone, Clock } from 'lucide-react';
+import { MessageSquare, Smartphone, Clock } from 'lucide-react';
 
 interface AutomationBuilderProps {
   templates: MessageTemplate[];
@@ -23,7 +23,9 @@ export const AutomationBuilder: React.FC<AutomationBuilderProps> = ({
   isLoading
 }) => {
   const [name, setName] = useState(initialAutomation?.name || '');
-  const [triggerType, setTriggerType] = useState(initialAutomation?.trigger.type || 'no_visit');
+  const [triggerType, setTriggerType] = useState<'no_visit' | 'birthday' | 'appointment_reminder' | 'custom'>(
+    initialAutomation?.trigger.type as 'no_visit' | 'birthday' | 'appointment_reminder' | 'custom' || 'no_visit'
+  );
   const [triggerDays, setTriggerDays] = useState(initialAutomation?.trigger.days?.toString() || '30');
   const [messageTemplate, setMessageTemplate] = useState(initialAutomation?.action.messageTemplate || '');
   const [channel, setChannel] = useState<'whatsapp' | 'sms' | 'in-app'>(initialAutomation?.action.channel || 'whatsapp');
@@ -35,7 +37,7 @@ export const AutomationBuilder: React.FC<AutomationBuilderProps> = ({
       id: initialAutomation?.id,
       name,
       trigger: {
-        type: triggerType as Automation['trigger']['type'],
+        type: triggerType,
         days: parseInt(triggerDays, 10)
       },
       action: {
@@ -52,7 +54,7 @@ export const AutomationBuilder: React.FC<AutomationBuilderProps> = ({
   };
 
   const channelIcons = {
-    whatsapp: <WhatsApp className="h-4 w-4" />,
+    whatsapp: <MessageSquare className="h-4 w-4 text-green-600" />,
     sms: <Smartphone className="h-4 w-4" />,
     'in-app': <MessageSquare className="h-4 w-4" />
   };
@@ -96,7 +98,10 @@ export const AutomationBuilder: React.FC<AutomationBuilderProps> = ({
         <div className="space-y-2">
           <label className="text-sm font-medium block">תנאי הפעלה</label>
           
-          <Select value={triggerType} onValueChange={(value) => setTriggerType(value)}>
+          <Select
+            value={triggerType}
+            onValueChange={(value: 'no_visit' | 'birthday' | 'appointment_reminder' | 'custom') => setTriggerType(value)}
+          >
             <SelectTrigger className="w-full">
               <SelectValue>{getTriggerTypeLabel(triggerType)}</SelectValue>
             </SelectTrigger>
