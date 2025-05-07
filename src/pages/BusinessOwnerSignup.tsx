@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
 import VisualIdentityStep from "@/components/signup/VisualIdentityStep";
+import BrandSettingsStep from "@/components/signup/BrandSettingsStep";
 import PaymentStep from "@/components/signup/PaymentStep";
 import WorkingHoursStep from "@/components/signup/WorkingHoursStep";
 import SuccessStep from "@/components/signup/SuccessStep";
@@ -22,6 +24,15 @@ interface SignupData {
   logoUrl?: string;
   primaryColor: string;
   accentColor: string;
+  backgroundColor: string;
+  headingTextColor: string;
+  bodyTextColor: string;
+  actionTextColor: string;
+  buttonBgColor1: string;
+  buttonBgColor2: string;
+  buttonTextColor1: string;
+  buttonTextColor2: string;
+  brandTone: string;
   subscriptionLevel: string;
   workingHours: {
     [key: string]: {
@@ -31,20 +42,26 @@ interface SignupData {
     };
   };
   googleCalendarConnected: boolean;
+  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
+  businessDomain?: string;
+  businessId?: string;
 }
 
 const steps = [
-  { id: 'personal', title: 'Personal Info' },
-  { id: 'visual', title: 'Brand Identity' },
-  { id: 'payment', title: 'Subscription' },
-  { id: 'hours', title: 'Working Hours' },
-  { id: 'success', title: 'All Done!' }
+  { id: 'personal', title: 'פרטים אישיים' },
+  { id: 'visual', title: 'זהות ויזואלית' },
+  { id: 'brand', title: 'הגדרות מותג' },
+  { id: 'payment', title: 'מנוי' },
+  { id: 'hours', title: 'שעות פעילות' },
+  { id: 'success', title: 'סיום' }
 ];
 
 const BusinessOwnerSignup = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [session, setSession] = useState<any>(null);
   const [signupData, setSignupData] = useState<SignupData>({
     firstName: "",
     lastName: "",
@@ -54,6 +71,15 @@ const BusinessOwnerSignup = () => {
     businessName: "",
     primaryColor: "#6A0DAD", // Default purple
     accentColor: "#5AA9E6", // Default blue
+    backgroundColor: "#FFFFFF",
+    headingTextColor: "#1A1F2C",
+    bodyTextColor: "#333333",
+    actionTextColor: "#FFFFFF",
+    buttonBgColor1: "#6A0DAD",
+    buttonBgColor2: "#8B5CF6",
+    buttonTextColor1: "#FFFFFF",
+    buttonTextColor2: "#FFFFFF",
+    brandTone: "professional",
     subscriptionLevel: "starter",
     workingHours: {
       monday: { active: true, start: "09:00", end: "17:00" },
@@ -65,49 +91,246 @@ const BusinessOwnerSignup = () => {
       sunday: { active: false, start: "10:00", end: "14:00" },
     },
     googleCalendarConnected: false,
+    isEmailVerified: false,
+    isPhoneVerified: false,
+    businessDomain: "",
+    businessId: "",
   });
 
-  const handleNext = async () => {
-    // If this is the first step, we need to create the account
-    if (currentStep === 0) {
-      setIsLoading(true);
-      try {
-        // Create user in Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
-          email: signupData.email,
-          password: signupData.password,
-          options: {
-            data: {
-              first_name: signupData.firstName,
-              last_name: signupData.lastName,
-            }
-          }
-        });
-
-        if (error) throw error;
-
-        setCurrentStep(currentStep + 1);
-      } catch (error: any) {
-        toast.error("Error creating account", {
-          description: error.message
-        });
-      } finally {
-        setIsLoading(false);
+  // Check for existing session on component mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setSession(data.session);
+        // Try to load existing signup data if available
+        loadSavedSignupData(data.session.user.id);
       }
-    } 
-    // If this is the second step (visual identity), we upload the logo
-    else if (currentStep === 1 && signupData.logo) {
-      setIsLoading(true);
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const userId = sessionData.session?.user?.id;
+    };
+    
+    checkSession();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        setSession(newSession);
+        // If we get a new session, try to load saved data
+        if (newSession && event === 'SIGNED_IN') {
+          loadSavedSignupData(newSession.user.id);
+        }
+      }
+    );
+    
+    return () => subscription.unsubscribe();
+  }, []);
+  
+  // Load any saved signup data
+  const loadSavedSignupData = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('business_owners')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
         
-        if (!userId) {
-          throw new Error("You must be logged in to continue");
+      if (error) {
+        // No data yet, that's ok for new users
+        console.log('No existing signup data found');
+        return;
+      }
+      
+      if (data) {
+        // Pre-populate our form with saved data
+        setSignupData(prev => ({
+          ...prev,
+          firstName: data.first_name || prev.firstName,
+          lastName: data.last_name || prev.lastName,
+          phone: data.phone || prev.phone,
+          businessName: data.business_name || prev.businessName,
+          primaryColor: data.primary_color || prev.primaryColor,
+          accentColor: data.accent_color || prev.accentColor,
+          backgroundColor: data.background_color || prev.backgroundColor,
+          headingTextColor: data.heading_text_color || prev.headingTextColor,
+          bodyTextColor: data.body_text_color || prev.bodyTextColor,
+          actionTextColor: data.action_text_color || prev.actionTextColor,
+          buttonBgColor1: data.button_bg_color_1 || prev.buttonBgColor1,
+          buttonBgColor2: data.button_bg_color_2 || prev.buttonBgColor2,
+          buttonTextColor1: data.button_text_color_1 || prev.buttonTextColor1,
+          buttonTextColor2: data.button_text_color_2 || prev.buttonTextColor2,
+          brandTone: data.brand_tone || prev.brandTone,
+          subscriptionLevel: data.subscription_level || prev.subscriptionLevel,
+          logoUrl: data.logo_url || prev.logoUrl,
+          workingHours: data.working_hours || prev.workingHours,
+          googleCalendarConnected: data.google_calendar_connected || prev.googleCalendarConnected,
+          isEmailVerified: data.email_verified || prev.isEmailVerified,
+          isPhoneVerified: data.phone_verified || prev.isPhoneVerified,
+        }));
+        
+        // Generate business domain and ID if we don't have them yet
+        if (!signupData.businessDomain) {
+          const domain = `bellevo.app/${data.business_name.toLowerCase().replace(/\s+/g, '-')}`;
+          const id = `BIZ-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+          
+          setSignupData(prev => ({
+            ...prev,
+            businessDomain: domain,
+            businessId: id,
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error loading saved signup data:', err);
+    }
+  };
+
+  // Save signup data after each step
+  const saveSignupData = async () => {
+    if (!session?.user?.id) {
+      console.log('No user ID available to save data');
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // For Personal Info step
+      if (currentStep === 0) {
+        // This gets saved when creating the user in handleNext
+        return;
+      } 
+      // For Visual Identity and Brand Settings steps
+      else if (currentStep === 1 || currentStep === 2) {
+        const { error } = await supabase
+          .from('business_owners')
+          .upsert({
+            user_id: session.user.id,
+            first_name: signupData.firstName,
+            last_name: signupData.lastName,
+            phone: signupData.phone,
+            business_name: signupData.businessName,
+            logo_url: signupData.logoUrl,
+            primary_color: signupData.primaryColor,
+            accent_color: signupData.accentColor,
+            background_color: signupData.backgroundColor,
+            heading_text_color: signupData.headingTextColor,
+            body_text_color: signupData.bodyTextColor,
+            action_text_color: signupData.actionTextColor,
+            button_bg_color_1: signupData.buttonBgColor1,
+            button_bg_color_2: signupData.buttonBgColor2,
+            button_text_color_1: signupData.buttonTextColor1,
+            button_text_color_2: signupData.buttonTextColor2,
+            brand_tone: signupData.brandTone,
+          });
+          
+        if (error) throw error;
+      }
+      // For Payment step
+      else if (currentStep === 3) {
+        const { error } = await supabase
+          .from('business_owners')
+          .update({
+            subscription_active: true,
+            subscription_level: signupData.subscriptionLevel,
+            subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          })
+          .eq('user_id', session.user.id);
+          
+        if (error) throw error;
+      }
+      // For Working Hours step
+      else if (currentStep === 4) {
+        const { error } = await supabase
+          .from('business_owners')
+          .update({
+            working_hours: signupData.workingHours,
+            google_calendar_connected: signupData.googleCalendarConnected,
+          })
+          .eq('user_id', session.user.id);
+          
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      toast.error("שגיאה בשמירת הנתונים", {
+        description: error.message
+      });
+      console.error('Error saving signup data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNext = async () => {
+    setIsLoading(true);
+    
+    try {
+      // If this is the first step, we need to create the account
+      if (currentStep === 0) {
+        // Check if we already have a session
+        if (!session) {
+          // Create user in Supabase Auth
+          const { data, error } = await supabase.auth.signUp({
+            email: signupData.email,
+            password: signupData.password,
+            options: {
+              data: {
+                first_name: signupData.firstName,
+                last_name: signupData.lastName,
+              }
+            }
+          });
+
+          if (error) throw error;
+          
+          // At this point we should have a session
+          if (data.session) {
+            setSession(data.session);
+            
+            // Initialize business owner record
+            const { error: businessError } = await supabase
+              .from('business_owners')
+              .insert({
+                user_id: data.user!.id,
+                first_name: signupData.firstName,
+                last_name: signupData.lastName,
+                phone: signupData.phone,
+                business_name: signupData.businessName || `${signupData.firstName}'s Business`,
+              });
+              
+            if (businessError) throw businessError;
+          } else {
+            // This might happen if email confirmation is required
+            toast.info("נשלח אליך אימות בדוא\"ל", {
+              description: "אנא אמתי את חשבונך כדי להמשיך"
+            });
+          }
+        }
+        
+        // Generate a business domain based on business name
+        const domain = `bellevo.app/${signupData.businessName.toLowerCase().replace(/\s+/g, '-')}`;
+        const id = `BIZ-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        
+        setSignupData(prev => ({
+          ...prev,
+          businessDomain: domain,
+          businessId: id,
+        }));
+        
+        // Auto-send verification emails
+        if (session?.user?.id) {
+          await supabase.auth.resetPasswordForEmail(signupData.email);
+          toast.info("נשלח אימות דוא\"ל", {
+            description: "אנא בדקי את תיבת הדואר שלך לקישור אימות"
+          });
+        }
+      } 
+      // If this is the second step (visual identity), we upload the logo
+      else if (currentStep === 1 && signupData.logo) {
+        if (!session?.user?.id) {
+          throw new Error("אינך מחוברת למערכת, נא להתחבר שנית");
         }
         
         const fileExt = signupData.logo.name.split('.').pop();
-        const filePath = `${userId}/${Date.now()}.${fileExt}`;
+        const filePath = `${session.user.id}/${Date.now()}.${fileExt}`;
         
         const { error: uploadError, data: uploadData } = await supabase.storage
           .from('logos')
@@ -124,95 +347,26 @@ const BusinessOwnerSignup = () => {
           ...signupData,
           logoUrl: publicUrl
         });
+      } 
+      
+      // If we're on the final step, complete all the setup
+      if (currentStep === 5) {
+        // Navigate to dashboard
+        navigate('/admin');
+      } else {
+        // Save current step data
+        await saveSignupData();
         
+        // Move to next step
         setCurrentStep(currentStep + 1);
-      } catch (error: any) {
-        toast.error("Error uploading logo", {
-          description: error.message
-        });
-      } finally {
-        setIsLoading(false);
       }
-    } 
-    // If this is the payment step
-    else if (currentStep === 2) {
-      // In a real app, this is where you'd integrate with Tranzila
-      // For now, we'll just simulate a successful payment
-      setIsLoading(true);
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const userId = sessionData.session?.user?.id;
-        
-        if (!userId) {
-          throw new Error("You must be logged in to continue");
-        }
-        
-        // Insert or update business owner record with all the info collected so far
-        const { error } = await supabase
-          .from('business_owners')
-          .upsert({
-            user_id: userId,
-            first_name: signupData.firstName,
-            last_name: signupData.lastName,
-            phone: signupData.phone,
-            business_name: signupData.businessName,
-            logo_url: signupData.logoUrl,
-            primary_color: signupData.primaryColor,
-            accent_color: signupData.accentColor,
-            subscription_active: true,
-            subscription_level: signupData.subscriptionLevel,
-            subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-          });
-          
-        if (error) throw error;
-        
-        setCurrentStep(currentStep + 1);
-      } catch (error: any) {
-        toast.error("Error processing payment", {
-          description: error.message
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } 
-    // If this is the working hours step
-    else if (currentStep === 3) {
-      setIsLoading(true);
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const userId = sessionData.session?.user?.id;
-        
-        if (!userId) {
-          throw new Error("You must be logged in to continue");
-        }
-        
-        // Update business owner record with working hours
-        const { error } = await supabase
-          .from('business_owners')
-          .update({
-            working_hours: signupData.workingHours,
-            google_calendar_connected: signupData.googleCalendarConnected,
-          })
-          .eq('user_id', userId);
-          
-        if (error) throw error;
-        
-        setCurrentStep(currentStep + 1);
-      } catch (error: any) {
-        toast.error("Error saving working hours", {
-          description: error.message
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } 
-    // If this is the success step, navigate to dashboard
-    else if (currentStep === 4) {
-      navigate('/admin');
-    } 
-    // Otherwise just move to the next step
-    else {
-      setCurrentStep(currentStep + 1);
+    } catch (error: any) {
+      toast.error("שגיאה בתהליך ההרשמה", {
+        description: error.message
+      });
+      console.error('Error in signup process:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -225,6 +379,22 @@ const BusinessOwnerSignup = () => {
   const updateSignupData = (data: Partial<SignupData>) => {
     setSignupData(prev => ({ ...prev, ...data }));
   };
+  
+  const handleResendVerification = async () => {
+    setIsLoading(true);
+    try {
+      await supabase.auth.resetPasswordForEmail(signupData.email);
+      toast.success("נשלחה בקשת אימות חדשה", {
+        description: "בדקי את תיבת הדואר האלקטרוני שלך"
+      });
+    } catch (error: any) {
+      toast.error("שגיאה בשליחת האימות", {
+        description: error.message
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -233,18 +403,29 @@ const BusinessOwnerSignup = () => {
       case 1:
         return <VisualIdentityStep data={signupData} updateData={updateSignupData} />;
       case 2:
-        return <PaymentStep data={signupData} updateData={updateSignupData} />;
+        return <BrandSettingsStep data={signupData} updateData={updateSignupData} />;
       case 3:
-        return <WorkingHoursStep data={signupData} updateData={updateSignupData} />;
+        return <PaymentStep data={signupData} updateData={updateSignupData} />;
       case 4:
-        return <SuccessStep businessName={signupData.businessName} />;
+        return <WorkingHoursStep data={signupData} updateData={updateSignupData} />;
+      case 5:
+        return (
+          <SuccessStep 
+            businessName={signupData.businessName} 
+            businessDomain={signupData.businessDomain}
+            businessId={signupData.businessId}
+            isEmailVerified={signupData.isEmailVerified}
+            isPhoneVerified={signupData.isPhoneVerified}
+            onResendVerification={handleResendVerification}
+          />
+        );
       default:
         return <PersonalInfoStep data={signupData} updateData={updateSignupData} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-3xl">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight">Bellevo</h1>
@@ -255,7 +436,7 @@ const BusinessOwnerSignup = () => {
           <CardHeader>
             <CardTitle>{steps[currentStep].title}</CardTitle>
             <CardDescription>
-              Step {currentStep + 1} of {steps.length}
+              שלב {currentStep + 1} מתוך {steps.length}
             </CardDescription>
             <div className="flex space-x-2 mt-4">
               {steps.map((step, index) => (
@@ -276,19 +457,21 @@ const BusinessOwnerSignup = () => {
                 variant="outline"
                 onClick={handlePrevious}
                 disabled={currentStep === 0 || isLoading}
+                className="flex-row-reverse"
               >
-                <ChevronLeft className="mr-2 h-4 w-4" /> Back
+                חזרה <ChevronLeft className="mr-2 h-4 w-4" />
               </Button>
               
               <Button 
                 onClick={handleNext}
                 disabled={isLoading}
+                className="flex-row-reverse"
               >
                 {currentStep === steps.length - 1 ? (
-                  'Go to Dashboard'
+                  'היכנסי ללוח הבקרה'
                 ) : (
                   <>
-                    Next <ChevronRight className="ml-2 h-4 w-4" />
+                    המשך <ChevronRight className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
