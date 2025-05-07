@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   action_type: z.string().min(2, {
@@ -43,8 +45,16 @@ const AutomatedActionForm = ({ clientId, onSuccess }: AutomatedActionFormProps) 
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from("automated_actions")
-        .insert([{ ...values, client_id: clientId }]);
+        .from("client_automated_actions")
+        .insert([{ 
+          client_id: clientId,
+          action_type: values.action_type,
+          content: values.description,
+          scheduled_for: values.scheduled_date.toISOString(),
+          source_type: 'manual',
+          source_id: clientId,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        }]);
 
       if (error) {
         throw new Error(error.message);
@@ -92,7 +102,7 @@ const AutomatedActionForm = ({ clientId, onSuccess }: AutomatedActionFormProps) 
                 <FormItem>
                   <FormLabel>תיאור</FormLabel>
                   <FormControl>
-                    <Input placeholder="תיאור" {...field} />
+                    <Textarea placeholder="תיאור" {...field} className="min-h-[100px]" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -110,7 +120,7 @@ const AutomatedActionForm = ({ clientId, onSuccess }: AutomatedActionFormProps) 
                     disabled={disabledDays}
                     selected={field.value}
                     onSelect={field.onChange}
-                    className="rounded-md border border-input w-full"
+                    className="w-full"
                   />
                   <FormMessage />
                 </FormItem>
