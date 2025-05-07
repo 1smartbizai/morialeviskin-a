@@ -20,7 +20,7 @@ export interface DatePickerProps {
   disabled?: (date: Date) => boolean
   className?: string
   mode?: "single" | "range" | "multiple"
-  selected?: Date | Date[] | undefined
+  selected?: Date | Date[] | { from: Date; to: Date } | undefined
   onSelect?: (date: Date | undefined) => void
   required?: boolean
 }
