@@ -27,22 +27,26 @@ export const loadSavedSignupData = async (userId: string, updateSignupData: (dat
         businessName: data.business_name || "",
         primaryColor: data.primary_color || "",
         accentColor: data.accent_color || "",
-        // Handle optional fields that might not exist in the database schema yet
-        backgroundColor: data.background_color as string || "",
-        headingTextColor: data.heading_text_color as string || "",
-        bodyTextColor: data.body_text_color as string || "",
-        actionTextColor: data.action_text_color as string || "",
-        buttonBgColor1: data.button_bg_color_1 as string || "",
-        buttonBgColor2: data.button_bg_color_2 as string || "",
-        buttonTextColor1: data.button_text_color_1 as string || "",
-        buttonTextColor2: data.button_text_color_2 as string || "",
-        brandTone: data.brand_tone as string || "",
-        subscriptionLevel: data.subscription_level || "",
         logoUrl: data.logo_url || "",
         googleCalendarConnected: data.google_calendar_connected || false,
-        isEmailVerified: data.email_verified as boolean || false,
-        isPhoneVerified: data.phone_verified as boolean || false,
       };
+
+      // Handle optional fields that might be stored as custom JSON/metadata
+      const metadata = data.metadata || {};
+      if (typeof metadata === 'object') {
+        updatedData.backgroundColor = metadata.background_color || "";
+        updatedData.headingTextColor = metadata.heading_text_color || "";
+        updatedData.bodyTextColor = metadata.body_text_color || "";
+        updatedData.actionTextColor = metadata.action_text_color || "";
+        updatedData.buttonBgColor1 = metadata.button_bg_color_1 || "";
+        updatedData.buttonBgColor2 = metadata.button_bg_color_2 || "";
+        updatedData.buttonTextColor1 = metadata.button_text_color_1 || "";
+        updatedData.buttonTextColor2 = metadata.button_text_color_2 || "";
+        updatedData.brandTone = metadata.brand_tone || "";
+        updatedData.subscriptionLevel = data.subscription_level || "";
+        updatedData.isEmailVerified = metadata.email_verified || false;
+        updatedData.isPhoneVerified = metadata.phone_verified || false;
+      }
 
       // Safely handle working hours with proper type casting
       if (data.working_hours && typeof data.working_hours === 'object') {
@@ -70,15 +74,12 @@ export const loadSavedSignupData = async (userId: string, updateSignupData: (dat
 export const saveSignupData = async (
   currentStep: number, 
   signupData: SignupData, 
-  userId: string, 
-  setIsLoading: (loading: boolean) => void
+  userId: string
 ) => {
   if (!userId) {
     console.log('No user ID available to save data');
     return;
   }
-  
-  setIsLoading(true);
   
   try {
     // For Personal Info step
@@ -88,6 +89,7 @@ export const saveSignupData = async (
     } 
     // For Visual Identity and Brand Settings steps
     else if (currentStep === 1 || currentStep === 2) {
+      // Store core data in the main table fields
       const { error } = await supabase
         .from('business_owners')
         .upsert({
@@ -99,15 +101,20 @@ export const saveSignupData = async (
           logo_url: signupData.logoUrl,
           primary_color: signupData.primaryColor,
           accent_color: signupData.accentColor,
-          background_color: signupData.backgroundColor,
-          heading_text_color: signupData.headingTextColor,
-          body_text_color: signupData.bodyTextColor,
-          action_text_color: signupData.actionTextColor,
-          button_bg_color_1: signupData.buttonBgColor1,
-          button_bg_color_2: signupData.buttonBgColor2,
-          button_text_color_1: signupData.buttonTextColor1,
-          button_text_color_2: signupData.buttonTextColor2,
-          brand_tone: signupData.brandTone,
+          // Store additional fields in metadata JSON
+          metadata: {
+            background_color: signupData.backgroundColor,
+            heading_text_color: signupData.headingTextColor,
+            body_text_color: signupData.bodyTextColor,
+            action_text_color: signupData.actionTextColor,
+            button_bg_color_1: signupData.buttonBgColor1,
+            button_bg_color_2: signupData.buttonBgColor2,
+            button_text_color_1: signupData.buttonTextColor1,
+            button_text_color_2: signupData.buttonTextColor2,
+            brand_tone: signupData.brandTone,
+            email_verified: signupData.isEmailVerified,
+            phone_verified: signupData.isPhoneVerified
+          }
         });
         
       if (error) throw error;
@@ -142,8 +149,6 @@ export const saveSignupData = async (
       description: error.message
     });
     console.error('Error saving signup data:', error);
-  } finally {
-    setIsLoading(false);
   }
 };
 
@@ -179,6 +184,10 @@ export const createUserAndBusiness = async (
         last_name: signupData.lastName,
         phone: signupData.phone,
         business_name: signupData.businessName || `${signupData.firstName}'s Business`,
+        metadata: {
+          email_verified: false,
+          phone_verified: false
+        }
       });
       
     if (businessError) throw businessError;
