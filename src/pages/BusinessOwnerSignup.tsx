@@ -1,11 +1,13 @@
 
 import { SignupProvider } from "@/contexts/SignupContext";
 import SignupContent from "@/components/signup/SignupContent";
+import SignupLayout from "@/components/signup/SignupLayout";
 
-// Wrap the component with the SignupProvider
 const BusinessOwnerSignup = () => (
   <SignupProvider>
-    <SignupContent />
+    <SignupLayout>
+      <SignupContent />
+    </SignupLayout>
   </SignupProvider>
 );
 

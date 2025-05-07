@@ -16,6 +16,7 @@ import {
   sendVerificationEmail,
   generateBusinessIdentifiers
 } from "@/utils/signupUtils";
+import SignupLayout from "./SignupLayout";
 
 const SignupContent = () => {
   const navigate = useNavigate();
@@ -134,35 +135,26 @@ const SignupContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4" dir="rtl">
-      <div className="w-full max-w-3xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Bellevo</h1>
-          <p className="text-muted-foreground mt-2">הפלטפורמה שמעצימה את העסק שלך</p>
-        </div>
-
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>{steps[currentStep].title}</CardTitle>
-            <SignupProgress />
-          </CardHeader>
-          <CardContent>
-            <StepRenderer 
-              currentStep={currentStep}
-              businessName={signupData.businessName}
-              businessDomain={signupData.businessDomain}
-              businessId={signupData.businessId}
-              isEmailVerified={signupData.isEmailVerified}
-              isPhoneVerified={signupData.isPhoneVerified}
-              onResendVerification={handleResendVerification}
-              signupData={signupData}
-              updateSignupData={updateSignupData}
-            />
-            <SignupNavigation onNext={handleNext} onPrevious={handlePrevious} />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>{steps[currentStep].title}</CardTitle>
+        <SignupProgress />
+      </CardHeader>
+      <CardContent>
+        <StepRenderer 
+          currentStep={currentStep}
+          businessName={signupData.businessName}
+          businessDomain={signupData.businessDomain}
+          businessId={signupData.businessId}
+          isEmailVerified={signupData.isEmailVerified}
+          isPhoneVerified={signupData.isPhoneVerified}
+          onResendVerification={handleResendVerification}
+          signupData={signupData}
+          updateSignupData={updateSignupData}
+        />
+        <SignupNavigation onNext={handleNext} onPrevious={handlePrevious} />
+      </CardContent>
+    </Card>
   );
 };
 
