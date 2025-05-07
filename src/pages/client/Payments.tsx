@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
 import { CalendarDays, CreditCard, Download, FileText, AlertTriangle } from "lucide-react";
 import { useClientPayments } from "@/hooks/useClientPayments";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PaymentItem } from "@/components/client/PaymentItem";
 
 const ClientPayments = () => {
   const { 
@@ -20,6 +20,11 @@ const ClientPayments = () => {
     downloadInvoice,
     payDebt
   } = useClientPayments();
+
+  // Create wrapper functions to handle the event properly
+  const handlePayAllDebt = () => {
+    payDebt();
+  };
 
   return (
     <ClientLayout>
@@ -35,7 +40,7 @@ const ClientPayments = () => {
             <AlertTitle className="text-beauty-dark">יש לך חוב פתוח</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
               <span>סכום לתשלום: ₪{totalDebt}</span>
-              <Button onClick={payDebt} className="bg-beauty-primary text-white hover:bg-beauty-primary/90">
+              <Button onClick={handlePayAllDebt} className="bg-beauty-primary text-white hover:bg-beauty-primary/90">
                 שלם עכשיו
               </Button>
             </AlertDescription>
@@ -108,30 +113,11 @@ const ClientPayments = () => {
                     
                     {payments.length > 0 ? (
                       payments.map((payment) => (
-                        <div 
+                        <PaymentItem 
                           key={payment.id}
-                          className="grid grid-cols-[1fr,auto,auto] items-center p-4 border-t text-sm"
-                        >
-                          <div>
-                            <div className="font-medium">{payment.service}</div>
-                            {payment.invoiceId && (
-                              <div className="text-xs text-muted-foreground flex items-center mt-1">
-                                <FileText className="h-3 w-3 ml-1" />
-                                <button 
-                                  className="text-beauty-primary hover:underline" 
-                                  onClick={() => downloadInvoice(payment.id)}
-                                >
-                                  הורד חשבונית
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center text-muted-foreground">
-                            <CalendarDays className="h-3 w-3 ml-1" />
-                            {payment.date}
-                          </div>
-                          <div className="text-right font-medium">₪{payment.amount}</div>
-                        </div>
+                          payment={payment}
+                          onDownloadInvoice={downloadInvoice}
+                        />
                       ))
                     ) : (
                       <div className="p-8 text-center text-muted-foreground">
@@ -172,30 +158,11 @@ const ClientPayments = () => {
                       payments
                         .filter(p => p.status === 'paid')
                         .map((payment) => (
-                          <div 
+                          <PaymentItem 
                             key={payment.id}
-                            className="grid grid-cols-[1fr,auto,auto] items-center p-4 border-t text-sm"
-                          >
-                            <div>
-                              <div className="font-medium">{payment.service}</div>
-                              {payment.invoiceId && (
-                                <div className="text-xs text-muted-foreground flex items-center mt-1">
-                                  <FileText className="h-3 w-3 ml-1" />
-                                  <button 
-                                    className="text-beauty-primary hover:underline" 
-                                    onClick={() => downloadInvoice(payment.id)}
-                                  >
-                                    הורד חשבונית
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex items-center text-muted-foreground">
-                              <CalendarDays className="h-3 w-3 ml-1" />
-                              {payment.date}
-                            </div>
-                            <div className="text-right font-medium">₪{payment.amount}</div>
-                          </div>
+                            payment={payment}
+                            onDownloadInvoice={downloadInvoice}
+                          />
                         ))
                     ) : (
                       <div className="p-8 text-center text-muted-foreground">
@@ -225,28 +192,14 @@ const ClientPayments = () => {
                     </div>
                     
                     {pendingPayments.map((payment) => (
-                      <div 
+                      <PaymentItem 
                         key={payment.id}
-                        className="grid grid-cols-[1fr,auto,auto,auto] items-center p-4 border-t text-sm"
-                      >
-                        <div>
-                          <div className="font-medium">{payment.service}</div>
-                        </div>
-                        <div className="flex items-center text-muted-foreground">
-                          <CalendarDays className="h-3 w-3 ml-1" />
-                          {payment.date}
-                        </div>
-                        <div className="font-medium">₪{payment.amount}</div>
-                        <div className="flex justify-end">
-                          <Button 
-                            size="sm" 
-                            className="bg-beauty-primary text-white hover:bg-beauty-primary/90"
-                            onClick={() => payDebt(payment.id)}
-                          >
-                            שלם
-                          </Button>
-                        </div>
-                      </div>
+                        payment={payment}
+                        showInvoiceDownload={false}
+                        showPayButton={true}
+                        onDownloadInvoice={downloadInvoice}
+                        onPayDebt={(paymentId) => payDebt(paymentId)}
+                      />
                     ))}
                   </div>
                 ) : (

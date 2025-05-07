@@ -18,6 +18,17 @@ export function PaymentItem({
   onDownloadInvoice,
   onPayDebt
 }: PaymentItemProps) {
+  // Create wrapper functions to handle events properly
+  const handleDownloadInvoice = () => {
+    onDownloadInvoice(payment.id);
+  };
+  
+  const handlePayDebt = () => {
+    if (onPayDebt) {
+      onPayDebt(payment.id);
+    }
+  };
+
   return (
     <div className={`grid ${showPayButton ? 'grid-cols-[1fr,auto,auto,auto]' : 'grid-cols-[1fr,auto,auto]'} items-center p-4 border-t text-sm`}>
       <div>
@@ -27,7 +38,7 @@ export function PaymentItem({
             <FileText className="h-3 w-3 ml-1" />
             <button 
               className="text-beauty-primary hover:underline" 
-              onClick={() => onDownloadInvoice(payment.id)}
+              onClick={handleDownloadInvoice}
             >
               הורד חשבונית
             </button>
@@ -46,7 +57,7 @@ export function PaymentItem({
           <Button 
             size="sm" 
             className="bg-beauty-primary text-white hover:bg-beauty-primary/90"
-            onClick={() => onPayDebt && onPayDebt(payment.id)}
+            onClick={handlePayDebt}
           >
             שלם
           </Button>
