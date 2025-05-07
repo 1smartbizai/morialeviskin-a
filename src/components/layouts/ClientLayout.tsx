@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, UserCheck, CreditCard, Settings, Award, BookOpen, Home, FileText, Droplet } from "lucide-react";
+import { Calendar, UserCheck, CreditCard, Settings, Award, BookOpen, Home, FileText, Droplet, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -29,6 +29,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
     { name: "היסטורית טיפולים", path: "/client/treatment-history", icon: FileText },
     { name: "פרופיל העור שלי", path: "/client/skin-profile", icon: Droplet },
     { name: "הטבות", path: "/client/rewards", icon: Award },
+    { name: "הודעות", path: "/client/messages", icon: MessageSquare }, // Add this new navigation item
     { name: "תשלומים", path: "/client/payments", icon: CreditCard },
   ];
 

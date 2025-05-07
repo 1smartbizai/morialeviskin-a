@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +36,7 @@ import ClientInsights from "./pages/admin/ClientInsights";
 import Analytics from "./pages/admin/Analytics";
 import BusinessSettings from "./pages/admin/BusinessSettings";
 import MessagesAndAutomations from "./pages/admin/MessagesAndAutomations";
+import ClientMessages from "./pages/client/Messages"; // Add this import
 
 const queryClient = new QueryClient();
 
@@ -84,6 +84,7 @@ const App = () => (
             <Route path="/client/rewards" element={<ClientRewards />} />
             <Route path="/client/payments" element={<ClientPayments />} />
             <Route path="/client/book" element={<BookAppointment />} /> 
+            <Route path="/client/messages" element={<ClientMessages />} /> {/* Add this new route */}
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
