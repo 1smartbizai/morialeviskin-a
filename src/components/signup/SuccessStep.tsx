@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Copy, Share2, Whatsapp } from "lucide-react";
+import { CheckCircle, Copy, Share2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import confetti from 'canvas-confetti';
 
@@ -150,7 +150,7 @@ const SuccessStep = ({
             onClick={shareOnWhatsapp}
             className="bg-[#25D366] hover:bg-[#128C7E] space-x-2 gap-2 flex-row-reverse"
           >
-            <Whatsapp className="h-4 w-4" />
+            <Share2 className="h-4 w-4" />
             <span>שתף בוואטסאפ</span>
           </Button>
         </div>
