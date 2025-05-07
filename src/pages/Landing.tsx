@@ -8,13 +8,13 @@ import LandingFaq from "@/components/landing/LandingFaq";
 import AppScreensShowcase from "@/components/landing/AppScreensShowcase";
 import LeadForm from "@/components/landing/LeadForm";
 
-// Placeholder data for app screens
+// App screenshots for showcase
 const appScreens = [
-  { image: "/placeholder.svg", title: "לוח בקרה" },
-  { image: "/placeholder.svg", title: "ניהול לקוחות" },
-  { image: "/placeholder.svg", title: "יומן פגישות" },
-  { image: "/placeholder.svg", title: "נתוני מכירות" },
-  { image: "/placeholder.svg", title: "תקשורת אוטומטית" },
+  { image: "/screenshots/dashboard.png", title: "לוח בקרה" },
+  { image: "/screenshots/analytics.png", title: "נתונים עסקיים" },
+  { image: "/screenshots/clients.png", title: "ניהול לקוחות" },
+  { image: "/screenshots/calendar.png", title: "יומן פגישות" },
+  { image: "/screenshots/payments.png", title: "ניהול תשלומים" },
 ];
 
 // Testimonials data
