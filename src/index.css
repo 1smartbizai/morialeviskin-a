@@ -1,3 +1,5 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
@@ -91,13 +93,16 @@
     @apply border-border;
   }
 
+  html {
+    direction: rtl;
+  }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Montserrat', sans-serif;
+    @apply bg-background text-foreground font-heebo;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Heebo', sans-serif;
   }
 
   .beauty-container {
@@ -110,5 +115,34 @@
   
   .beauty-button {
     @apply px-6 py-3 rounded-full font-medium transition-all;
+  }
+
+  /* SmartBizAI specific styles */
+  .smartbiz-container {
+    @apply w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .smartbiz-card {
+    @apply bg-white rounded-xl shadow-md transition-all hover:shadow-lg border border-gray-100;
+  }
+
+  .smartbiz-gradient-bg {
+    @apply bg-gradient-to-br from-smartbiz-primary/90 via-smartbiz-primary/80 to-smartbiz-primary/70;
+  }
+
+  .smartbiz-btn-primary {
+    @apply bg-smartbiz-primary text-white hover:bg-smartbiz-primary/90 transition-colors px-6 py-3 rounded-xl font-medium;
+  }
+
+  .smartbiz-btn-secondary {
+    @apply bg-white text-smartbiz-primary border border-smartbiz-primary hover:bg-smartbiz-primary/10 transition-colors px-6 py-3 rounded-xl font-medium;
+  }
+
+  .phone-mockup {
+    @apply relative rounded-[3rem] border-8 border-smartbiz-dark shadow-xl overflow-hidden;
+  }
+
+  .phone-notch {
+    @apply absolute top-0 left-1/2 transform -translate-x-1/2 w-1/3 h-8 bg-smartbiz-dark rounded-b-xl;
   }
 }
