@@ -1,59 +1,60 @@
 
-import { z } from "zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useSignup } from "@/contexts/SignupContext";
 
-interface PersonalInfoStepProps {
-  data: any;
-  updateData: (data: any) => void;
-}
-
-const formSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  businessName: z.string().min(2, "Business name must be at least 2 characters"),
+// Create the validation schema
+const personalInfoSchema = z.object({
+  firstName: z.string().min(2, "השם חייב להכיל לפחות 2 תווים"),
+  lastName: z.string().min(2, "שם המשפחה חייב להכיל לפחות 2 תווים"),
+  email: z.string().email("כתובת אימייל לא תקינה"),
+  password: z.string().min(8, "הסיסמה חייבת להכיל לפחות 8 תווים"),
+  phone: z.string().min(9, "מספר טלפון לא תקין"),
+  businessName: z.string().min(2, "שם העסק חייב להכיל לפחות 2 תווים"),
 });
 
-const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+const PersonalInfoStep = () => {
+  const { signupData, updateSignupData } = useSignup();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const form = useForm({
+    resolver: zodResolver(personalInfoSchema),
     defaultValues: {
-      firstName: data.firstName || "",
-      lastName: data.lastName || "",
-      email: data.email || "",
-      password: data.password || "",
-      phone: data.phone || "",
-      businessName: data.businessName || "",
+      firstName: signupData.firstName,
+      lastName: signupData.lastName,
+      email: signupData.email,
+      password: signupData.password,
+      phone: signupData.phone,
+      businessName: signupData.businessName,
     },
   });
 
-  // Form automatically updates parent state on every change
-  const handleFieldChange = (field: string, value: string) => {
-    updateData({ [field]: value });
+  // Update global state when form values change
+  const handleFormChange = (field: string, value: string) => {
+    updateSignupData({ [field]: value });
   };
 
   return (
     <Form {...form}>
       <form className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name</FormLabel>
+                <FormLabel>שם פרטי</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="Enter your first name" 
                     {...field} 
+                    placeholder="הכניסי את שמך הפרטי"
                     onChange={(e) => {
                       field.onChange(e);
-                      handleFieldChange("firstName", e.target.value);
+                      handleFormChange("firstName", e.target.value);
                     }}
                   />
                 </FormControl>
@@ -61,19 +62,20 @@ const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) => {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Name</FormLabel>
+                <FormLabel>שם משפחה</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="Enter your last name" 
                     {...field} 
+                    placeholder="הכניסי את שם המשפחה שלך"
                     onChange={(e) => {
                       field.onChange(e);
-                      handleFieldChange("lastName", e.target.value);
+                      handleFormChange("lastName", e.target.value);
                     }}
                   />
                 </FormControl>
@@ -85,18 +87,39 @@ const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) => {
 
         <FormField
           control={form.control}
+          name="businessName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>שם העסק</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field} 
+                  placeholder="הכניסי את שם העסק שלך"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleFormChange("businessName", e.target.value);
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address</FormLabel>
+              <FormLabel>אימייל</FormLabel>
               <FormControl>
                 <Input 
-                  type="email" 
-                  placeholder="Enter your email" 
                   {...field} 
+                  placeholder="your@email.com" 
+                  type="email"
                   onChange={(e) => {
                     field.onChange(e);
-                    handleFieldChange("email", e.target.value);
+                    handleFormChange("email", e.target.value);
                   }}
                 />
               </FormControl>
@@ -110,17 +133,26 @@ const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>סיסמה</FormLabel>
               <FormControl>
-                <Input 
-                  type="password" 
-                  placeholder="Create a password" 
-                  {...field} 
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleFieldChange("password", e.target.value);
-                  }}
-                />
+                <div className="relative">
+                  <Input 
+                    {...field} 
+                    placeholder="בחרי סיסמה (לפחות 8 תווים)" 
+                    type={passwordVisible ? "text" : "password"}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleFormChange("password", e.target.value);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 px-3 flex items-center text-sm"
+                    onClick={() => setPasswordVisible(!passwordVisible)}
+                  >
+                    {passwordVisible ? "הסתר" : "הצג"}
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -132,36 +164,16 @@ const PersonalInfoStep = ({ data, updateData }: PersonalInfoStepProps) => {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>מספר טלפון</FormLabel>
               <FormControl>
                 <Input 
-                  type="tel" 
-                  placeholder="Enter your phone number" 
                   {...field} 
+                  placeholder="הכניסי מספר טלפון"
+                  dir="ltr"
+                  className="text-right"
                   onChange={(e) => {
                     field.onChange(e);
-                    handleFieldChange("phone", e.target.value);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="businessName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Business Name</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Enter your business name" 
-                  {...field} 
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleFieldChange("businessName", e.target.value);
+                    handleFormChange("phone", e.target.value);
                   }}
                 />
               </FormControl>

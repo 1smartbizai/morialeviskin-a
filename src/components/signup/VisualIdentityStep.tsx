@@ -1,156 +1,163 @@
 
-import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useSignup } from "@/contexts/SignupContext";
+import ColorPicker from "./brand/ColorPicker";
 
-interface VisualIdentityStepProps {
-  data: any;
-  updateData: (data: any) => void;
-}
-
-const VisualIdentityStep = ({ data, updateData }: VisualIdentityStepProps) => {
-  const [logoPreview, setLogoPreview] = useState<string | null>(data.logoUrl || null);
+const VisualIdentityStep = () => {
+  const { signupData, updateSignupData } = useSignup();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      updateData({ logo: file });
+  
+  const handleColorChange = (field: string, value: string) => {
+    updateSignupData({ [field]: value });
+  };
+  
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      updateSignupData({ logo: file });
+      
+      // Create a preview
       const reader = new FileReader();
-      reader.onload = () => {
-        setLogoPreview(reader.result as string);
+      reader.onload = function(event) {
+        if (event.target?.result) {
+          const previewUrl = event.target.result as string;
+          // Note: this is just for the preview, actual URL comes after upload
+          updateSignupData({ logoUrl: previewUrl });
+        }
       };
       reader.readAsDataURL(file);
     }
   };
-
-  const handleColorChange = (field: "primaryColor" | "accentColor", value: string) => {
-    updateData({ [field]: value });
+  
+  const selectLogoFile = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Label className="block mb-2">Business Logo</Label>
-        <Card className="cursor-pointer relative overflow-hidden">
-          <CardContent className="p-6 flex flex-col items-center justify-center">
-            {logoPreview ? (
-              <div className="w-full max-w-[200px]">
-                <AspectRatio ratio={1/1}>
-                  <img 
-                    src={logoPreview} 
-                    alt="Logo Preview" 
-                    className="rounded-full object-cover w-full h-full"
-                  />
-                </AspectRatio>
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-4"
-                  onClick={() => fileInputRef.current?.click()}
+    <div className="space-y-8" dir="rtl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Logo Upload Section */}
+        <div>
+          <Label className="block mb-2">לוגו העסק</Label>
+          <div className="mb-4 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+            {signupData.logoUrl ? (
+              <div className="relative">
+                <img 
+                  src={signupData.logoUrl} 
+                  alt="Logo preview" 
+                  className="mx-auto h-32 w-32 object-contain" 
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={selectLogoFile}
                 >
-                  Change Logo
+                  החלף לוגו
                 </Button>
               </div>
             ) : (
-              <div 
-                className="w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted-foreground/20 rounded-lg"
-                onClick={() => fileInputRef.current?.click()}
+              <div
+                className="flex flex-col items-center justify-center py-4 cursor-pointer"
+                onClick={selectLogoFile}
               >
-                <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">
-                  Drag & drop your logo here
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  or click to browse files
+                <div className="border border-gray-300 rounded-full p-3 mb-2">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
+                    <line x1="16" y1="5" x2="22" y2="5"></line>
+                    <line x1="19" y1="2" x2="19" y2="8"></line>
+                    <circle cx="9" cy="9" r="2"></circle>
+                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                  </svg>
+                </div>
+                <Label className="cursor-pointer">לחצי להעלאת לוגו</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  מומלץ בגודל 512x512 פיקסלים
                 </p>
               </div>
             )}
             <Input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
-              ref={fileInputRef}
               className="hidden"
-              onChange={handleLogoUpload}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="primaryColor">Primary Color</Label>
-          <div className="flex items-center space-x-2">
-            <div 
-              className="w-10 h-10 rounded-full border"
-              style={{ backgroundColor: data.primaryColor }}
-            ></div>
-            <Input
-              id="primaryColor"
-              type="color"
-              value={data.primaryColor}
-              onChange={(e) => handleColorChange("primaryColor", e.target.value)}
-              className="w-full h-10"
+              onChange={handleLogoChange}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
-            Main color for your brand, used in buttons and highlights
-          </p>
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="accentColor">Accent Color</Label>
-          <div className="flex items-center space-x-2">
-            <div 
-              className="w-10 h-10 rounded-full border"
-              style={{ backgroundColor: data.accentColor }}
-            ></div>
-            <Input
-              id="accentColor"
-              type="color"
-              value={data.accentColor}
-              onChange={(e) => handleColorChange("accentColor", e.target.value)}
-              className="w-full h-10"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Secondary color used for backgrounds and subtle elements
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-8 p-6 bg-muted/30 rounded-lg">
-        <h3 className="text-lg font-medium mb-4">Brand Preview</h3>
         
-        <div className="flex flex-col space-y-4">
-          <div className="flex items-center space-x-4">
-            {logoPreview && (
-              <img src={logoPreview} alt="Logo" className="w-10 h-10 rounded-full object-cover" />
+        {/* Color Scheme Section */}
+        <div>
+          <Label className="block mb-2">צבעי מותג ראשיים</Label>
+          <div className="space-y-4">
+            <ColorPicker 
+              id="primaryColor"
+              label="צבע ראשי"
+              value={signupData.primaryColor}
+              onChange={(value) => handleColorChange("primaryColor", value)}
+            />
+            
+            <ColorPicker 
+              id="accentColor"
+              label="צבע משני"
+              value={signupData.accentColor}
+              onChange={(value) => handleColorChange("accentColor", value)}
+            />
+          </div>
+        </div>
+      </div>
+      
+      {/* Preview Section */}
+      <Card className="overflow-hidden">
+        <div className="h-8" style={{ backgroundColor: signupData.primaryColor }}></div>
+        <CardContent className="pt-6">
+          <div className="flex items-center">
+            {signupData.logoUrl && (
+              <div 
+                className="mr-4 w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border"
+                style={{ borderColor: signupData.accentColor }}
+              >
+                <img 
+                  src={signupData.logoUrl} 
+                  alt="Logo preview" 
+                  className="w-10 h-10 object-contain" 
+                />
+              </div>
             )}
             <div>
-              <div className="font-medium">{data.businessName || "Your Business"}</div>
-              <div className="text-sm text-muted-foreground">Beauty & Wellness</div>
+              <h3 className="font-medium">{signupData.businessName || "שם העסק שלך"}</h3>
+              <p className="text-sm text-muted-foreground">תצוגה מקדימה של המותג שלך</p>
             </div>
           </div>
           
-          <div className="flex space-x-2 my-2">
-            <Button style={{ backgroundColor: data.primaryColor }}>Primary Button</Button>
-            <Button variant="outline" style={{ borderColor: data.primaryColor, color: data.primaryColor }}>
-              Secondary
-            </Button>
+          <div className="flex space-x-2 mt-4">
+            <div 
+              className="h-8 w-8 rounded-full border"
+              style={{ backgroundColor: signupData.primaryColor }}
+            ></div>
+            <div 
+              className="h-8 w-8 rounded-full border"
+              style={{ backgroundColor: signupData.accentColor }}
+            ></div>
           </div>
-          
-          <div 
-            className="p-4 rounded-lg" 
-            style={{ backgroundColor: data.accentColor + '20' }} // Using 20 for opacity (12.5%)
-          >
-            <p className="text-sm">This is how accent colors will appear in your client interface.</p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

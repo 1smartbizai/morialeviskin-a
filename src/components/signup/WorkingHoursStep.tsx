@@ -1,175 +1,121 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Clock, Calendar } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock } from "lucide-react";
+import { useSignup } from "@/contexts/SignupContext";
 
-interface WorkingHoursStepProps {
-  data: any;
-  updateData: (data: any) => void;
-}
+type DayKey = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
-interface DayConfig {
-  active: boolean;
-  start: string;
-  end: string;
-}
+const daysTranslation: Record<DayKey, string> = {
+  sunday: 'ראשון',
+  monday: 'שני',
+  tuesday: 'שלישי',
+  wednesday: 'רביעי',
+  thursday: 'חמישי',
+  friday: 'שישי',
+  saturday: 'שבת',
+};
 
-const weekdays = [
-  { id: "monday", label: "Monday" },
-  { id: "tuesday", label: "Tuesday" },
-  { id: "wednesday", label: "Wednesday" },
-  { id: "thursday", label: "Thursday" },
-  { id: "friday", label: "Friday" },
-  { id: "saturday", label: "Saturday" },
-  { id: "sunday", label: "Sunday" },
-];
-
-const WorkingHoursStep = ({ data, updateData }: WorkingHoursStepProps) => {
-  const [workingHours, setWorkingHours] = useState<{
-    [key: string]: DayConfig;
-  }>(data.workingHours);
+const WorkingHoursStep = () => {
+  const { signupData, updateSignupData } = useSignup();
+  const [googleConnected, setGoogleConnected] = useState(signupData.googleCalendarConnected);
   
-  const [googleCalendarConnected, setGoogleCalendarConnected] = useState<boolean>(
-    data.googleCalendarConnected || false
-  );
-
-  const updateDay = (day: string, field: keyof DayConfig, value: any) => {
+  const handleWorkingHoursChange = (
+    day: DayKey, 
+    field: 'active' | 'start' | 'end', 
+    value: boolean | string
+  ) => {
     const updatedHours = {
-      ...workingHours,
+      ...signupData.workingHours,
       [day]: {
-        ...workingHours[day],
-        [field]: value,
-      },
+        ...signupData.workingHours[day],
+        [field]: value
+      }
     };
     
-    setWorkingHours(updatedHours);
-    updateData({ workingHours: updatedHours });
+    updateSignupData({ workingHours: updatedHours });
   };
-
+  
   const handleConnectGoogle = () => {
-    // In a real application, this would initiate the OAuth flow with Google
-    // For now, we'll just simulate a successful connection
-    setGoogleCalendarConnected(true);
-    updateData({ googleCalendarConnected: true });
+    // Simulate Google Calendar connection
+    setGoogleConnected(true);
+    updateSignupData({ googleCalendarConnected: true });
+    
+    // In a real app, this would be an OAuth flow
+    alert("תכונה זו תהיה זמינה בהמשך. לחצתם על התחברות ל-Google Calendar.");
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center">
-            <Clock className="h-5 w-5 mr-2 text-primary" />
-            <CardTitle>Set Your Working Hours</CardTitle>
-          </div>
-          <CardDescription>
-            Define when clients can book appointments with you
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="space-y-8" dir="rtl">
+      <div className="grid grid-cols-1 gap-6">
+        {/* Working Hours */}
+        <div>
+          <h3 className="text-lg font-medium mb-4">שעות פעילות</h3>
           <div className="space-y-4">
-            {weekdays.map((day) => (
-              <div
-                key={day.id}
-                className="flex items-center justify-between py-2 border-b last:border-0"
-              >
-                <div className="flex items-center space-x-3">
-                  <Switch
-                    checked={workingHours[day.id].active}
-                    onCheckedChange={(checked) =>
-                      updateDay(day.id, "active", checked)
-                    }
-                    id={`${day.id}-active`}
+            {(Object.keys(daysTranslation) as DayKey[]).map((day) => (
+              <div key={day} className="flex items-center justify-between p-3 border rounded-md">
+                <div className="flex items-center space-x-4">
+                  <Switch 
+                    checked={signupData.workingHours[day]?.active || false}
+                    onCheckedChange={(checked) => handleWorkingHoursChange(day, 'active', checked)}
                   />
-                  <Label
-                    htmlFor={`${day.id}-active`}
-                    className={`font-medium ${
-                      !workingHours[day.id].active && "text-muted-foreground"
-                    }`}
-                  >
-                    {day.label}
-                  </Label>
+                  <Label className="mr-2">{daysTranslation[day]}</Label>
                 </div>
-
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="time"
-                    value={workingHours[day.id].start}
-                    onChange={(e) =>
-                      updateDay(day.id, "start", e.target.value)
-                    }
-                    disabled={!workingHours[day.id].active}
-                    className="w-32"
-                  />
-                  <span className="text-muted-foreground">to</span>
-                  <Input
-                    type="time"
-                    value={workingHours[day.id].end}
-                    onChange={(e) => updateDay(day.id, "end", e.target.value)}
-                    disabled={!workingHours[day.id].active}
-                    className="w-32"
-                  />
-                </div>
+                
+                {signupData.workingHours[day]?.active && (
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2" />
+                      <Input
+                        type="time"
+                        value={signupData.workingHours[day]?.start || '09:00'}
+                        onChange={(e) => handleWorkingHoursChange(day, 'start', e.target.value)}
+                        className="w-24"
+                      />
+                      <span className="mx-2">עד</span>
+                      <Input
+                        type="time"
+                        value={signupData.workingHours[day]?.end || '17:00'}
+                        onChange={(e) => handleWorkingHoursChange(day, 'end', e.target.value)}
+                        className="w-24"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2 text-primary" />
-            <CardTitle>Google Calendar Integration</CardTitle>
-          </div>
-          <CardDescription>
-            Sync your appointments with Google Calendar
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {googleCalendarConnected ? (
-            <div className="bg-green-50 border border-green-200 rounded-md p-4 flex items-center justify-between">
-              <div>
-                <h4 className="font-medium text-green-700">
-                  Connected to Google Calendar
-                </h4>
-                <p className="text-sm text-green-600">
-                  Your appointments will be automatically synced
-                </p>
+        </div>
+        
+        {/* Calendar Integration */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-2 bg-primary/10 rounded-full">
+                  <Calendar className="h-6 w-6 text-primary" />
+                </div>
+                <div className="mr-2">
+                  <h4 className="font-medium">Google Calendar</h4>
+                  <p className="text-sm text-muted-foreground">סנכרנו את היומן שלך עם Google Calendar</p>
+                </div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setGoogleCalendarConnected(false);
-                  updateData({ googleCalendarConnected: false });
-                }}
+              
+              <Button 
+                variant={googleConnected ? "outline" : "default"}
+                onClick={handleConnectGoogle}
+                disabled={googleConnected}
               >
-                Disconnect
+                {googleConnected ? 'מחובר' : 'חברי יומן'}
               </Button>
             </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  Connect your Google Calendar to automatically:
-                </p>
-                <ul className="text-sm list-disc list-inside space-y-1">
-                  <li>Sync your appointments between systems</li>
-                  <li>Avoid double-bookings</li>
-                  <li>Get calendar notifications for new bookings</li>
-                </ul>
-              </div>
-              <Button onClick={handleConnectGoogle} className="whitespace-nowrap">
-                Connect Google Calendar
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
