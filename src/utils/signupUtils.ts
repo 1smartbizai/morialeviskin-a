@@ -5,20 +5,34 @@ import { SignupData } from "@/contexts/SignupContext";
 import { Json } from "@/integrations/supabase/types";
 
 // Define interface for business style metadata
-interface BusinessStyleMetadata {
-  background_color?: string;
-  heading_text_color?: string;
-  body_text_color?: string;
-  action_text_color?: string;
-  button_bg_color_1?: string;
-  button_bg_color_2?: string;
-  button_text_color_1?: string;
-  button_text_color_2?: string;
-  brand_tone?: string;
-  email_verified?: boolean;
-  phone_verified?: boolean;
-  [key: string]: any; // Allow for additional properties
+export interface BusinessStyleMetadata {
+  background_color: string;
+  heading_text_color: string;
+  body_text_color: string;
+  action_text_color: string;
+  button_bg_color_1: string;
+  button_bg_color_2: string;
+  button_text_color_1: string;
+  button_text_color_2: string;
+  brand_tone: 'professional' | 'friendly' | 'luxury' | 'casual';
+  email_verified: boolean;
+  phone_verified: boolean;
 }
+
+// Default metadata values to ensure consistency
+export const DEFAULT_METADATA: BusinessStyleMetadata = {
+  background_color: "#FFFFFF",
+  heading_text_color: "#1A1F2C",
+  body_text_color: "#333333",
+  action_text_color: "#FFFFFF",
+  button_bg_color_1: "#6A0DAD",
+  button_bg_color_2: "#8B5CF6",
+  button_text_color_1: "#FFFFFF",
+  button_text_color_2: "#FFFFFF",
+  brand_tone: "professional",
+  email_verified: false,
+  phone_verified: false
+};
 
 // Type guard to safely use metadata
 function isValidMetadata(metadata: Json): metadata is Record<string, any> {
@@ -26,11 +40,32 @@ function isValidMetadata(metadata: Json): metadata is Record<string, any> {
 }
 
 // Helper function to safely get metadata values
-function getMetadataValue<T>(metadata: Json | null | undefined, key: string, defaultValue: T): T {
+function getMetadataValue<T>(
+  metadata: Json | null | undefined, 
+  key: keyof BusinessStyleMetadata, 
+  defaultValue: T
+): T {
   if (!metadata || !isValidMetadata(metadata) || !(key in metadata)) {
     return defaultValue;
   }
   return (metadata[key] as any) ?? defaultValue;
+}
+
+// Convert SignupData to BusinessStyleMetadata
+function signupDataToMetadata(data: Partial<SignupData>): BusinessStyleMetadata {
+  return {
+    background_color: data.backgroundColor || DEFAULT_METADATA.background_color,
+    heading_text_color: data.headingTextColor || DEFAULT_METADATA.heading_text_color,
+    body_text_color: data.bodyTextColor || DEFAULT_METADATA.body_text_color,
+    action_text_color: data.actionTextColor || DEFAULT_METADATA.action_text_color,
+    button_bg_color_1: data.buttonBgColor1 || DEFAULT_METADATA.button_bg_color_1,
+    button_bg_color_2: data.buttonBgColor2 || DEFAULT_METADATA.button_bg_color_2,
+    button_text_color_1: data.buttonTextColor1 || DEFAULT_METADATA.button_text_color_1,
+    button_text_color_2: data.buttonTextColor2 || DEFAULT_METADATA.button_text_color_2,
+    brand_tone: (data.brandTone || DEFAULT_METADATA.brand_tone) as BusinessStyleMetadata['brand_tone'],
+    email_verified: data.isEmailVerified || DEFAULT_METADATA.email_verified,
+    phone_verified: data.isPhoneVerified || DEFAULT_METADATA.phone_verified
+  };
 }
 
 // Load saved signup data from Supabase
@@ -64,17 +99,18 @@ export const loadSavedSignupData = async (userId: string, updateSignupData: (dat
 
       // Handle metadata fields with proper type safety
       if (data.metadata) {
-        updatedData.backgroundColor = getMetadataValue(data.metadata, 'background_color', "");
-        updatedData.headingTextColor = getMetadataValue(data.metadata, 'heading_text_color', "");
-        updatedData.bodyTextColor = getMetadataValue(data.metadata, 'body_text_color', "");
-        updatedData.actionTextColor = getMetadataValue(data.metadata, 'action_text_color', "");
-        updatedData.buttonBgColor1 = getMetadataValue(data.metadata, 'button_bg_color_1', "");
-        updatedData.buttonBgColor2 = getMetadataValue(data.metadata, 'button_bg_color_2', "");
-        updatedData.buttonTextColor1 = getMetadataValue(data.metadata, 'button_text_color_1', "");
-        updatedData.buttonTextColor2 = getMetadataValue(data.metadata, 'button_text_color_2', "");
-        updatedData.brandTone = getMetadataValue(data.metadata, 'brand_tone', "professional");
-        updatedData.isEmailVerified = getMetadataValue(data.metadata, 'email_verified', false);
-        updatedData.isPhoneVerified = getMetadataValue(data.metadata, 'phone_verified', false);
+        const metadata = data.metadata;
+        updatedData.backgroundColor = getMetadataValue(metadata, 'background_color', DEFAULT_METADATA.background_color);
+        updatedData.headingTextColor = getMetadataValue(metadata, 'heading_text_color', DEFAULT_METADATA.heading_text_color);
+        updatedData.bodyTextColor = getMetadataValue(metadata, 'body_text_color', DEFAULT_METADATA.body_text_color);
+        updatedData.actionTextColor = getMetadataValue(metadata, 'action_text_color', DEFAULT_METADATA.action_text_color);
+        updatedData.buttonBgColor1 = getMetadataValue(metadata, 'button_bg_color_1', DEFAULT_METADATA.button_bg_color_1);
+        updatedData.buttonBgColor2 = getMetadataValue(metadata, 'button_bg_color_2', DEFAULT_METADATA.button_bg_color_2);
+        updatedData.buttonTextColor1 = getMetadataValue(metadata, 'button_text_color_1', DEFAULT_METADATA.button_text_color_1);
+        updatedData.buttonTextColor2 = getMetadataValue(metadata, 'button_text_color_2', DEFAULT_METADATA.button_text_color_2);
+        updatedData.brandTone = getMetadataValue(metadata, 'brand_tone', DEFAULT_METADATA.brand_tone);
+        updatedData.isEmailVerified = getMetadataValue(metadata, 'email_verified', DEFAULT_METADATA.email_verified);
+        updatedData.isPhoneVerified = getMetadataValue(metadata, 'phone_verified', DEFAULT_METADATA.phone_verified);
       }
 
       // Safely handle working hours with type assertion
@@ -105,14 +141,15 @@ export const loadSavedSignupData = async (userId: string, updateSignupData: (dat
       updateSignupData(updatedData);
       
       // Generate business domain and ID if we don't have them yet
-      const businessName = data.business_name || "";
-      const domain = `bellevo.app/${businessName.toLowerCase().replace(/\s+/g, '-')}`;
-      const id = `BIZ-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      
-      updateSignupData({
-        businessDomain: domain,
-        businessId: id,
-      });
+      if (!updatedData.businessDomain || !updatedData.businessId) {
+        const businessName = data.business_name || "";
+        const { domain, id } = generateBusinessIdentifiers(businessName);
+        
+        updateSignupData({
+          businessDomain: domain,
+          businessId: id,
+        });
+      }
     }
   } catch (err) {
     console.error('Error loading saved signup data:', err);
@@ -139,19 +176,7 @@ export const saveSignupData = async (
     // For Visual Identity and Brand Settings steps
     else if (currentStep === 1 || currentStep === 2) {
       // Create metadata object with all UI configuration fields
-      const metadata: BusinessStyleMetadata = {
-        background_color: signupData.backgroundColor || "",
-        heading_text_color: signupData.headingTextColor || "",
-        body_text_color: signupData.bodyTextColor || "",
-        action_text_color: signupData.actionTextColor || "",
-        button_bg_color_1: signupData.buttonBgColor1 || "",
-        button_bg_color_2: signupData.buttonBgColor2 || "",
-        button_text_color_1: signupData.buttonTextColor1 || "",
-        button_text_color_2: signupData.buttonTextColor2 || "",
-        brand_tone: signupData.brandTone || "professional",
-        email_verified: signupData.isEmailVerified || false,
-        phone_verified: signupData.isPhoneVerified || false
-      };
+      const metadata: BusinessStyleMetadata = signupDataToMetadata(signupData);
 
       // Store core data in the main table fields
       const { error } = await supabase
@@ -230,19 +255,7 @@ export const createUserAndBusiness = async (
     setSession(data.session);
     
     // Create metadata object with initial values
-    const metadata: BusinessStyleMetadata = {
-      email_verified: false,
-      phone_verified: false,
-      background_color: "",
-      heading_text_color: "",
-      body_text_color: "",
-      action_text_color: "",
-      button_bg_color_1: "",
-      button_bg_color_2: "",
-      button_text_color_1: "",
-      button_text_color_2: "",
-      brand_tone: "professional"
-    };
+    const metadata = signupDataToMetadata(signupData);
     
     // Initialize business owner record with metadata
     const { error: businessError } = await supabase
@@ -269,6 +282,10 @@ export const createUserAndBusiness = async (
 
 // Upload logo to Supabase storage
 export const uploadLogo = async (logo: File, userId: string) => {
+  if (!logo || !userId) {
+    throw new Error("Missing required parameters: logo file or user ID");
+  }
+  
   const fileExt = logo.name.split('.').pop();
   const filePath = `${userId}/${Date.now()}.${fileExt}`;
   
@@ -288,6 +305,10 @@ export const uploadLogo = async (logo: File, userId: string) => {
 
 // Send verification email to user
 export const sendVerificationEmail = async (email: string) => {
+  if (!email) {
+    throw new Error("Email address is required");
+  }
+  
   await supabase.auth.resetPasswordForEmail(email);
   toast.info("נשלח אימות דוא\"ל", {
     description: "אנא בדקי את תיבת הדואר שלך לקישור אימות"
@@ -296,6 +317,10 @@ export const sendVerificationEmail = async (email: string) => {
 
 // Generate business domain and ID
 export const generateBusinessIdentifiers = (businessName: string) => {
+  if (!businessName || typeof businessName !== 'string') {
+    businessName = "business"; // Default fallback
+  }
+  
   const domain = `bellevo.app/${businessName.toLowerCase().replace(/\s+/g, '-')}`;
   const id = `BIZ-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   

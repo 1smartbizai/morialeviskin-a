@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
-import StepRenderer from "@/components/signup/StepRenderer";
+import StepRenderer, { STEP_COMPONENTS } from "@/components/signup/StepRenderer";
 import SignupProgress from "@/components/signup/SignupProgress";
 import SignupNavigation, { steps } from "@/components/signup/SignupNavigation";
 import { useSignup } from "@/contexts/SignupContext";
@@ -16,6 +16,7 @@ import {
   sendVerificationEmail,
   generateBusinessIdentifiers
 } from "@/utils/signupUtils";
+import { initStorage } from "@/utils/initStorage";
 
 const SignupContent = () => {
   const navigate = useNavigate();
@@ -30,8 +31,13 @@ const SignupContent = () => {
     setCurrentStep
   } = useSignup();
 
-  // Check for existing session on component mount
+  // Check for existing session on component mount and ensure storage is initialized
   useEffect(() => {
+    // Initialize storage buckets
+    initStorage().catch(error => {
+      console.error("Failed to initialize storage:", error);
+    });
+
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
@@ -58,12 +64,16 @@ const SignupContent = () => {
   }, []);
 
   const handleResendVerification = async () => {
+    if (!signupData.email) {
+      toast.error("אין כתובת דוא\"ל זמינה", {
+        description: "אנא השלם את שלב הפרטים האישיים תחילה"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      await supabase.auth.resetPasswordForEmail(signupData.email);
-      toast.success("נשלחה בקשת אימות חדשה", {
-        description: "בדקי את תיבת הדואר האלקטרוני שלך"
-      });
+      await sendVerificationEmail(signupData.email);
     } catch (error: any) {
       toast.error("שגיאה בשליחת האימות", {
         description: error.message
@@ -78,7 +88,7 @@ const SignupContent = () => {
     
     try {
       // If this is the first step, we need to create the account
-      if (currentStep === 0) {
+      if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) {
         // Check if we already have a session
         if (!session) {
           // Create user and initialize business records
@@ -90,12 +100,12 @@ const SignupContent = () => {
         updateSignupData({ businessDomain: domain, businessId: id });
         
         // Auto-send verification emails
-        if (session?.user?.id) {
+        if (session?.user?.id && signupData.email) {
           await sendVerificationEmail(signupData.email);
         }
       } 
       // If this is the second step (visual identity), we upload the logo
-      else if (currentStep === 1 && signupData.logo) {
+      else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && signupData.logo) {
         if (!session?.user?.id) {
           throw new Error("אינך מחוברת למערכת, נא להתחבר שנית");
         }
@@ -105,7 +115,7 @@ const SignupContent = () => {
       } 
       
       // If we're on the final step, complete all the setup
-      if (currentStep === 5) {
+      if (currentStep === STEP_COMPONENTS.SUCCESS) {
         // Navigate to dashboard
         navigate('/admin');
       } else {

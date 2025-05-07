@@ -7,6 +7,7 @@ import WorkingHoursStep from "@/components/signup/WorkingHoursStep";
 import SuccessStep from "@/components/signup/SuccessStep";
 import { SignupData } from "@/contexts/SignupContext";
 
+// Define interface for StepRendererProps to ensure type safety
 interface StepRendererProps {
   currentStep: number;
   businessName: string;
@@ -19,6 +20,16 @@ interface StepRendererProps {
   updateSignupData: (data: Partial<SignupData>) => void;
 }
 
+// Define step configuration for better organization
+export const STEP_COMPONENTS = {
+  PERSONAL_INFO: 0,
+  VISUAL_IDENTITY: 1,
+  BRAND_SETTINGS: 2,
+  PAYMENT: 3,
+  WORKING_HOURS: 4,
+  SUCCESS: 5
+};
+
 const StepRenderer = ({ 
   currentStep, 
   businessName,
@@ -30,21 +41,29 @@ const StepRenderer = ({
   signupData,
   updateSignupData
 }: StepRendererProps) => {
+  // Use a switch statement for clear step rendering logic
   switch (currentStep) {
-    case 0:
+    case STEP_COMPONENTS.PERSONAL_INFO:
       return <PersonalInfoStep />;
-    case 1:
+      
+    case STEP_COMPONENTS.VISUAL_IDENTITY:
       return <VisualIdentityStep />;
-    case 2:
+      
+    case STEP_COMPONENTS.BRAND_SETTINGS:
       return <BrandSettingsStep />;
-    case 3:
-      return <PaymentStep 
-        data={signupData}
-        updateData={updateSignupData}
-      />;
-    case 4:
+      
+    case STEP_COMPONENTS.PAYMENT:
+      return (
+        <PaymentStep 
+          data={signupData}
+          updateData={updateSignupData}
+        />
+      );
+      
+    case STEP_COMPONENTS.WORKING_HOURS:
       return <WorkingHoursStep />;
-    case 5:
+      
+    case STEP_COMPONENTS.SUCCESS:
       return (
         <SuccessStep 
           businessName={businessName} 
@@ -55,6 +74,7 @@ const StepRenderer = ({
           onResendVerification={onResendVerification}
         />
       );
+      
     default:
       return <PersonalInfoStep />;
   }

@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { initStorage } from "./utils/initStorage";
+import { useEffect } from "react";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -43,12 +45,21 @@ import ClientSettings from "./pages/client/Settings"; // Add this import
 
 const queryClient = new QueryClient();
 
+// Initialize Supabase resources when app loads
+const InitializeApp = () => {
+  useEffect(() => {
+    initStorage().catch(console.error);
+  }, []);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <InitializeApp />
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
@@ -89,7 +100,7 @@ const App = () => (
             <Route path="/client/book" element={<BookAppointment />} /> 
             <Route path="/client/messages" element={<ClientMessages />} />
             <Route path="/client/feedback" element={<FeedbackSurvey />} />
-            <Route path="/client/settings" element={<ClientSettings />} /> {/* Add this new route */}
+            <Route path="/client/settings" element={<ClientSettings />} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
