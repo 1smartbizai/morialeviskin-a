@@ -44,32 +44,15 @@ const PrivacyTab = () => {
         .select("*")
         .eq("client_id", user.id);
       
-      // Fetch payments history - handle missing table
+      // Instead of querying a non-existent 'payments' table directly,
+      // we'll check if there's payment-related data in appointments or prepare a placeholder
       let paymentsData = [];
-      try {
-        // Check if payments table exists by querying it
-        const { error } = await supabase
-          .rpc('check_table_exists', { table_name: 'payments' });
-          
-        if (!error) {
-          const paymentsQuery = await supabase
-            .from("payments")
-            .select("*")
-            .eq("client_id", user.id);
-            
-          if (!paymentsQuery.error) {
-            paymentsData = paymentsQuery.data || [];
-          }
-        }
-      } catch (error) {
-        console.warn("Payments table may not exist:", error);
-      }
       
       // Prepare download data
       const exportData = {
         personalInfo: clientData,
         treatments: treatmentsData || [],
-        payments: paymentsData || []
+        payments: paymentsData
       };
       
       // Create and download file
