@@ -51,7 +51,7 @@ export const useTreatmentHistory = () => {
       const treatments = await fetchTreatmentPrices(treatmentIds);
       
       // Format appointments data
-      const history = appointments.map(appointment => {
+      const history: TreatmentHistoryItem[] = appointments.map(appointment => {
         const businessOwner = businessOwners?.find(bo => bo.id === appointment.business_owner_id);
         const treatment = treatments?.find(t => t.id === appointment.treatment_id);
         
@@ -59,7 +59,7 @@ export const useTreatmentHistory = () => {
           ? `${businessOwner.first_name} ${businessOwner.last_name}`
           : undefined;
         
-        // Format the attachments
+        // Format the attachments using the updated utility function
         const formattedAttachments = formatAttachments(appointment.attachments);
         
         return {
