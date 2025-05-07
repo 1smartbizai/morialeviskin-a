@@ -1,6 +1,7 @@
 
+import React from 'react';
 import { Message } from '@/types/messaging';
-import { Clock, Send, Check, CheckCheck, XCircle } from 'lucide-react';
+import { Clock, Send, Check, CheckCheck, XCircle, MessageSquare, Smartphone } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -56,6 +57,19 @@ export const getChannelLabel = (channel: 'whatsapp' | 'sms' | 'in-app') => {
     'in-app': 'באפליקציה'
   };
   return labels[channel] || channel;
+};
+
+export const getChannelIcon = (channel: 'whatsapp' | 'sms' | 'in-app') => {
+  switch (channel) {
+    case 'whatsapp':
+      return <MessageSquare className="h-4 w-4 text-green-600" />;
+    case 'sms':
+      return <Smartphone className="h-4 w-4" />;
+    case 'in-app':
+      return <MessageSquare className="h-4 w-4" />;
+    default:
+      return null;
+  }
 };
 
 export const formatTime = (dateString: string) => {
