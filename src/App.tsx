@@ -27,7 +27,8 @@ import ClientTreatments from "./pages/client/Treatments";
 import ClientRewards from "./pages/client/Rewards";
 import ClientPayments from "./pages/client/Payments";
 import ClientAuth from "./pages/client/Auth";
-import BookAppointment from "./pages/client/BookAppointment"; // Add this import
+import BookAppointment from "./pages/client/BookAppointment"; 
+import TreatmentHistory from "./pages/client/TreatmentHistory"; // Add this import
 import BusinessOwnerSignup from "./pages/BusinessOwnerSignup";
 import BusinessManagement from "./pages/admin/BusinessManagement";
 import AdminLoyalty from "./pages/admin/Loyalty";
@@ -77,9 +78,10 @@ const App = () => (
             <Route path="/client/dashboard" element={<ClientDashboard />} />
             <Route path="/client/appointments" element={<ClientAppointments />} />
             <Route path="/client/treatments" element={<ClientTreatments />} />
+            <Route path="/client/treatment-history" element={<TreatmentHistory />} /> {/* Add this new route */}
             <Route path="/client/rewards" element={<ClientRewards />} />
             <Route path="/client/payments" element={<ClientPayments />} />
-            <Route path="/client/book" element={<BookAppointment />} /> {/* Add this new route */}
+            <Route path="/client/book" element={<BookAppointment />} /> 
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

@@ -12,6 +12,7 @@ export type Database = {
       appointments: {
         Row: {
           appointment_date: string
+          attachments: Json | null
           business_owner_id: string
           cancelled_at: string | null
           cancelled_reason: string | null
@@ -21,12 +22,14 @@ export type Database = {
           id: string
           notes: string | null
           status: string
+          therapist_notes: string | null
           treatment_id: string | null
           treatment_name: string
           updated_at: string
         }
         Insert: {
           appointment_date: string
+          attachments?: Json | null
           business_owner_id: string
           cancelled_at?: string | null
           cancelled_reason?: string | null
@@ -36,12 +39,14 @@ export type Database = {
           id?: string
           notes?: string | null
           status?: string
+          therapist_notes?: string | null
           treatment_id?: string | null
           treatment_name: string
           updated_at?: string
         }
         Update: {
           appointment_date?: string
+          attachments?: Json | null
           business_owner_id?: string
           cancelled_at?: string | null
           cancelled_reason?: string | null
@@ -51,6 +56,7 @@ export type Database = {
           id?: string
           notes?: string | null
           status?: string
+          therapist_notes?: string | null
           treatment_id?: string | null
           treatment_name?: string
           updated_at?: string
