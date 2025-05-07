@@ -38,11 +38,19 @@ export function DatePicker({
   // Allow both controlled and uncontrolled usage
   const handleSelect = (selectedDate: Date | undefined) => {
     if (onSelect) {
-      onSelect(selectedDate)
+      onSelect(selectedDate);
     }
     if (onDateChange) {
-      onDateChange(selectedDate)
+      onDateChange(selectedDate);
     }
+  }
+  
+  // Ensure we're displaying the proper date format
+  const formattedDate = () => {
+    if (selected instanceof Date || date instanceof Date) {
+      return format(selected as Date || date as Date, "dd/MM/yyyy");
+    }
+    return undefined;
   }
   
   return (
@@ -52,27 +60,49 @@ export function DatePicker({
           variant={"outline"}
           className={cn(
             "w-full justify-start text-right font-normal",
-            !date && !selected && "text-muted-foreground",
+            !formattedDate() && "text-muted-foreground",
             className
           )}
         >
           <CalendarIcon className="ml-2 h-4 w-4" />
-          {(selected || date) ? (
-            format(selected || date || new Date(), "dd/MM/yyyy")
+          {formattedDate() ? (
+            formattedDate()
           ) : (
             <span>בחר תאריך{required && "*"}</span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode={mode}
-          selected={selected || date}
-          onSelect={handleSelect}
-          disabled={disabled}
-          initialFocus
-          className="pointer-events-auto"
-        />
+        {mode === "single" && (
+          <Calendar
+            mode="single"
+            selected={selected as Date || date}
+            onSelect={handleSelect}
+            disabled={disabled}
+            initialFocus
+            className="pointer-events-auto"
+          />
+        )}
+        {mode === "range" && (
+          <Calendar
+            mode="range"
+            selected={selected as { from: Date; to: Date }}
+            onSelect={handleSelect as any}
+            disabled={disabled}
+            initialFocus
+            className="pointer-events-auto"
+          />
+        )}
+        {mode === "multiple" && (
+          <Calendar
+            mode="multiple"
+            selected={selected as Date[]}
+            onSelect={handleSelect as any}
+            disabled={disabled}
+            initialFocus
+            className="pointer-events-auto"
+          />
+        )}
       </PopoverContent>
     </Popover>
   )

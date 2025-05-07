@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Json } from "@/integrations/supabase/types";
 
 interface DaySchedule {
   isOpen: boolean;
@@ -93,7 +93,7 @@ const WorkingHoursTab = ({ businessOwner }: WorkingHoursTabProps) => {
       const { error } = await supabase
         .from("business_owners")
         .update({
-          working_hours: workingHours,
+          working_hours: workingHours as unknown as Json,
           holidays: holidays
         })
         .eq("id", businessOwner.id);

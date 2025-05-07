@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useEmotionalLogs } from "@/hooks/useEmotionalLogs";
 import EmotionalLogForm from "./EmotionalLogForm";
@@ -12,10 +11,10 @@ import AutomatedActionForm from "./AutomatedActionForm";
 export const EmotionalLogTab = ({ clientId }: { clientId?: string }) => {
   const [showForm, setShowForm] = useState(false);
   const [showActionForm, setShowActionForm] = useState(false);
-  const { logs, isLoading, addLog } = useEmotionalLogs(clientId);
+  const { logs, isLoading, createLog } = useEmotionalLogs(clientId);
 
   const handleAddLog = async (data: any) => {
-    await addLog(data);
+    await createLog(data);
     setShowForm(false);
   };
 
