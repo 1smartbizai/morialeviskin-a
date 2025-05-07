@@ -15,7 +15,7 @@ import {
   uploadLogo,
   sendVerificationEmail,
   generateBusinessIdentifiers
-} from "@/utils/signupUtils";
+} from "@/utils/signup";
 import { initStorage } from "@/utils/initStorage";
 
 const SignupContent = () => {
