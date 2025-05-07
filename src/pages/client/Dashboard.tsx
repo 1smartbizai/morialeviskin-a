@@ -32,7 +32,8 @@ const ClientDashboard = () => {
     treatmentHistory,
     pendingPayment,
     skinProfile,
-    loyalty
+    loyalty,
+    tip
   } = useClientDashboard();
   
   const { toast } = useToast();
@@ -129,10 +130,10 @@ const ClientDashboard = () => {
                   {treatmentHistory.slice(0, 2).map((treatment) => (
                     <div key={treatment.id} className="p-4">
                       <div className="flex justify-between">
-                        <h3 className="font-medium">{treatment.name}</h3>
+                        <h3 className="font-medium">{treatment.treatmentName}</h3>
                         <span className="text-sm text-muted-foreground flex items-center">
                           <Clock className="h-3 w-3 ml-1" />
-                          {treatment.date}
+                          {treatment.appointmentDate.toLocaleDateString()}
                         </span>
                       </div>
                     </div>
@@ -146,7 +147,7 @@ const ClientDashboard = () => {
           </div>
         )}
         
-        <TipCard />
+        {tip && <TipCard tip={tip} />}
       </div>
       
       {/* Referral Link Dialog */}

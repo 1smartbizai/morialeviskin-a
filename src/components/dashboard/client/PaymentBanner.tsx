@@ -5,13 +5,13 @@ import { CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface PaymentBannerProps {
-  pendingPayment: number;
+  amount: number;
 }
 
-const PaymentBanner = ({ pendingPayment }: PaymentBannerProps) => {
+const PaymentBanner = ({ amount }: PaymentBannerProps) => {
   const navigate = useNavigate();
 
-  if (pendingPayment <= 0) {
+  if (amount <= 0) {
     return null;
   }
 
@@ -21,7 +21,7 @@ const PaymentBanner = ({ pendingPayment }: PaymentBannerProps) => {
         <div className="flex items-start justify-between">
           <div>
             <h3 className="font-medium text-blue-900 mb-1">תשלום ממתין</h3>
-            <div className="text-2xl font-bold text-blue-700">₪{pendingPayment}</div>
+            <div className="text-2xl font-bold text-blue-700">₪{amount}</div>
             <p className="text-sm text-blue-800 mt-1">עבור הטיפול האחרון</p>
           </div>
           <CreditCard className="h-10 w-10 text-blue-500" />

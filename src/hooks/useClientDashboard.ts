@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { Appointment } from "@/types/appointments";
+import type { TreatmentHistoryItem } from "@/types/treatmentHistory";
 
 interface ClientData {
   id: string;
@@ -10,6 +11,23 @@ interface ClientData {
   last_name: string;
   points?: number;
   pending_payment?: number;
+}
+
+interface LoyaltyData {
+  total_points: number;
+  next_reward_threshold?: number;
+}
+
+interface SkinProfile {
+  attributes: string[];
+  lastQuestionDate?: string;
+  answeredQuestions: any[];
+}
+
+interface PendingPayment {
+  amount: number;
+  treatmentId: string;
+  treatmentName: string;
 }
 
 const tips = [
@@ -24,6 +42,10 @@ export const useClientDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [clientData, setClientData] = useState<ClientData | null>(null);
   const [nextAppointment, setNextAppointment] = useState<Appointment | null>(null);
+  const [treatmentHistory, setTreatmentHistory] = useState<TreatmentHistoryItem[] | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<PendingPayment | null>(null);
+  const [skinProfile, setSkinProfile] = useState<SkinProfile | null>(null);
+  const [loyalty, setLoyalty] = useState<LoyaltyData | null>(null);
   const [tip, setTip] = useState<string>("");
 
   useEffect(() => {
@@ -70,22 +92,63 @@ export const useClientDashboard = () => {
           updated_at: new Date().toISOString()
         };
 
+        // Mock treatment history data
+        const mockTreatmentHistory = [
+          {
+            id: "history-1",
+            treatmentName: "טיפול פנים מעמיק",
+            appointmentDate: new Date(),
+            appointmentStatus: "completed",
+            price: 300,
+            attachments: []
+          },
+          {
+            id: "history-2",
+            treatmentName: "טיפול אקנה",
+            appointmentDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
+            appointmentStatus: "completed",
+            price: 250,
+            attachments: []
+          }
+        ];
+
+        // Mock pending payment
+        const mockPendingPayment = {
+          amount: 350,
+          treatmentId: "treatment-1",
+          treatmentName: "טיפול פנים משולב"
+        };
+
+        // Mock skin profile
+        const mockSkinProfile = {
+          attributes: ["רגיש", "יבש", "נוטה לאדמומיות"],
+          lastQuestionDate: new Date().toISOString(),
+          answeredQuestions: []
+        };
+
         if (clientData) {
           setClientData({
             ...clientData,
             points: loyaltyData?.total_points || 0,
-            pending_payment: 0 // This would come from real payments data
+            pending_payment: mockPendingPayment.amount // Mock pending payment amount
           });
         }
         
         // Set mock appointment data
         setNextAppointment(mockAppointment);
+        setTreatmentHistory(mockTreatmentHistory);
+        setPendingPayment(mockPendingPayment);
+        setSkinProfile(mockSkinProfile);
+        setLoyalty({
+          total_points: loyaltyData?.total_points || 0,
+          next_reward_threshold: 100
+        });
         
         // Set random tip
         setTip(tips[Math.floor(Math.random() * tips.length)]);
         
       } catch (error) {
-        console.error("Error fetching client data:", error);
+        console.error("Error fetching client dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -94,5 +157,14 @@ export const useClientDashboard = () => {
     fetchClientData();
   }, [navigate]);
 
-  return { clientData, nextAppointment, tip, isLoading };
+  return { 
+    clientData, 
+    nextAppointment, 
+    treatmentHistory, 
+    pendingPayment, 
+    skinProfile, 
+    loyalty, 
+    tip, 
+    isLoading 
+  };
 };
