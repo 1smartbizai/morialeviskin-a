@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { SignupData } from "@/contexts/SignupContext";
@@ -32,20 +31,19 @@ export const loadSavedSignupData = async (userId: string, updateSignupData: (dat
       };
 
       // Handle optional fields that might be stored as custom JSON/metadata
-      const metadata = data.metadata || {};
-      if (typeof metadata === 'object') {
-        updatedData.backgroundColor = metadata.background_color || "";
-        updatedData.headingTextColor = metadata.heading_text_color || "";
-        updatedData.bodyTextColor = metadata.body_text_color || "";
-        updatedData.actionTextColor = metadata.action_text_color || "";
-        updatedData.buttonBgColor1 = metadata.button_bg_color_1 || "";
-        updatedData.buttonBgColor2 = metadata.button_bg_color_2 || "";
-        updatedData.buttonTextColor1 = metadata.button_text_color_1 || "";
-        updatedData.buttonTextColor2 = metadata.button_text_color_2 || "";
-        updatedData.brandTone = metadata.brand_tone || "";
+      if (data.metadata && typeof data.metadata === 'object') {
+        updatedData.backgroundColor = data.metadata.background_color || "";
+        updatedData.headingTextColor = data.metadata.heading_text_color || "";
+        updatedData.bodyTextColor = data.metadata.body_text_color || "";
+        updatedData.actionTextColor = data.metadata.action_text_color || "";
+        updatedData.buttonBgColor1 = data.metadata.button_bg_color_1 || "";
+        updatedData.buttonBgColor2 = data.metadata.button_bg_color_2 || "";
+        updatedData.buttonTextColor1 = data.metadata.button_text_color_1 || "";
+        updatedData.buttonTextColor2 = data.metadata.button_text_color_2 || "";
+        updatedData.brandTone = data.metadata.brand_tone || "";
         updatedData.subscriptionLevel = data.subscription_level || "";
-        updatedData.isEmailVerified = metadata.email_verified || false;
-        updatedData.isPhoneVerified = metadata.phone_verified || false;
+        updatedData.isEmailVerified = data.metadata.email_verified || false;
+        updatedData.isPhoneVerified = data.metadata.phone_verified || false;
       }
 
       // Safely handle working hours with proper type casting
