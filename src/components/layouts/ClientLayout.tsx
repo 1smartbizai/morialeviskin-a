@@ -27,7 +27,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
     { name: "תורים", path: "/client/appointments", icon: Calendar },
     { name: "טיפולים", path: "/client/treatments", icon: BookOpen },
     { name: "היסטורית טיפולים", path: "/client/treatment-history", icon: FileText },
-    { name: "פרופיל העור שלי", path: "/client/skin-profile", icon: Droplet }, // Changed SkinIcon to Droplet
+    { name: "פרופיל העור שלי", path: "/client/skin-profile", icon: Droplet },
     { name: "הטבות", path: "/client/rewards", icon: Award },
     { name: "תשלומים", path: "/client/payments", icon: CreditCard },
   ];
