@@ -162,8 +162,11 @@ export const useBookingFlow = () => {
           
         const businessOwnerId = businessOwner?.business_owner_id;
         
+        // If no previous appointment found, get any business owner
+        let defaultBusinessOwnerId = null;
+        
         if (!businessOwnerId) {
-          // If no previous appointment, get any business owner
+          // Get any business owner
           const { data: anyBusinessOwner } = await supabase
             .from("business_owners")
             .select("id")
@@ -173,13 +176,17 @@ export const useBookingFlow = () => {
           if (!anyBusinessOwner) {
             throw new Error("לא נמצאו בעלי עסק במערכת");
           }
+          defaultBusinessOwnerId = anyBusinessOwner.id;
         }
+        
+        // Use business owner id from previous appointment or the default one
+        const ownerIdToUse = businessOwnerId || defaultBusinessOwnerId;
         
         // Get available time slots
         const { data: availableSlots, error: slotsError } = await supabase
           .from("available_timeslots")
           .select("*")
-          .eq("business_owner_id", businessOwnerId || anyBusinessOwner.id)
+          .eq("business_owner_id", ownerIdToUse)
           .gte("start_time", startOfDay.toISOString())
           .lte("start_time", endOfDay.toISOString())
           .eq("is_available", true);
@@ -190,7 +197,7 @@ export const useBookingFlow = () => {
         const { data: existingAppointments, error: appError } = await supabase
           .from("appointments")
           .select("*")
-          .eq("business_owner_id", businessOwnerId || anyBusinessOwner.id)
+          .eq("business_owner_id", ownerIdToUse)
           .gte("appointment_date", startOfDay.toISOString())
           .lte("appointment_date", endOfDay.toISOString())
           .neq("status", "cancelled");
