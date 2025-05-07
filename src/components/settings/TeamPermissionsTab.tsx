@@ -181,10 +181,10 @@ const TeamPermissionsTab = () => {
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">דוא"ל</Label>
+                    <Label htmlFor="email">דוא&quot;ל</Label>
                     <Input
                       id="email"
-                      placeholder="דוא"ל"
+                      placeholder="דוא&quot;ל"
                       value={newMemberEmail}
                       onChange={(e) => setNewMemberEmail(e.target.value)}
                     />
