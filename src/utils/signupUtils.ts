@@ -29,29 +29,27 @@ export const loadSavedSignupData = async (userId: string, updateSignupData: (dat
         accentColor: data.accent_color || "",
         logoUrl: data.logo_url || "",
         googleCalendarConnected: data.google_calendar_connected || false,
+        subscriptionLevel: data.subscription_level || "",
       };
 
-      // Handle optional fields that might be stored as custom JSON/metadata
-      // Use type assertion to handle the metadata field properly
-      const metadata = (data as any).metadata || {};
-      if (typeof metadata === 'object') {
-        updatedData.backgroundColor = metadata.background_color || "";
-        updatedData.headingTextColor = metadata.heading_text_color || "";
-        updatedData.bodyTextColor = metadata.body_text_color || "";
-        updatedData.actionTextColor = metadata.action_text_color || "";
-        updatedData.buttonBgColor1 = metadata.button_bg_color_1 || "";
-        updatedData.buttonBgColor2 = metadata.button_bg_color_2 || "";
-        updatedData.buttonTextColor1 = metadata.button_text_color_1 || "";
-        updatedData.buttonTextColor2 = metadata.button_text_color_2 || "";
-        updatedData.brandTone = metadata.brand_tone || "";
-        updatedData.subscriptionLevel = data.subscription_level || "";
-        updatedData.isEmailVerified = metadata.email_verified || false;
-        updatedData.isPhoneVerified = metadata.phone_verified || false;
+      // Handle metadata fields with appropriate null/undefined checks
+      if (data.metadata) {
+        updatedData.backgroundColor = data.metadata.background_color || "";
+        updatedData.headingTextColor = data.metadata.heading_text_color || "";
+        updatedData.bodyTextColor = data.metadata.body_text_color || "";
+        updatedData.actionTextColor = data.metadata.action_text_color || "";
+        updatedData.buttonBgColor1 = data.metadata.button_bg_color_1 || "";
+        updatedData.buttonBgColor2 = data.metadata.button_bg_color_2 || "";
+        updatedData.buttonTextColor1 = data.metadata.button_text_color_1 || "";
+        updatedData.buttonTextColor2 = data.metadata.button_text_color_2 || "";
+        updatedData.brandTone = data.metadata.brand_tone || "professional";
+        updatedData.isEmailVerified = data.metadata.email_verified || false;
+        updatedData.isPhoneVerified = data.metadata.phone_verified || false;
       }
 
-      // Safely handle working hours with proper type casting
+      // Safely handle working hours
       if (data.working_hours && typeof data.working_hours === 'object') {
-        updatedData.workingHours = data.working_hours as unknown as SignupData['workingHours'];
+        updatedData.workingHours = data.working_hours;
       }
       
       updateSignupData(updatedData);
@@ -90,6 +88,21 @@ export const saveSignupData = async (
     } 
     // For Visual Identity and Brand Settings steps
     else if (currentStep === 1 || currentStep === 2) {
+      // Create metadata object with all UI configuration fields
+      const metadata = {
+        background_color: signupData.backgroundColor || "",
+        heading_text_color: signupData.headingTextColor || "",
+        body_text_color: signupData.bodyTextColor || "",
+        action_text_color: signupData.actionTextColor || "",
+        button_bg_color_1: signupData.buttonBgColor1 || "",
+        button_bg_color_2: signupData.buttonBgColor2 || "",
+        button_text_color_1: signupData.buttonTextColor1 || "",
+        button_text_color_2: signupData.buttonTextColor2 || "",
+        brand_tone: signupData.brandTone || "professional",
+        email_verified: signupData.isEmailVerified || false,
+        phone_verified: signupData.isPhoneVerified || false
+      };
+
       // Store core data in the main table fields
       const { error } = await supabase
         .from('business_owners')
@@ -102,20 +115,7 @@ export const saveSignupData = async (
           logo_url: signupData.logoUrl,
           primary_color: signupData.primaryColor,
           accent_color: signupData.accentColor,
-          // Store additional fields in metadata JSON
-          metadata: {
-            background_color: signupData.backgroundColor,
-            heading_text_color: signupData.headingTextColor,
-            body_text_color: signupData.bodyTextColor,
-            action_text_color: signupData.actionTextColor,
-            button_bg_color_1: signupData.buttonBgColor1,
-            button_bg_color_2: signupData.buttonBgColor2,
-            button_text_color_1: signupData.buttonTextColor1,
-            button_text_color_2: signupData.buttonTextColor2,
-            brand_tone: signupData.brandTone,
-            email_verified: signupData.isEmailVerified,
-            phone_verified: signupData.isPhoneVerified
-          }
+          metadata // Store additional fields in metadata JSON
         });
         
       if (error) throw error;
@@ -176,7 +176,7 @@ export const createUserAndBusiness = async (
   if (data.session) {
     setSession(data.session);
     
-    // Initialize business owner record
+    // Initialize business owner record with metadata
     const { error: businessError } = await supabase
       .from('business_owners')
       .insert({
@@ -187,7 +187,16 @@ export const createUserAndBusiness = async (
         business_name: signupData.businessName || `${signupData.firstName}'s Business`,
         metadata: {
           email_verified: false,
-          phone_verified: false
+          phone_verified: false,
+          background_color: "",
+          heading_text_color: "",
+          body_text_color: "",
+          action_text_color: "",
+          button_bg_color_1: "",
+          button_bg_color_2: "",
+          button_text_color_1: "",
+          button_text_color_2: "",
+          brand_tone: "professional"
         }
       });
       

@@ -133,6 +133,7 @@ export type Database = {
           id: string
           last_name: string
           logo_url: string | null
+          metadata: Json | null
           phone: string
           primary_color: string | null
           subscription_active: boolean | null
@@ -151,6 +152,7 @@ export type Database = {
           id?: string
           last_name: string
           logo_url?: string | null
+          metadata?: Json | null
           phone: string
           primary_color?: string | null
           subscription_active?: boolean | null
@@ -169,6 +171,7 @@ export type Database = {
           id?: string
           last_name?: string
           logo_url?: string | null
+          metadata?: Json | null
           phone?: string
           primary_color?: string | null
           subscription_active?: boolean | null

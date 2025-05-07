@@ -1,14 +1,15 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, CreditCard } from "lucide-react";
+import { SignupData } from "@/contexts/SignupContext";
 
 interface PaymentStepProps {
-  data: any;
-  updateData: (data: any) => void;
+  data: Partial<SignupData>;
+  updateData: (data: Partial<SignupData>) => void;
 }
 
 interface PlanOption {
@@ -63,12 +64,21 @@ const plans: PlanOption[] = [
 ];
 
 const PaymentStep = ({ data, updateData }: PaymentStepProps) => {
-  const [selectedPlan, setSelectedPlan] = useState<string>(data.subscriptionLevel || "professional");
+  const [selectedPlan, setSelectedPlan] = useState<string>(data?.subscriptionLevel || "professional");
   const [paymentInfo, setPaymentInfo] = useState({
     cardNumber: "",
     cardExpiry: "",
     cardCvv: "",
   });
+
+  // Make sure the selected plan is synced with the context
+  useEffect(() => {
+    if (data?.subscriptionLevel && data.subscriptionLevel !== selectedPlan) {
+      setSelectedPlan(data.subscriptionLevel);
+    } else if (!data?.subscriptionLevel && selectedPlan) {
+      updateData({ subscriptionLevel: selectedPlan });
+    }
+  }, [data?.subscriptionLevel]);
 
   const handlePlanChange = (planId: string) => {
     setSelectedPlan(planId);

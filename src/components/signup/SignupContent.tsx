@@ -16,7 +16,6 @@ import {
   sendVerificationEmail,
   generateBusinessIdentifiers
 } from "@/utils/signupUtils";
-import SignupLayout from "./SignupLayout";
 
 const SignupContent = () => {
   const navigate = useNavigate();
