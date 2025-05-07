@@ -147,7 +147,10 @@ const BusinessOwnerSignupContent = () => {
       case 2:
         return <BrandSettingsStep />;
       case 3:
-        return <PaymentStep />;
+        return <PaymentStep 
+          data={signupData}
+          updateData={updateSignupData}
+        />;
       case 4:
         return <WorkingHoursStep />;
       case 5:

@@ -20,29 +20,36 @@ export const loadSavedSignupData = async (userId: string, updateSignupData: (dat
     
     if (data) {
       // Pre-populate our form with saved data
-      updateSignupData({
+      const updatedData: Partial<SignupData> = {
         firstName: data.first_name || "",
         lastName: data.last_name || "",
         phone: data.phone || "",
         businessName: data.business_name || "",
         primaryColor: data.primary_color || "",
         accentColor: data.accent_color || "",
-        backgroundColor: data.background_color || "",
-        headingTextColor: data.heading_text_color || "",
-        bodyTextColor: data.body_text_color || "",
-        actionTextColor: data.action_text_color || "",
-        buttonBgColor1: data.button_bg_color_1 || "",
-        buttonBgColor2: data.button_bg_color_2 || "",
-        buttonTextColor1: data.button_text_color_1 || "",
-        buttonTextColor2: data.button_text_color_2 || "",
-        brandTone: data.brand_tone || "",
+        // Handle optional fields that might not exist in the database schema yet
+        backgroundColor: data.background_color as string || "",
+        headingTextColor: data.heading_text_color as string || "",
+        bodyTextColor: data.body_text_color as string || "",
+        actionTextColor: data.action_text_color as string || "",
+        buttonBgColor1: data.button_bg_color_1 as string || "",
+        buttonBgColor2: data.button_bg_color_2 as string || "",
+        buttonTextColor1: data.button_text_color_1 as string || "",
+        buttonTextColor2: data.button_text_color_2 as string || "",
+        brandTone: data.brand_tone as string || "",
         subscriptionLevel: data.subscription_level || "",
         logoUrl: data.logo_url || "",
-        workingHours: data.working_hours || {},
         googleCalendarConnected: data.google_calendar_connected || false,
-        isEmailVerified: data.email_verified || false,
-        isPhoneVerified: data.phone_verified || false,
-      });
+        isEmailVerified: data.email_verified as boolean || false,
+        isPhoneVerified: data.phone_verified as boolean || false,
+      };
+
+      // Safely handle working hours with proper type casting
+      if (data.working_hours && typeof data.working_hours === 'object') {
+        updatedData.workingHours = data.working_hours as unknown as SignupData['workingHours'];
+      }
+      
+      updateSignupData(updatedData);
       
       // Generate business domain and ID if we don't have them yet
       const businessName = data.business_name || "";
