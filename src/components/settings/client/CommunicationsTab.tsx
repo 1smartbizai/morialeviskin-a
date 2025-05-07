@@ -41,7 +41,9 @@ const CommunicationsTab = () => {
           .single();
           
         if (clientData && clientData.communication_preferences) {
-          setPreferences(clientData.communication_preferences as CommunicationPreferences);
+          // Type casting to handle the JSON response
+          const prefs = clientData.communication_preferences as unknown as CommunicationPreferences;
+          setPreferences(prefs);
         }
       } catch (error) {
         console.error("Error fetching communication preferences:", error);
@@ -76,7 +78,7 @@ const CommunicationsTab = () => {
       const { error } = await supabase
         .from("clients")
         .update({
-          communication_preferences: preferences,
+          communication_preferences: preferences as any,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);

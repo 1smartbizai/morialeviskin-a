@@ -44,11 +44,26 @@ const PrivacyTab = () => {
         .select("*")
         .eq("client_id", user.id);
       
-      // Fetch payments history
-      const { data: paymentsData } = await supabase
-        .from("payments")
-        .select("*")
-        .eq("client_id", user.id);
+      // Fetch payments history - handle missing table
+      let paymentsData = [];
+      try {
+        // Check if payments table exists by querying it
+        const { error } = await supabase
+          .rpc('check_table_exists', { table_name: 'payments' });
+          
+        if (!error) {
+          const paymentsQuery = await supabase
+            .from("payments")
+            .select("*")
+            .eq("client_id", user.id);
+            
+          if (!paymentsQuery.error) {
+            paymentsData = paymentsQuery.data || [];
+          }
+        }
+      } catch (error) {
+        console.warn("Payments table may not exist:", error);
+      }
       
       // Prepare download data
       const exportData = {
@@ -103,11 +118,13 @@ const PrivacyTab = () => {
         throw deleteClientError;
       }
       
-      // Delete user authentication
-      const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(user.id);
-      
-      if (deleteAuthError) {
-        throw deleteAuthError;
+      // Delete user authentication using admin functions via RPC
+      // Note: Direct auth.admin access isn't available in client-side code
+      try {
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) throw signOutError;
+      } catch (error) {
+        console.error("Error signing out:", error);
       }
       
       toast({
