@@ -29,8 +29,9 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
     { name: "היסטורית טיפולים", path: "/client/treatment-history", icon: FileText },
     { name: "פרופיל העור שלי", path: "/client/skin-profile", icon: Droplet },
     { name: "הטבות", path: "/client/rewards", icon: Award },
-    { name: "הודעות", path: "/client/messages", icon: MessageSquare }, // Add this new navigation item
+    { name: "הודעות", path: "/client/messages", icon: MessageSquare },
     { name: "תשלומים", path: "/client/payments", icon: CreditCard },
+    { name: "הגדרות", path: "/client/settings", icon: Settings }, // Add settings menu item
   ];
 
   const toggleNav = () => {
@@ -60,13 +61,15 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
               <p className="text-sm text-gray-500">שלום, {clientName}</p>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-9 w-9 rounded-full bg-beauty-primary text-white"
-          >
-            {clientName ? clientName.charAt(0) : "ל"}
-          </Button>
+          <Link to="/client/settings">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 rounded-full bg-beauty-primary text-white"
+            >
+              {clientName ? clientName.charAt(0) : "ל"}
+            </Button>
+          </Link>
         </div>
         
         {/* Navigation for desktop */}

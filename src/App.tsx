@@ -38,7 +38,8 @@ import Analytics from "./pages/admin/Analytics";
 import BusinessSettings from "./pages/admin/BusinessSettings";
 import MessagesAndAutomations from "./pages/admin/MessagesAndAutomations";
 import ClientMessages from "./pages/client/Messages";
-import FeedbackSurvey from "./pages/client/FeedbackSurvey"; // Add this import
+import FeedbackSurvey from "./pages/client/FeedbackSurvey";
+import ClientSettings from "./pages/client/Settings"; // Add this import
 
 const queryClient = new QueryClient();
 
@@ -87,7 +88,8 @@ const App = () => (
             <Route path="/client/payments" element={<ClientPayments />} />
             <Route path="/client/book" element={<BookAppointment />} /> 
             <Route path="/client/messages" element={<ClientMessages />} />
-            <Route path="/client/feedback" element={<FeedbackSurvey />} /> {/* Add this new route */}
+            <Route path="/client/feedback" element={<FeedbackSurvey />} />
+            <Route path="/client/settings" element={<ClientSettings />} /> {/* Add this new route */}
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Calendar, MessageSquare, Award, Droplet } from "lucide-react";
+import { Calendar, MessageSquare, Award, Droplet, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useFeedbackSurvey } from "@/hooks/useFeedbackSurvey";
 
@@ -43,13 +43,13 @@ const QuickActions = ({ hasPendingFeedback = false }: QuickActionsProps) => {
         </Button>
       </Link>
       
-      <Link to="/client/skin-profile">
+      <Link to="/client/settings">
         <Button
           variant="outline"
           className="w-full h-auto py-4 flex flex-col items-center"
         >
-          <Droplet className="h-5 w-5 mb-2" />
-          <span>פרופיל העור</span>
+          <Settings className="h-5 w-5 mb-2" />
+          <span>הגדרות</span>
         </Button>
       </Link>
       
