@@ -274,6 +274,80 @@ export type Database = {
           },
         ]
       }
+      client_feedback: {
+        Row: {
+          additional_comments: string | null
+          business_owner_id: string
+          client_id: string
+          created_at: string
+          id: string
+          overall_satisfaction: number
+          staff_friendliness: number
+          treatment_effectiveness: number
+        }
+        Insert: {
+          additional_comments?: string | null
+          business_owner_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          overall_satisfaction: number
+          staff_friendliness: number
+          treatment_effectiveness: number
+        }
+        Update: {
+          additional_comments?: string | null
+          business_owner_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          overall_satisfaction?: number
+          staff_friendliness?: number
+          treatment_effectiveness?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_feedback_business_owner_id_fkey"
+            columns: ["business_owner_id"]
+            isOneToOne: false
+            referencedRelation: "business_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_feedback_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_feedback_dismissals: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_feedback_dismissals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_loyalty: {
         Row: {
           client_id: string
