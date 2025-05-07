@@ -3,7 +3,7 @@ import ClientLayout from "@/components/layouts/ClientLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Sparkles, Gift, Clock } from "lucide-react";
+import { Sparkles, Gift, Clock, Share, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 
@@ -30,6 +38,9 @@ const ClientRewards = () => {
   const queryClient = useQueryClient();
   const [selectedReward, setSelectedReward] = useState<LoyaltyReward | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [referralDialogOpen, setReferralDialogOpen] = useState<boolean>(false);
+  const [referralLink, setReferralLink] = useState<string>("");
+  const [referralCount, setReferralCount] = useState<number>(0);
   
   const { data: clientData } = useQuery({
     queryKey: ["client-data"],
@@ -180,6 +191,54 @@ const ClientRewards = () => {
     }
   });
   
+  useEffect(() => {
+    // Generate a unique referral link for the client
+    if (clientId) {
+      const uniqueLink = `${window.location.origin}/referral/${clientId}`;
+      setReferralLink(uniqueLink);
+      
+      // Simulate referral data from database
+      // In a real app, this would fetch actual referral count from the database
+      setReferralCount(Math.floor(Math.random() * 3));
+    }
+  }, [clientId]);
+  
+  const handleShareReferral = async () => {
+    if (navigator.share && referralLink) {
+      try {
+        await navigator.share({
+          title: 'הצטרף אלינו!',
+          text: 'הצטרף אלינו וקבל הנחה בטיפול הראשון שלך!',
+          url: referralLink,
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        // Fallback for browsers that don't support Web Share API
+        copyToClipboard();
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+  
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(referralLink).then(
+      () => {
+        toast({
+          title: "הקישור הועתק",
+          description: "הקישור הועתק ללוח. עכשיו אפשר לשתף עם חברים!",
+        });
+      },
+      (err) => {
+        toast({
+          title: "לא הצלחנו להעתיק את הקישור",
+          description: "אנא נסה שוב מאוחר יותר",
+          variant: "destructive",
+        });
+      }
+    );
+  };
+  
   const progress = (loyalty.total_points / loyalty.nextRewardAt) * 100;
   
   const formatDate = (dateString: string) => {
@@ -205,7 +264,7 @@ const ClientRewards = () => {
       <div className="space-y-6" dir="rtl">
         <h1 className="text-2xl font-bold text-beauty-dark">מועדון נאמנות</h1>
         
-        <Card>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
               <div className="flex-1">
@@ -219,13 +278,19 @@ const ClientRewards = () => {
                 </div>
                 
                 <div className="mt-4">
-                  <Progress value={progress} className="h-2" />
+                  <Progress value={progress} className="h-2 bg-purple-200">
+                    <div className="h-full bg-beauty-primary" style={{ width: `${progress}%` }} />
+                  </Progress>
                 </div>
               </div>
               
               <div className="flex flex-col gap-2">
-                <Button className="bg-beauty-primary">
-                  לפרטים נוספים
+                <Button 
+                  onClick={() => setReferralDialogOpen(true)} 
+                  className="bg-beauty-primary hover:bg-beauty-primary/90 flex items-center gap-2"
+                >
+                  <Share className="h-4 w-4" />
+                  הזמן חברים
                 </Button>
               </div>
             </div>
@@ -271,6 +336,45 @@ const ClientRewards = () => {
           </div>
         </div>
         
+        {/* Referrals Section */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-beauty-dark">הזמנת חברים</h2>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-beauty-primary/10 p-3 rounded-full">
+                    <Users className="h-6 w-6 text-beauty-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-lg">תכנית חבר מביא חבר</h3>
+                    <p className="text-sm text-muted-foreground">הזמינו חברים והרוויחו 50 נקודות לכל חבר שמצטרף</p>
+                  </div>
+                </div>
+                
+                <div className="bg-muted rounded-lg p-4 flex items-center justify-between">
+                  <div>
+                    <span className="text-sm text-muted-foreground">חברים שהזמנת:</span>
+                    <div className="font-bold text-lg">{referralCount}</div>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">נקודות שהרווחת:</span>
+                    <div className="font-bold text-lg">{referralCount * 50}</div>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={() => setReferralDialogOpen(true)} 
+                  className="bg-beauty-primary hover:bg-beauty-primary/90 flex items-center justify-center gap-2 mt-2"
+                >
+                  <Share className="h-4 w-4" />
+                  שתף קישור הזמנה
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-beauty-dark">היסטוריית הטבות</h2>
           
@@ -313,6 +417,7 @@ const ClientRewards = () => {
         </div>
       </div>
       
+      {/* Redeem Confirmation Dialog */}
       <AlertDialog 
         open={!!selectedReward} 
         onOpenChange={(open) => !open && setSelectedReward(null)}
@@ -340,6 +445,39 @@ const ClientRewards = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Referral Link Dialog */}
+      <Dialog open={referralDialogOpen} onOpenChange={setReferralDialogOpen}>
+        <DialogContent dir="rtl" className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>שתף קישור הזמנה</DialogTitle>
+            <DialogDescription>
+              כשחברים נרשמים דרך הקישור שלך, אתם מקבלים 50 נקודות לחשבון שלכם
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="bg-muted p-3 rounded-md text-center break-all text-xs">
+            {referralLink}
+          </div>
+          
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button 
+              onClick={handleShareReferral} 
+              className="w-full bg-beauty-primary hover:bg-beauty-primary/90"
+            >
+              <Share className="mr-2 h-4 w-4" />
+              שתף את הקישור
+            </Button>
+            <Button 
+              onClick={copyToClipboard} 
+              className="w-full"
+              variant="outline"
+            >
+              העתק קישור
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ClientLayout>
   );
 };
