@@ -1,178 +1,129 @@
-
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { AutomatedActionFormValues } from "@/types/client-management";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useAutomatedActions } from "@/hooks/useAutomatedActions";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const formSchema = z.object({
-  client_id: z.string().min(1, "Client is required"),
-  source_type: z.enum(["emotional_log", "risk_assessment"]),
-  source_id: z.string().min(1, "Source is required"),
-  action_type: z.enum(["message", "reminder", "task", "email"]),
-  content: z.string().min(1, "Content is required"),
-  scheduled_for: z.date().optional(),
+  action_type: z.string().min(2, {
+    message: "יש לבחור סוג פעולה",
+  }),
+  description: z.string().min(10, {
+    message: "תיאור הפעולה חייב להכיל לפחות 10 תווים",
+  }),
+  scheduled_date: z.date({
+    required_error: "יש לבחור תאריך עתידי",
+  }),
 });
 
 interface AutomatedActionFormProps {
   clientId: string;
-  sourceId: string;
-  sourceType: "emotional_log" | "risk_assessment";
-  initialContent?: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  onSuccess: () => void;
 }
 
-export const AutomatedActionForm: React.FC<AutomatedActionFormProps> = ({
-  clientId,
-  sourceId,
-  sourceType,
-  initialContent = "",
-  onSuccess,
-  onCancel,
-}) => {
-  const { createAction } = useAutomatedActions();
-  
-  const form = useForm<AutomatedActionFormValues>({
+const AutomatedActionForm = ({ clientId, onSuccess }: AutomatedActionFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      client_id: clientId,
-      source_type: sourceType,
-      source_id: sourceId,
-      action_type: "reminder",
-      content: initialContent,
+      action_type: "",
+      description: "",
+      scheduled_date: new Date(),
     },
   });
-  
-  const handleSubmit = (values: AutomatedActionFormValues) => {
-    createAction(values);
-    onSuccess?.();
-    onCancel?.();
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("automated_actions")
+        .insert([{ ...values, client_id: clientId }]);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast.success("פעולה אוטומטית נוצרה בהצלחה");
+      onSuccess();
+    } catch (error) {
+      console.error("Error creating automated action:", error);
+      toast.error("שגיאה ביצירת פעולה אוטומטית");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const disabledDays = (day: Date) => {
+    return day < new Date();
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="action_type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Action Type</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select action type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="message">Message</SelectItem>
-                  <SelectItem value="reminder">Reminder</SelectItem>
-                  <SelectItem value="task">Task</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Action content..." 
-                  className="h-24"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="scheduled_for"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Schedule For</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
+    <Card>
+      <CardHeader>
+        <CardTitle>צור פעולה אוטומטית</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="action_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>סוג פעולה</FormLabel>
                   <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
+                    <Input placeholder="סוג פעולה" {...field} />
                   </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 pointer-events-auto">
-                  <Calendar
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>תיאור</FormLabel>
+                  <FormControl>
+                    <Input placeholder="תיאור" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="scheduled_date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col space-y-2">
+                  <FormLabel>תאריך</FormLabel>
+                  <DatePicker
                     mode="single"
+                    required
+                    disabled={disabledDays}
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date < new Date()}
-                    initialFocus
-                    className="p-3"
+                    className="rounded-md border border-input w-full"
                   />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="flex justify-end gap-2 pt-2">
-          {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "יוצר..." : "צור פעולה"}
             </Button>
-          )}
-          <Button type="submit">
-            Create Action
-          </Button>
-        </div>
-      </form>
-    </Form>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
+
+export default AutomatedActionForm;
