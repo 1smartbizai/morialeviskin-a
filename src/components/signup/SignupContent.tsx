@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,39 +86,51 @@ const SignupContent = () => {
     setIsLoading(true);
     
     try {
-      // If this is the first step, we need to create the account
+      // If this is the first step, we need to prepare business identifiers but don't create user yet
       if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) {
-        // Check if we already have a session
-        if (!session) {
-          // Create user and initialize business records
-          await createUserAndBusiness(signupData, setSession);
-        }
-        
         // Generate business domain and ID
         const { domain, id } = generateBusinessIdentifiers(signupData.businessName);
         updateSignupData({ businessDomain: domain, businessId: id });
         
-        // Auto-send verification emails
-        if (session?.user?.id && signupData.email) {
-          await sendVerificationEmail(signupData.email);
-        }
+        // We'll delay account creation until the final step
+        // Just move to next step without requiring authentication
       } 
-      // If this is the second step (visual identity), we upload the logo
+      // If this is the second step (visual identity), we handle logo upload with temp storage
       else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && signupData.logo) {
-        if (!session?.user?.id) {
-          throw new Error("אינך מחוברת למערכת, נא להתחבר שנית");
+        // If we have a session, we can upload the logo properly
+        if (session?.user?.id) {
+          const publicUrl = await uploadLogo(signupData.logo, session.user.id);
+          updateSignupData({ logoUrl: publicUrl });
+        } else {
+          // Store the logo in state for later upload when we have a session
+          // We'll keep the File object in memory until final step
+          console.log("Logo will be uploaded in the final step when account is created");
         }
-        
-        const publicUrl = await uploadLogo(signupData.logo, session.user.id);
-        updateSignupData({ logoUrl: publicUrl });
       } 
       
-      // If we're on the final step, complete all the setup
+      // If we're on the final step, complete all the setup and create the account
       if (currentStep === STEP_COMPONENTS.SUCCESS) {
+        // Now create the user and business if we haven't already
+        if (!session) {
+          // Create user and initialize business records
+          await createUserAndBusiness(signupData, setSession);
+          
+          // Upload the logo if it's still pending and we now have a session
+          if (signupData.logo && !signupData.logoUrl && session?.user?.id) {
+            const publicUrl = await uploadLogo(signupData.logo, session.user.id);
+            updateSignupData({ logoUrl: publicUrl });
+          }
+          
+          // Auto-send verification emails
+          if (signupData.email) {
+            await sendVerificationEmail(signupData.email);
+          }
+        }
+        
         // Navigate to dashboard
         navigate('/admin');
       } else {
-        // Save current step data
+        // Save current step data if we have a session
         if (session?.user?.id) {
           await saveSignupData(currentStep, signupData, session.user.id);
         }
