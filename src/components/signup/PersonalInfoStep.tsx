@@ -7,7 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useSignup } from "@/contexts/SignupContext";
 
-// Create the validation schema
+// Create the validation schema with Hebrew error messages
 const personalInfoSchema = z.object({
   firstName: z.string().min(2, "השם חייב להכיל לפחות 2 תווים"),
   lastName: z.string().min(2, "שם המשפחה חייב להכיל לפחות 2 תווים"),
@@ -40,7 +40,7 @@ const PersonalInfoStep = () => {
 
   return (
     <Form {...form}>
-      <form className="space-y-6">
+      <form className="space-y-6" dir="rtl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -111,12 +111,14 @@ const PersonalInfoStep = () => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>אימייל</FormLabel>
+              <FormLabel>דוא״ל</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="your@email.com" 
                   type="email"
+                  dir="ltr"
+                  className="text-left"
                   onChange={(e) => {
                     field.onChange(e);
                     handleFormChange("email", e.target.value);
@@ -140,6 +142,8 @@ const PersonalInfoStep = () => {
                     {...field} 
                     placeholder="בחרי סיסמה (לפחות 8 תווים)" 
                     type={passwordVisible ? "text" : "password"}
+                    dir="ltr"
+                    className="text-left"
                     onChange={(e) => {
                       field.onChange(e);
                       handleFormChange("password", e.target.value);
@@ -147,7 +151,7 @@ const PersonalInfoStep = () => {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 px-3 flex items-center text-sm"
+                    className="absolute inset-y-0 left-0 px-3 flex items-center text-sm"
                     onClick={() => setPasswordVisible(!passwordVisible)}
                   >
                     {passwordVisible ? "הסתר" : "הצג"}
@@ -170,7 +174,7 @@ const PersonalInfoStep = () => {
                   {...field} 
                   placeholder="הכניסי מספר טלפון"
                   dir="ltr"
-                  className="text-right"
+                  className="text-left"
                   onChange={(e) => {
                     field.onChange(e);
                     handleFormChange("phone", e.target.value);

@@ -10,12 +10,22 @@ import { signupDataToMetadata } from "./dataTransformers";
  */
 export const sendVerificationEmail = async (email: string) => {
   if (!email) {
-    throw new Error("Email address is required");
+    throw new Error("כתובת דוא\"ל נדרשת");
   }
   
-  await supabase.auth.resetPasswordForEmail(email);
+  // Use the correct function to send email verification
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false,
+      emailRedirectTo: window.location.origin + '/admin'
+    }
+  });
+  
+  if (error) throw error;
+  
   toast.info("נשלח אימות דוא\"ל", {
-    description: "אנא בדקי את תיבת הדואר שלך לקישור אימות"
+    description: "אנא בדקי את תיבת הדואר שלך לקישור האימות"
   });
 };
 
@@ -34,7 +44,8 @@ export const createUserAndBusiness = async (
       data: {
         first_name: signupData.firstName,
         last_name: signupData.lastName,
-      }
+      },
+      emailRedirectTo: window.location.origin + '/admin'
     }
   });
 
@@ -56,10 +67,16 @@ export const createUserAndBusiness = async (
         last_name: signupData.lastName,
         phone: signupData.phone,
         business_name: signupData.businessName || `${signupData.firstName}'s Business`,
-        metadata: metadata
+        metadata: metadata,
+        primary_color: signupData.primaryColor,
+        accent_color: signupData.accentColor
       });
       
     if (businessError) throw businessError;
+    
+    toast.success("החשבון נוצר בהצלחה!", {
+      description: "ברוכה הבאה ל-Bellevo"
+    });
   } else {
     // This might happen if email confirmation is required
     toast.info("נשלח אליך אימות בדוא\"ל", {

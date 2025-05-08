@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useSignup } from "@/contexts/SignupContext";
 import ColorPicker from "./brand/ColorPicker";
+import { ImagePlus } from "lucide-react";
 
 const VisualIdentityStep = () => {
   const { signupData, updateSignupData } = useSignup();
@@ -18,6 +19,13 @@ const VisualIdentityStep = () => {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      
+      // Check file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert("הקובץ גדול מדי. אנא בחרי קובץ בגודל עד 2MB");
+        return;
+      }
+      
       updateSignupData({ logo: file });
       
       // Create a preview
@@ -50,7 +58,7 @@ const VisualIdentityStep = () => {
               <div className="relative">
                 <img 
                   src={signupData.logoUrl} 
-                  alt="Logo preview" 
+                  alt="תצוגה מקדימה של הלוגו" 
                   className="mx-auto h-32 w-32 object-contain" 
                 />
                 <Button
@@ -59,7 +67,7 @@ const VisualIdentityStep = () => {
                   className="mt-2"
                   onClick={selectLogoFile}
                 >
-                  החלף לוגו
+                  החלפת לוגו
                 </Button>
               </div>
             ) : (
@@ -68,23 +76,7 @@ const VisualIdentityStep = () => {
                 onClick={selectLogoFile}
               >
                 <div className="border border-gray-300 rounded-full p-3 mb-2">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="24" 
-                    height="24" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
-                    <line x1="16" y1="5" x2="22" y2="5"></line>
-                    <line x1="19" y1="2" x2="19" y2="8"></line>
-                    <circle cx="9" cy="9" r="2"></circle>
-                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
-                  </svg>
+                  <ImagePlus className="h-6 w-6 text-gray-400" />
                 </div>
                 <Label className="cursor-pointer">לחצי להעלאת לוגו</Label>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -130,12 +122,12 @@ const VisualIdentityStep = () => {
           <div className="flex items-center">
             {signupData.logoUrl && (
               <div 
-                className="mr-4 w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border"
+                className="ml-4 w-12 h-12 rounded-full flex items-center justify-center overflow-hidden border"
                 style={{ borderColor: signupData.accentColor }}
               >
                 <img 
                   src={signupData.logoUrl} 
-                  alt="Logo preview" 
+                  alt="תצוגה מקדימה של הלוגו" 
                   className="w-10 h-10 object-contain" 
                 />
               </div>
@@ -146,14 +138,16 @@ const VisualIdentityStep = () => {
             </div>
           </div>
           
-          <div className="flex space-x-2 mt-4">
+          <div className="flex gap-2 mt-4">
             <div 
               className="h-8 w-8 rounded-full border"
               style={{ backgroundColor: signupData.primaryColor }}
+              aria-label="צבע ראשי"
             ></div>
             <div 
               className="h-8 w-8 rounded-full border"
               style={{ backgroundColor: signupData.accentColor }}
+              aria-label="צבע משני"
             ></div>
           </div>
         </CardContent>

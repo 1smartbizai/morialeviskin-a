@@ -21,26 +21,24 @@ const SignupNavigation = ({ onNext, onPrevious }: SignupNavigationProps) => {
   const { currentStep, isLoading } = useSignup();
 
   return (
-    <div className="flex justify-between mt-8">
+    <div className="flex justify-between mt-8" dir="rtl">
       <Button 
         variant="outline"
         onClick={onPrevious}
         disabled={currentStep === 0 || isLoading}
-        className="flex-row-reverse"
       >
-        חזרה <ChevronLeft className="mr-2 h-4 w-4" />
+        <ChevronRight className="ml-2 h-4 w-4" /> חזרה
       </Button>
       
       <Button 
         onClick={onNext}
         disabled={isLoading}
-        className="flex-row-reverse"
       >
         {currentStep === steps.length - 1 ? (
           'היכנסי ללוח הבקרה'
         ) : (
           <>
-            המשך <ChevronRight className="ml-2 h-4 w-4" />
+            המשך <ChevronLeft className="mr-2 h-4 w-4" />
           </>
         )}
       </Button>

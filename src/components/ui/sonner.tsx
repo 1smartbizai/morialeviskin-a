@@ -1,3 +1,4 @@
+
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, toast } from "sonner"
 
@@ -10,10 +11,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      dir="rtl"
+      position="top-left"
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:dir-rtl",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
@@ -26,4 +29,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
   )
 }
 
-export { Toaster, toast }
+// Type extensions for toast to add success and other variants
+const extendedToast = {
+  ...toast,
+  success: (title: string, options?: any) => toast.success(title, options),
+  warning: (title: string, options?: any) => toast.warning(title, options),
+  info: (title: string, options?: any) => toast.info(title, options),
+  error: (title: string, options?: any) => toast.error(title, options),
+}
+
+export { Toaster, extendedToast as toast }

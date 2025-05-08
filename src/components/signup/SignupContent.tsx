@@ -34,7 +34,10 @@ const SignupContent = () => {
   useEffect(() => {
     // Initialize storage buckets
     initStorage().catch(error => {
-      console.error("Failed to initialize storage:", error);
+      console.error("נכשל באתחול אחסון:", error);
+      toast.error("שגיאה באתחול המערכת", {
+        description: "אנא נסי שוב מאוחר יותר"
+      });
     });
 
     const checkSession = async () => {
@@ -73,9 +76,13 @@ const SignupContent = () => {
     setIsLoading(true);
     try {
       await sendVerificationEmail(signupData.email);
+      toast.success("נשלח אימות חדש", {
+        description: "נא לבדוק את תיבת הדוא\"ל שלך"
+      });
     } catch (error: any) {
+      console.error("שגיאה בשליחת האימות:", error);
       toast.error("שגיאה בשליחת האימות", {
-        description: error.message
+        description: error.message || "אנא נסי שוב מאוחר יותר"
       });
     } finally {
       setIsLoading(false);
@@ -104,7 +111,7 @@ const SignupContent = () => {
         } else {
           // Store the logo in state for later upload when we have a session
           // We'll keep the File object in memory until final step
-          console.log("Logo will be uploaded in the final step when account is created");
+          console.log("הלוגו יועלה בשלב האחרון כשהחשבון ייווצר");
         }
       } 
       
@@ -112,18 +119,30 @@ const SignupContent = () => {
       if (currentStep === STEP_COMPONENTS.SUCCESS) {
         // Now create the user and business if we haven't already
         if (!session) {
-          // Create user and initialize business records
-          await createUserAndBusiness(signupData, setSession);
-          
-          // Upload the logo if it's still pending and we now have a session
-          if (signupData.logo && !signupData.logoUrl && session?.user?.id) {
-            const publicUrl = await uploadLogo(signupData.logo, session.user.id);
-            updateSignupData({ logoUrl: publicUrl });
-          }
-          
-          // Auto-send verification emails
-          if (signupData.email) {
-            await sendVerificationEmail(signupData.email);
+          try {
+            // Create user and initialize business records
+            const result = await createUserAndBusiness(signupData, setSession);
+            
+            if (result?.session) {
+              // Upload the logo if it's still pending
+              if (signupData.logo && !signupData.logoUrl) {
+                try {
+                  const publicUrl = await uploadLogo(signupData.logo, result.session.user.id);
+                  updateSignupData({ logoUrl: publicUrl });
+                } catch (logoError: any) {
+                  console.error("שגיאה בהעלאת הלוגו:", logoError);
+                  toast.error("הלוגו לא הועלה בהצלחה", {
+                    description: "ניתן לעדכן את הלוגו מאוחר יותר בהגדרות"
+                  });
+                }
+              }
+            }
+          } catch (accountError: any) {
+            console.error("שגיאה ביצירת החשבון:", accountError);
+            toast.error("שגיאה ביצירת החשבון", {
+              description: accountError.message || "אנא נסי שנית מאוחר יותר"
+            });
+            return; // Don't proceed to dashboard if account creation failed
           }
         }
         
@@ -140,9 +159,9 @@ const SignupContent = () => {
       }
     } catch (error: any) {
       toast.error("שגיאה בתהליך ההרשמה", {
-        description: error.message
+        description: error.message || "אנא נסי שנית"
       });
-      console.error('Error in signup process:', error);
+      console.error('שגיאה בתהליך ההרשמה:', error);
     } finally {
       setIsLoading(false);
     }
@@ -155,7 +174,7 @@ const SignupContent = () => {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full" dir="rtl">
       <CardHeader>
         <CardTitle>{steps[currentStep].title}</CardTitle>
         <SignupProgress />

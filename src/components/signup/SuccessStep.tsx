@@ -25,7 +25,7 @@ const SuccessStep = ({
 }: SuccessStepProps) => {
 
   return (
-    <div className="text-center py-6 rtl" dir="rtl">
+    <div className="text-center py-6" dir="rtl">
       <SuccessConfetti />
       
       <div className="flex justify-center mb-6">
