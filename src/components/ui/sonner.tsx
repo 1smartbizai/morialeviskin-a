@@ -13,6 +13,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       dir="rtl"
       position="top-left"
+      expand={true}
+      richColors={true}
+      closeButton={true}
       toastOptions={{
         classNames: {
           toast:
@@ -23,6 +26,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
+        duration: 5000,
       }}
       {...props}
     />

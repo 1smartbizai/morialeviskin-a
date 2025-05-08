@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,6 +91,15 @@ const SignupContent = () => {
   };
 
   const handleNext = async () => {
+    // Check for step-specific validation before proceeding
+    if (currentStep === STEP_COMPONENTS.PERSONAL_INFO && !signupData.isPersonalInfoValid) {
+      toast.error("אנא השלימי את כל שדות החובה", {
+        description: "יש למלא את כל השדות בצורה תקינה לפני המשך התהליך"
+      });
+      return;
+    }
+    
+    // Continue with the signup process
     setIsLoading(true);
     
     try {

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,12 +8,19 @@ import { Input } from "@/components/ui/input";
 import { useSignup } from "@/contexts/SignupContext";
 
 // Create the validation schema with Hebrew error messages
+const phoneRegex = /^0\d{8,9}$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const personalInfoSchema = z.object({
   firstName: z.string().min(2, "השם חייב להכיל לפחות 2 תווים"),
   lastName: z.string().min(2, "שם המשפחה חייב להכיל לפחות 2 תווים"),
-  email: z.string().email("כתובת אימייל לא תקינה"),
+  email: z.string().email("כתובת אימייל לא תקינה").refine((val) => emailRegex.test(val), {
+    message: "כתובת האימייל אינה בפורמט תקין",
+  }),
   password: z.string().min(8, "הסיסמה חייבת להכיל לפחות 8 תווים"),
-  phone: z.string().min(9, "מספר טלפון לא תקין"),
+  phone: z.string().refine((val) => phoneRegex.test(val), {
+    message: "מספר טלפון לא תקין - יש להזין מספר ישראלי תקין (מתחיל ב-0 ומכיל 9-10 ספרות)",
+  }),
   businessName: z.string().min(2, "שם העסק חייב להכיל לפחות 2 תווים"),
 });
 
@@ -24,14 +31,24 @@ const PersonalInfoStep = () => {
   const form = useForm({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
-      firstName: signupData.firstName,
-      lastName: signupData.lastName,
-      email: signupData.email,
-      password: signupData.password,
-      phone: signupData.phone,
-      businessName: signupData.businessName,
+      firstName: signupData.firstName || "",
+      lastName: signupData.lastName || "",
+      email: signupData.email || "",
+      password: signupData.password || "",
+      phone: signupData.phone || "",
+      businessName: signupData.businessName || "",
     },
+    mode: "onChange", // Enable real-time validation
   });
+
+  // Track form validity for the parent component
+  const isValid = form.formState.isValid;
+  const isDirty = form.formState.isDirty;
+  
+  // Update SignupContext with form validity
+  useEffect(() => {
+    updateSignupData({ isPersonalInfoValid: isValid && isDirty });
+  }, [isValid, isDirty, updateSignupData]);
 
   // Update global state when form values change
   const handleFormChange = (field: string, value: string) => {
@@ -47,7 +64,7 @@ const PersonalInfoStep = () => {
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>שם פרטי</FormLabel>
+                <FormLabel>שם פרטי *</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -68,7 +85,7 @@ const PersonalInfoStep = () => {
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>שם משפחה</FormLabel>
+                <FormLabel>שם משפחה *</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -90,7 +107,7 @@ const PersonalInfoStep = () => {
           name="businessName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>שם העסק</FormLabel>
+              <FormLabel>שם העסק *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
@@ -111,7 +128,7 @@ const PersonalInfoStep = () => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>דוא״ל</FormLabel>
+              <FormLabel>דוא״ל *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
@@ -135,7 +152,7 @@ const PersonalInfoStep = () => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>סיסמה</FormLabel>
+              <FormLabel>סיסמה *</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input 
@@ -168,11 +185,11 @@ const PersonalInfoStep = () => {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>מספר טלפון</FormLabel>
+              <FormLabel>מספר טלפון *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="הכניסי מספר טלפון"
+                  placeholder="הכניסי מספר טלפון ישראלי (מתחיל ב-0)"
                   dir="ltr"
                   className="text-left"
                   onChange={(e) => {
@@ -185,6 +202,10 @@ const PersonalInfoStep = () => {
             </FormItem>
           )}
         />
+        
+        <div className="text-sm text-muted-foreground">
+          * שדות חובה
+        </div>
       </form>
     </Form>
   );

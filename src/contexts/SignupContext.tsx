@@ -38,6 +38,8 @@ export interface SignupData {
   isPhoneVerified: boolean;
   businessDomain?: string;
   businessId?: string;
+  // Validation states
+  isPersonalInfoValid: boolean;
 }
 
 interface SignupContextType {
@@ -83,7 +85,8 @@ const defaultSignupData: SignupData = {
   workingHours: defaultWorkingHours,
   googleCalendarConnected: false,
   isEmailVerified: false,
-  isPhoneVerified: false
+  isPhoneVerified: false,
+  isPersonalInfoValid: false, // Add validation state
 };
 
 const SignupContext = createContext<SignupContextType | undefined>(undefined);

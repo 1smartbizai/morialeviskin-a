@@ -1,6 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useSignup } from "@/contexts/SignupContext";
 
 export const steps = [
@@ -18,21 +18,47 @@ interface SignupNavigationProps {
 }
 
 const SignupNavigation = ({ onNext, onPrevious }: SignupNavigationProps) => {
-  const { currentStep, isLoading } = useSignup();
-
+  const { currentStep, isLoading, signupData } = useSignup();
+  const navigate = useNavigate();
+  
+  // Handle the "back" button click
+  const handleBack = () => {
+    if (currentStep === 0) {
+      // If on the first step, navigate to the homepage
+      navigate('/');
+    } else {
+      // Otherwise, go to the previous step
+      onPrevious();
+    }
+  };
+  
+  // Determine if the next button should be disabled based on the current step
+  const isNextDisabled = () => {
+    if (isLoading) return true;
+    
+    // Step-specific validation
+    switch (currentStep) {
+      case 0: // Personal info step
+        return !signupData.isPersonalInfoValid;
+      // Add validation for other steps as needed
+      default:
+        return false;
+    }
+  };
+  
   return (
     <div className="flex justify-between mt-8" dir="rtl">
       <Button 
         variant="outline"
-        onClick={onPrevious}
-        disabled={currentStep === 0 || isLoading}
+        onClick={handleBack}
+        disabled={isLoading}
       >
         <ChevronRight className="ml-2 h-4 w-4" /> חזרה
       </Button>
       
       <Button 
         onClick={onNext}
-        disabled={isLoading}
+        disabled={isNextDisabled()}
       >
         {currentStep === steps.length - 1 ? (
           'היכנסי ללוח הבקרה'
