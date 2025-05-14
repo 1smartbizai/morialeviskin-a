@@ -1,5 +1,6 @@
+
 import { Json } from "@/integrations/supabase/types";
-import { DEFAULT_METADATA, BusinessStyleMetadataJson } from "./types";
+import { DEFAULT_METADATA, BusinessStyleMetadataJson, DEFAULT_LOGOS } from "./types";
 
 // Type guard to check if metadata is valid
 export const isValidMetadata = (metadata: Json | null): boolean => {
@@ -60,9 +61,7 @@ export const isUsingDefaultLogo = (metadata: Json | null) => {
 export const getDefaultLogoPath = (logoId: string | null | undefined) => {
   if (!logoId) return "/logos/salon-logo.png"; // Default fallback
   
-  // Import the array from types
-  const { DEFAULT_LOGOS } = require('./types');
-  
+  // Use directly imported DEFAULT_LOGOS from types.ts
   const logo = DEFAULT_LOGOS.find(l => l.id === logoId);
   return logo ? logo.path : "/logos/salon-logo.png";
 };
