@@ -1,4 +1,3 @@
-
 import { Json } from "@/integrations/supabase/types";
 import { DEFAULT_METADATA, BusinessStyleMetadataJson } from "./types";
 
@@ -48,7 +47,13 @@ export const generateBusinessIdentifiers = (businessName: string) => {
 // Check if user is using a default logo
 export const isUsingDefaultLogo = (metadata: Json | null) => {
   if (!metadata || typeof metadata !== 'object') return true; // Default to true if no metadata
-  return metadata.uses_default_logo === true;
+  
+  // Check if metadata is not an array and has uses_default_logo property
+  if (!Array.isArray(metadata) && 'uses_default_logo' in metadata) {
+    return metadata.uses_default_logo === true;
+  }
+  
+  return true; // Default to true if property doesn't exist
 };
 
 // Get default logo path from ID

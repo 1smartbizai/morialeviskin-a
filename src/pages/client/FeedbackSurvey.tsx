@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ClientLayout from "@/components/layouts/ClientLayout";
@@ -66,6 +65,7 @@ const FeedbackSurvey: React.FC = () => {
   const handleDismiss = async () => {
     await dismissSurvey();
     toast({
+      title: "משוב נדחה",
       description: "המשוב נדחה בהצלחה",
     });
     navigate("/client/dashboard");

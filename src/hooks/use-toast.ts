@@ -1,7 +1,7 @@
 
 import { toast as sonnerToast, type ToastT } from "sonner";
 
-interface ToastProps {
+export interface ToastProps {
   title: string;
   description?: string;
   variant?: "default" | "destructive";
@@ -27,12 +27,10 @@ export function toast({
   });
 }
 
-// Provide the original sonner toast for more complex toast usage
-export { sonnerToast as toast };
-
-// Re-export for compatibility with components/ui/use-toast
 export const useToast = () => {
   return {
     toast,
+    // This is needed for compatibility with the toaster.tsx component
+    toasts: [] as any[],
   };
 };
