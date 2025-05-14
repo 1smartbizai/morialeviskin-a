@@ -1,9 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/components/ui/use-toast";
 import { SignupData } from "@/contexts/SignupContext";
 import { BusinessStyleMetadataJson } from "./types";
 import { signupDataToMetadata } from "./dataTransformers";
+import { Json } from "@/integrations/supabase/types";
+import { handleLogoUpload } from "./storageUtils";
 
 /**
  * Send verification email to user
@@ -24,7 +26,8 @@ export const sendVerificationEmail = async (email: string) => {
   
   if (error) throw error;
   
-  toast.info("נשלח אימות דוא\"ל", {
+  toast({
+    title: "נשלח אימות דוא\"ל",
     description: "אנא בדקי את תיבת הדואר שלך לקישור האימות"
   });
 };
@@ -56,7 +59,7 @@ export const createUserAndBusiness = async (
     setSession(data.session);
     
     // Create metadata object with initial values
-    const metadata = signupDataToMetadata(signupData) as any;
+    const metadata = signupDataToMetadata(signupData) as Json;
     
     // Initialize business owner record with metadata
     const { error: businessError } = await supabase
@@ -74,12 +77,14 @@ export const createUserAndBusiness = async (
       
     if (businessError) throw businessError;
     
-    toast.success("החשבון נוצר בהצלחה!", {
+    toast({
+      title: "החשבון נוצר בהצלחה!",
       description: "ברוכה הבאה ל-Bellevo"
     });
   } else {
     // This might happen if email confirmation is required
-    toast.info("נשלח אליך אימות בדוא\"ל", {
+    toast({
+      title: "נשלח אליך אימות בדוא\"ל",
       description: "אנא אמתי את חשבונך כדי להמשיך"
     });
   }

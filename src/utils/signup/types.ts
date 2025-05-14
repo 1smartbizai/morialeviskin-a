@@ -1,8 +1,6 @@
 
-import { Json } from "@/integrations/supabase/types";
-
-// Define interface for business style metadata
-export interface BusinessStyleMetadata {
+// Define metadata types for business styling
+export interface BusinessStyleMetadataJson {
   background_color: string;
   heading_text_color: string;
   body_text_color: string;
@@ -11,27 +9,15 @@ export interface BusinessStyleMetadata {
   button_bg_color_2: string;
   button_text_color_1: string;
   button_text_color_2: string;
-  brand_tone: 'professional' | 'friendly' | 'luxury' | 'casual';
+  brand_tone: string;
   email_verified: boolean;
   phone_verified: boolean;
+  uses_default_logo: boolean;
+  default_logo_id?: string;
 }
 
-// Convert BusinessStyleMetadata to a type that can be used with Supabase
-export type BusinessStyleMetadataJson = {
-  [K in keyof BusinessStyleMetadata]: BusinessStyleMetadata[K];
-}
-
-// Define the working hours data structure
-export interface WorkingHoursData {
-  [key: string]: {
-    active: boolean;
-    start: string;
-    end: string;
-  };
-}
-
-// Default metadata values to ensure consistency
-export const DEFAULT_METADATA: BusinessStyleMetadata = {
+// Default styling metadata values
+export const DEFAULT_METADATA: BusinessStyleMetadataJson = {
   background_color: "#FFFFFF",
   heading_text_color: "#1A1F2C",
   body_text_color: "#333333",
@@ -42,16 +28,16 @@ export const DEFAULT_METADATA: BusinessStyleMetadata = {
   button_text_color_2: "#FFFFFF",
   brand_tone: "professional",
   email_verified: false,
-  phone_verified: false
+  phone_verified: false,
+  uses_default_logo: true,
+  default_logo_id: "default1"
 };
 
-// Default working hours
-export const DEFAULT_WORKING_HOURS: WorkingHoursData = {
-  monday: { active: true, start: "09:00", end: "17:00" },
-  tuesday: { active: true, start: "09:00", end: "17:00" },
-  wednesday: { active: true, start: "09:00", end: "17:00" },
-  thursday: { active: true, start: "09:00", end: "17:00" },
-  friday: { active: true, start: "09:00", end: "17:00" },
-  saturday: { active: false, start: "10:00", end: "14:00" },
-  sunday: { active: false, start: "10:00", end: "14:00" },
-};
+// Define available default logos
+export const DEFAULT_LOGOS = [
+  { id: "default1", name: "סלון יופי", path: "/logos/salon-logo.png" },
+  { id: "default2", name: "קוסמטיקה", path: "/logos/cosmetics-logo.png" },
+  { id: "default3", name: "טיפוח", path: "/logos/spa-logo.png" },
+  { id: "default4", name: "ציפורניים", path: "/logos/nails-logo.png" },
+  { id: "default5", name: "אף אחד (טקסט בלבד)", path: "" }
+];

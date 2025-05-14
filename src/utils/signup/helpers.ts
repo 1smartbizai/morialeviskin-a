@@ -1,38 +1,63 @@
 
 import { Json } from "@/integrations/supabase/types";
-import { BusinessStyleMetadata, DEFAULT_METADATA } from "./types";
+import { DEFAULT_METADATA, BusinessStyleMetadataJson } from "./types";
 
-/**
- * Type guard to safely use metadata
- */
-export function isValidMetadata(metadata: Json): metadata is Record<string, any> {
-  return typeof metadata === 'object' && metadata !== null && !Array.isArray(metadata);
-}
+// Type guard to check if metadata is valid
+export const isValidMetadata = (metadata: Json | null): boolean => {
+  if (!metadata || typeof metadata !== 'object') return false;
+  
+  // Check for required keys that are part of our metadata definition
+  const requiredKeys = [
+    'background_color',
+    'heading_text_color',
+    'body_text_color',
+  ];
+  
+  return requiredKeys.every(key => key in metadata);
+};
 
-/**
- * Helper function to safely get metadata values
- */
-export function getMetadataValue<T>(
-  metadata: Json | null | undefined, 
-  key: keyof BusinessStyleMetadata, 
+// Get a metadata value with type safety
+export const getMetadataValue = <T>(
+  metadata: Json | null, 
+  key: keyof BusinessStyleMetadataJson, 
   defaultValue: T
-): T {
-  if (!metadata || !isValidMetadata(metadata) || !(key in metadata)) {
-    return defaultValue;
-  }
-  return (metadata[key] as any) ?? defaultValue;
-}
+): T => {
+  if (!metadata || typeof metadata !== 'object') return defaultValue;
+  return (metadata[key] as T) ?? defaultValue;
+};
 
-/**
- * Generate business domain and ID
- */
+// Create a safe URL for the business domain based on business name
 export const generateBusinessIdentifiers = (businessName: string) => {
-  if (!businessName || typeof businessName !== 'string') {
-    businessName = "business"; // Default fallback
-  }
+  // Generate a safe domain name
+  const safeBusinessName = businessName
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with dashes
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-') // Replace multiple dashes with single dash
+    .replace(/^-+/, '') // Trim dashes from start
+    .replace(/-+$/, ''); // Trim dashes from end
+    
+  const randomId = Math.random().toString(36).substring(2, 8);
   
-  const domain = `bellevo.app/${businessName.toLowerCase().replace(/\s+/g, '-')}`;
-  const id = `BIZ-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  return {
+    domain: safeBusinessName || `business-${randomId}`,
+    id: `biz_${randomId}`
+  };
+};
+
+// Check if user is using a default logo
+export const isUsingDefaultLogo = (metadata: Json | null) => {
+  if (!metadata || typeof metadata !== 'object') return true; // Default to true if no metadata
+  return metadata.uses_default_logo === true;
+};
+
+// Get default logo path from ID
+export const getDefaultLogoPath = (logoId: string | null | undefined) => {
+  if (!logoId) return "/logos/salon-logo.png"; // Default fallback
   
-  return { domain, id };
+  // Import the array from types
+  const { DEFAULT_LOGOS } = require('./types');
+  
+  const logo = DEFAULT_LOGOS.find(l => l.id === logoId);
+  return logo ? logo.path : "/logos/salon-logo.png";
 };

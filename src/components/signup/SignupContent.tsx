@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import StepRenderer, { STEP_COMPONENTS } from "@/components/signup/StepRenderer";
 import SignupProgress from "@/components/signup/SignupProgress";
@@ -10,12 +10,14 @@ import SignupNavigation, { steps } from "@/components/signup/SignupNavigation";
 import { useSignup } from "@/contexts/SignupContext";
 import { 
   loadSavedSignupData, 
-  saveSignupData, 
+  saveSignupData
+} from "@/utils/signup/signupDataService";
+import { 
   createUserAndBusiness,
-  uploadLogo,
-  sendVerificationEmail,
-  generateBusinessIdentifiers
-} from "@/utils/signup";
+  sendVerificationEmail 
+} from "@/utils/signup/authUtils";
+import { handleLogoUpload } from "@/utils/signup/storageUtils";
+import { generateBusinessIdentifiers } from "@/utils/signup/helpers";
 import { initStorage } from "@/utils/initStorage";
 
 const SignupContent = () => {
@@ -36,7 +38,9 @@ const SignupContent = () => {
     // Initialize storage buckets
     initStorage().catch(error => {
       console.error("נכשל באתחול אחסון:", error);
-      toast.error("שגיאה באתחול המערכת", {
+      toast({
+        variant: "destructive",
+        title: "שגיאה באתחול המערכת",
         description: "אנא נסי שוב מאוחר יותר"
       });
     });
@@ -68,7 +72,9 @@ const SignupContent = () => {
 
   const handleResendVerification = async () => {
     if (!signupData.email) {
-      toast.error("אין כתובת דוא\"ל זמינה", {
+      toast({
+        variant: "destructive",
+        title: "אין כתובת דוא\"ל זמינה",
         description: "אנא השלם את שלב הפרטים האישיים תחילה"
       });
       return;
@@ -77,12 +83,15 @@ const SignupContent = () => {
     setIsLoading(true);
     try {
       await sendVerificationEmail(signupData.email);
-      toast.success("נשלח אימות חדש", {
+      toast({
+        title: "נשלח אימות חדש",
         description: "נא לבדוק את תיבת הדוא\"ל שלך"
       });
     } catch (error: any) {
       console.error("שגיאה בשליחת האימות:", error);
-      toast.error("שגיאה בשליחת האימות", {
+      toast({
+        variant: "destructive",
+        title: "שגיאה בשליחת האימות",
         description: error.message || "אנא נסי שוב מאוחר יותר"
       });
     } finally {
@@ -93,7 +102,9 @@ const SignupContent = () => {
   const handleNext = async () => {
     // Check for step-specific validation before proceeding
     if (currentStep === STEP_COMPONENTS.PERSONAL_INFO && !signupData.isPersonalInfoValid) {
-      toast.error("אנא השלימי את כל שדות החובה", {
+      toast({
+        variant: "destructive",
+        title: "אנא השלימי את כל שדות החובה",
         description: "יש למלא את כל השדות בצורה תקינה לפני המשך התהליך"
       });
       return;
@@ -103,72 +114,69 @@ const SignupContent = () => {
     setIsLoading(true);
     
     try {
-      // If this is the first step, we need to prepare business identifiers but don't create user yet
+      // If this is the first step, we create the user account 
       if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) {
         // Generate business domain and ID
         const { domain, id } = generateBusinessIdentifiers(signupData.businessName);
         updateSignupData({ businessDomain: domain, businessId: id });
         
-        // We'll delay account creation until the final step
-        // Just move to next step without requiring authentication
-      } 
-      // If this is the second step (visual identity), we handle logo upload with temp storage
-      else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && signupData.logo) {
-        // If we have a session, we can upload the logo properly
-        if (session?.user?.id) {
-          const publicUrl = await uploadLogo(signupData.logo, session.user.id);
-          updateSignupData({ logoUrl: publicUrl });
-        } else {
-          // Store the logo in state for later upload when we have a session
-          // We'll keep the File object in memory until final step
-          console.log("הלוגו יועלה בשלב האחרון כשהחשבון ייווצר");
-        }
-      } 
-      
-      // If we're on the final step, complete all the setup and create the account
-      if (currentStep === STEP_COMPONENTS.SUCCESS) {
-        // Now create the user and business if we haven't already
+        // Create user if we don't have a session yet
         if (!session) {
           try {
             // Create user and initialize business records
             const result = await createUserAndBusiness(signupData, setSession);
             
             if (result?.session) {
-              // Upload the logo if it's still pending
-              if (signupData.logo && !signupData.logoUrl) {
-                try {
-                  const publicUrl = await uploadLogo(signupData.logo, result.session.user.id);
-                  updateSignupData({ logoUrl: publicUrl });
-                } catch (logoError: any) {
-                  console.error("שגיאה בהעלאת הלוגו:", logoError);
-                  toast.error("הלוגו לא הועלה בהצלחה", {
-                    description: "ניתן לעדכן את הלוגו מאוחר יותר בהגדרות"
-                  });
-                }
-              }
+              toast({
+                title: "נוצר חשבון בהצלחה!",
+                description: `שלום ${signupData.firstName}, המשיכי להגדיר את העסק שלך`
+              });
             }
           } catch (accountError: any) {
             console.error("שגיאה ביצירת החשבון:", accountError);
-            toast.error("שגיאה ביצירת החשבון", {
+            toast({
+              variant: "destructive",
+              title: "שגיאה ביצירת החשבון",
               description: accountError.message || "אנא נסי שנית מאוחר יותר"
             });
-            return; // Don't proceed to dashboard if account creation failed
+            return; // Don't proceed if account creation failed
+          }
+        }
+      } 
+      // If this is the visual identity step, handle logo upload
+      else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && session?.user?.id) {
+        // Only handle logo upload if we're using a custom logo and have a logo file
+        if (!signupData.usesDefaultLogo && signupData.logo) {
+          try {
+            const logoUrl = await handleLogoUpload(session.user.id, signupData);
+            if (logoUrl) {
+              updateSignupData({ logoUrl });
+            }
+          } catch (logoError) {
+            // Logo errors are non-blocking, already handled in handleLogoUpload
+            console.log("Continuing despite logo upload issues");
           }
         }
         
-        // Navigate to dashboard
+        // Save the visual identity settings to the database
+        await saveSignupData(currentStep, signupData, session.user.id);
+      } 
+      // For other steps, save the current data if we have a session
+      else if (session?.user?.id) {
+        await saveSignupData(currentStep, signupData, session.user.id);
+      }
+      
+      // Handle final step navigation to dashboard
+      if (currentStep === STEP_COMPONENTS.SUCCESS) {
         navigate('/admin');
       } else {
-        // Save current step data if we have a session
-        if (session?.user?.id) {
-          await saveSignupData(currentStep, signupData, session.user.id);
-        }
-        
         // Move to next step
         setCurrentStep(currentStep + 1);
       }
     } catch (error: any) {
-      toast.error("שגיאה בתהליך ההרשמה", {
+      toast({
+        variant: "destructive",
+        title: "שגיאה בתהליך ההרשמה",
         description: error.message || "אנא נסי שנית"
       });
       console.error('שגיאה בתהליך ההרשמה:', error);

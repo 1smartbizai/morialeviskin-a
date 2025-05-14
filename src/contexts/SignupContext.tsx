@@ -20,6 +20,8 @@ export interface SignupData {
   businessName: string;
   logo?: File;
   logoUrl?: string;
+  usesDefaultLogo: boolean;
+  defaultLogoId?: string;
   primaryColor: string;
   accentColor: string;
   backgroundColor: string;
@@ -70,6 +72,8 @@ const defaultSignupData: SignupData = {
   password: "",
   phone: "",
   businessName: "",
+  usesDefaultLogo: true,
+  defaultLogoId: "default1",
   primaryColor: "#6A0DAD", // Default purple
   accentColor: "#5AA9E6", // Default blue
   backgroundColor: "#FFFFFF",

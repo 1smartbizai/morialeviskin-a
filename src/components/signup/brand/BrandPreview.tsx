@@ -1,5 +1,7 @@
 
 import { useSignup } from "@/contexts/SignupContext";
+import { getDefaultLogoPath } from "@/utils/signup/helpers";
+import { DEFAULT_LOGOS } from "@/utils/signup/types";
 
 interface BrandPreviewProps {
   previewText: string;
@@ -17,8 +19,15 @@ const BrandPreview = ({ previewText }: BrandPreviewProps) => {
     buttonTextColor1,
     buttonTextColor2,
     businessName,
+    usesDefaultLogo,
+    defaultLogoId,
     logoUrl
   } = signupData;
+  
+  // Determine which logo to display
+  const displayLogo = usesDefaultLogo 
+    ? defaultLogoId !== "default5" ? getDefaultLogoPath(defaultLogoId) : null
+    : logoUrl;
 
   return (
     <div className="bg-muted/30 rounded-lg">
@@ -31,8 +40,8 @@ const BrandPreview = ({ previewText }: BrandPreviewProps) => {
           >
             <div className="p-4">
               <div className="flex items-center space-x-4 justify-center">
-                {logoUrl && (
-                  <img src={logoUrl} alt="לוגו" className="w-16 h-16 object-contain rounded" />
+                {displayLogo && (
+                  <img src={displayLogo} alt="לוגו" className="w-16 h-16 object-contain rounded" />
                 )}
               </div>
               
