@@ -1,7 +1,7 @@
 
 import { useSignup } from "@/contexts/SignupContext";
 import { Label } from "@/components/ui/label";
-import ColorPicker from "../brand/ColorPicker";
+import ColorPicker from "../brand-settings/ColorPicker";
 
 interface ColorSchemeSectionProps {
   onColorChange: (field: string, value: string) => void;

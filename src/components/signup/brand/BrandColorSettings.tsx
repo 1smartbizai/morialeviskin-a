@@ -1,6 +1,6 @@
 
 import { useSignup } from "@/contexts/SignupContext";
-import ColorPicker from "./ColorPicker";
+import ColorPicker from "../brand-settings/ColorPicker";
 
 interface BrandColorSettingsProps {
   onChange: (field: string, value: string) => void;
