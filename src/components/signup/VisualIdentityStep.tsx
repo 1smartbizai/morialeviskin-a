@@ -1,3 +1,4 @@
+
 import { useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +10,7 @@ import ColorPicker from "./brand/ColorPicker";
 import { ImagePlus } from "lucide-react";
 import DefaultLogoSelector from "./brand/DefaultLogoSelector";
 import BrandPreview from "./brand/BrandPreview";
+import AILogoGenerator from "./brand/AILogoGenerator";
 
 const VisualIdentityStep = () => {
   const { signupData, updateSignupData } = useSignup();
@@ -65,12 +67,25 @@ const VisualIdentityStep = () => {
         // Keep the existing default logo or set to default1 if none
         defaultLogoId: signupData.defaultLogoId || "default1"
       });
-    } else {
+    } else if (value === "custom") {
       // Only switch to custom if we actually have a logo file
       if (signupData.logo || signupData.logoUrl) {
         updateSignupData({ usesDefaultLogo: false });
       }
     }
+    // For the AI tab, we don't change any settings until logo is generated
+  };
+
+  // Handler for when an AI logo is successfully generated
+  const handleAILogoGenerated = (logoUrl: string) => {
+    updateSignupData({
+      logoUrl: logoUrl,
+      usesDefaultLogo: false,
+      defaultLogoId: undefined
+    });
+    
+    // Switch to custom tab to show the generated logo
+    setActiveTab("custom");
   };
 
   return (
@@ -81,9 +96,10 @@ const VisualIdentityStep = () => {
           <Label className="block mb-4">לוגו העסק</Label>
           
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid grid-cols-2 mb-4">
+            <TabsList className="grid grid-cols-3 mb-4">
               <TabsTrigger value="default">לוגו מוכן</TabsTrigger>
               <TabsTrigger value="custom">לוגו מותאם אישית</TabsTrigger>
+              <TabsTrigger value="ai">יצירת לוגו AI</TabsTrigger>
             </TabsList>
             
             <TabsContent value="default" className="space-y-4">
@@ -133,6 +149,10 @@ const VisualIdentityStep = () => {
                   onChange={handleLogoChange}
                 />
               </div>
+            </TabsContent>
+            
+            <TabsContent value="ai">
+              <AILogoGenerator onLogoGenerated={handleAILogoGenerated} />
             </TabsContent>
           </Tabs>
         </div>
