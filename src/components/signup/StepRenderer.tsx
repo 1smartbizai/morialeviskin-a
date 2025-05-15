@@ -25,8 +25,8 @@ export const STEP_COMPONENTS = {
   PERSONAL_INFO: 0,
   VISUAL_IDENTITY: 1,
   BRAND_SETTINGS: 2,
-  PAYMENT: 3,
-  WORKING_HOURS: 4,
+  WORKING_HOURS: 3,
+  PAYMENT: 4,
   SUCCESS: 5
 };
 
@@ -52,6 +52,9 @@ const StepRenderer = ({
     case STEP_COMPONENTS.BRAND_SETTINGS:
       return <BrandSettingsStep />;
       
+    case STEP_COMPONENTS.WORKING_HOURS:
+      return <WorkingHoursStep />;
+      
     case STEP_COMPONENTS.PAYMENT:
       return (
         <PaymentStep 
@@ -59,9 +62,6 @@ const StepRenderer = ({
           updateData={updateSignupData}
         />
       );
-      
-    case STEP_COMPONENTS.WORKING_HOURS:
-      return <WorkingHoursStep />;
       
     case STEP_COMPONENTS.SUCCESS:
       return (

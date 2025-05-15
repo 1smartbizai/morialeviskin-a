@@ -40,6 +40,11 @@ export interface SignupData {
   isPhoneVerified: boolean;
   businessDomain?: string;
   businessId?: string;
+  // New fields
+  trialEndDate?: string;
+  emailIntegration?: boolean;
+  socialMediaIntegration?: boolean;
+  whatsappIntegration?: boolean;
   // Validation states
   isPersonalInfoValid: boolean;
 }
@@ -85,12 +90,16 @@ const defaultSignupData: SignupData = {
   buttonTextColor1: "#FFFFFF",
   buttonTextColor2: "#FFFFFF",
   brandTone: "professional",
-  subscriptionLevel: "starter",
+  subscriptionLevel: "pro", // Changed default from "starter" to "pro"
   workingHours: defaultWorkingHours,
   googleCalendarConnected: false,
+  emailIntegration: false,
+  socialMediaIntegration: false,
+  whatsappIntegration: false,
   isEmailVerified: false,
   isPhoneVerified: false,
-  isPersonalInfoValid: false, // Add validation state
+  isPersonalInfoValid: false,
+  trialEndDate: undefined,
 };
 
 const SignupContext = createContext<SignupContextType | undefined>(undefined);

@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
@@ -32,6 +32,9 @@ const SignupContent = () => {
     currentStep,
     setCurrentStep
   } = useSignup();
+
+  // Reference to the container to scroll to top when changing steps
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Check for existing session on component mount and ensure storage is initialized
   useEffect(() => {
@@ -70,6 +73,13 @@ const SignupContent = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Function to scroll to the top of the container when changing steps
+  const scrollToTop = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const handleResendVerification = async () => {
     if (!signupData.email) {
       toast({
@@ -100,6 +110,9 @@ const SignupContent = () => {
   };
 
   const handleNext = async () => {
+    // Scroll to top before proceeding
+    scrollToTop();
+    
     // Check for step-specific validation before proceeding
     if (currentStep === STEP_COMPONENTS.PERSONAL_INFO && !signupData.isPersonalInfoValid) {
       toast({
@@ -108,6 +121,24 @@ const SignupContent = () => {
         description: "יש למלא את כל השדות בצורה תקינה לפני המשך התהליך"
       });
       return;
+    }
+    
+    // Payment step validation
+    if (currentStep === STEP_COMPONENTS.PAYMENT) {
+      // Access the processPayment function directly from the PaymentStep component
+      // This requires the component to expose this function
+      const PaymentStepComponent = require('./PaymentStep').default;
+      const isPaidPlan = signupData.subscriptionLevel !== 'free';
+      
+      if (isPaidPlan && PaymentStepComponent.processPayment) {
+        setIsLoading(true);
+        const success = await PaymentStepComponent.processPayment();
+        setIsLoading(false);
+        
+        if (!success) {
+          return; // Don't proceed if payment failed
+        }
+      }
     }
     
     // Continue with the signup process
@@ -186,32 +217,37 @@ const SignupContent = () => {
   };
 
   const handlePrevious = () => {
+    // Scroll to top before proceeding
+    scrollToTop();
+    
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
   return (
-    <Card className="w-full" dir="rtl">
-      <CardHeader>
-        <CardTitle>{steps[currentStep].title}</CardTitle>
-        <SignupProgress />
-      </CardHeader>
-      <CardContent>
-        <StepRenderer 
-          currentStep={currentStep}
-          businessName={signupData.businessName}
-          businessDomain={signupData.businessDomain}
-          businessId={signupData.businessId}
-          isEmailVerified={signupData.isEmailVerified}
-          isPhoneVerified={signupData.isPhoneVerified}
-          onResendVerification={handleResendVerification}
-          signupData={signupData}
-          updateSignupData={updateSignupData}
-        />
-        <SignupNavigation onNext={handleNext} onPrevious={handlePrevious} />
-      </CardContent>
-    </Card>
+    <div ref={containerRef}>
+      <Card className="w-full" dir="rtl">
+        <CardHeader>
+          <CardTitle>{steps[currentStep].title}</CardTitle>
+          <SignupProgress />
+        </CardHeader>
+        <CardContent>
+          <StepRenderer 
+            currentStep={currentStep}
+            businessName={signupData.businessName}
+            businessDomain={signupData.businessDomain}
+            businessId={signupData.businessId}
+            isEmailVerified={signupData.isEmailVerified}
+            isPhoneVerified={signupData.isPhoneVerified}
+            onResendVerification={handleResendVerification}
+            signupData={signupData}
+            updateSignupData={updateSignupData}
+          />
+          <SignupNavigation onNext={handleNext} onPrevious={handlePrevious} />
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
