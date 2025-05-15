@@ -1,9 +1,11 @@
 
 import { useState } from "react";
 import { useSignup } from "@/contexts/SignupContext";
-import BrandToneSelector from "./brand/BrandToneSelector";
-import BrandColorSettings from "./brand/BrandColorSettings";
-import BrandPreview from "./brand/BrandPreview";
+import { 
+  BrandToneSelector,
+  BrandColorSettings,
+  BrandPreview 
+} from "./brand-settings";
 
 const BrandSettingsStep = () => {
   const { signupData, updateSignupData } = useSignup();
