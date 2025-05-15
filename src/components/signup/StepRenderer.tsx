@@ -1,8 +1,7 @@
-
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
 import VisualIdentityStep from "@/components/signup/VisualIdentityStep";
 import BrandSettingsStep from "@/components/signup/BrandSettingsStep";
-import PaymentStep from "@/components/signup/PaymentStep";
+import PaymentStep from "./payment/PaymentStep";
 import WorkingHoursStep from "@/components/signup/WorkingHoursStep";
 import SuccessStep from "@/components/signup/SuccessStep";
 import { SignupData } from "@/contexts/SignupContext";
