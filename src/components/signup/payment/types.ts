@@ -4,9 +4,9 @@ export interface PlanOption {
   name: string;
   price: number;
   features: string[];
-  recommended?: boolean;
   isFree?: boolean;
   trialDays?: number;
+  recommended?: boolean;
 }
 
 export interface PaymentInfoState {
@@ -17,6 +17,9 @@ export interface PaymentInfoState {
 }
 
 export interface PaymentStepProps {
-  data: any;
+  data?: {
+    subscriptionLevel?: string;
+    [key: string]: any;
+  };
   updateData: (data: any) => void;
 }
