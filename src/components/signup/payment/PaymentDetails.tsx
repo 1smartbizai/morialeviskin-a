@@ -2,13 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { CreditCard } from "lucide-react";
-import { PaymentInfoState } from "./types";
-
-interface PaymentDetailsProps {
-  paymentInfo: PaymentInfoState;
-  onPaymentInfoChange: (field: string, value: string) => void;
-  onValidate: () => boolean;
-}
+import { PaymentDetailsProps } from "./types";
 
 const PaymentDetails = ({ 
   paymentInfo, 

@@ -1,12 +1,18 @@
 
 import { useState, useEffect } from "react";
+import { useSignup } from "@/contexts/SignupContext";
 import { toast } from "@/components/ui/use-toast";
 import { PaymentInfoState } from "./types";
+import { plans } from "./planData";
 
-export const usePaymentLogic = (initialPlan: string, updateData: (data: any) => void) => {
-  const [selectedPlan, setSelectedPlan] = useState<string>(initialPlan || "pro");
+/**
+ * Custom hook to handle payment step logic
+ */
+export const usePaymentStep = (data: any, updateData: (data: any) => void) => {
+  const { signupData } = useSignup();
+  const [firstName] = useState<string>(signupData.firstName || '');
+  const [selectedPlan, setSelectedPlan] = useState<string>(data?.subscriptionLevel || "pro");
   const [showPaymentInfo, setShowPaymentInfo] = useState<boolean>(false);
-  const [isPaymentValid, setIsPaymentValid] = useState<boolean>(false);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfoState>({
     cardNumber: "",
     cardExpiry: "",
@@ -14,36 +20,47 @@ export const usePaymentLogic = (initialPlan: string, updateData: (data: any) => 
     cardholderName: "",
     errors: {}
   });
+  
+  // Check if the selected plan requires payment
+  const selectedPlanDetails = plans.find(plan => plan.id === selectedPlan);
+  const isPaidPlan = selectedPlanDetails && !selectedPlanDetails.isFree;
 
-  // Update selected plan in parent component when changed
+  // Show payment info for paid plans
   useEffect(() => {
-    updateData({ 
-      subscriptionLevel: selectedPlan,
-      // Set trial end date if selecting free plan
-      trialEndDate: selectedPlan === 'free' ? 
-        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : 
-        undefined
-    });
-  }, [selectedPlan, updateData]);
-
-  // Determine if payment info should be shown
-  useEffect(() => {
-    const isPaidPlan = selectedPlan !== 'free';
-    setShowPaymentInfo(isPaidPlan);
-    
-    // For free plans, we don't need validation of payment
-    if (!isPaidPlan) {
-      setIsPaymentValid(true);
+    if (isPaidPlan) {
+      setShowPaymentInfo(true);
     } else {
-      // Re-validate if switching to paid plan
-      validatePaymentInfo();
+      setShowPaymentInfo(false);
     }
-  }, [selectedPlan]);
+  }, [selectedPlan, isPaidPlan]);
+
+  // Make sure the selected plan is synced with the context
+  useEffect(() => {
+    if (data?.subscriptionLevel && data.subscriptionLevel !== selectedPlan) {
+      setSelectedPlan(data.subscriptionLevel);
+    } else if (!data?.subscriptionLevel && selectedPlan) {
+      updateData({ 
+        subscriptionLevel: selectedPlan,
+        // Set trial end date if selecting free plan
+        trialEndDate: selectedPlan === 'free' ? 
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : 
+          undefined
+      });
+    }
+  }, [data?.subscriptionLevel, selectedPlan, updateData]);
 
   const handlePlanChange = (planId: string) => {
     setSelectedPlan(planId);
+    updateData({ 
+      subscriptionLevel: planId,
+      // Set trial end date if selecting free plan
+      trialEndDate: planId === 'free' ? 
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : 
+        undefined
+    });
   };
 
+  // Handle payment info changes
   const handlePaymentInfoChange = (field: string, value: string) => {
     setPaymentInfo(prev => ({
       ...prev,
@@ -103,13 +120,10 @@ export const usePaymentLogic = (initialPlan: string, updateData: (data: any) => 
       errors
     }));
     
-    const isValid = Object.keys(errors).length === 0;
-    setIsPaymentValid(isValid);
-    
-    return isValid;
+    return Object.keys(errors).length === 0;
   };
 
-  // Simulate payment processing
+  // Process payment logic
   const processPayment = async () => {
     if (selectedPlan === 'free') return true;
     
@@ -122,14 +136,13 @@ export const usePaymentLogic = (initialPlan: string, updateData: (data: any) => 
       return false;
     }
     
-    // Simulate payment processing
     try {
       // In a real implementation, we would call a payment API
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast({
         title: "התשלום בוצע בהצלחה!",
-        description: `נרשמת בהצלחה לתכנית ${selectedPlan}`
+        description: `נרשמת בהצלחה לתכנית ${selectedPlanDetails?.name}`
       });
       
       return true;
@@ -145,10 +158,12 @@ export const usePaymentLogic = (initialPlan: string, updateData: (data: any) => 
   };
 
   return {
+    firstName,
     selectedPlan,
+    selectedPlanDetails,
     showPaymentInfo,
-    isPaymentValid, 
     paymentInfo,
+    isPaidPlan,
     handlePlanChange,
     handlePaymentInfoChange,
     validatePaymentInfo,

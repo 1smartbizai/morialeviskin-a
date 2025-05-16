@@ -4,13 +4,7 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { plans as defaultPlans } from "./planData";
-import { PlanOption } from "./types";
-
-interface PlanOptionsProps {
-  selectedPlan: string;
-  onPlanChange: (planId: string) => void;
-  plans?: PlanOption[];
-}
+import { PlanOptionsProps } from "./types";
 
 const PlanOptions = ({ 
   selectedPlan, 

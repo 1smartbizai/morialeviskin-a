@@ -27,3 +27,19 @@ export interface PlanOption {
   trialDays?: number;
   priceLabel?: string;
 }
+
+export interface PaymentDetailsProps {
+  paymentInfo: PaymentInfoState;
+  onPaymentInfoChange: (field: string, value: string) => void;
+  onValidate: () => boolean;
+}
+
+export interface LegalDisclaimerProps {
+  isPaidPlan: boolean;
+}
+
+export interface PlanOptionsProps {
+  selectedPlan: string;
+  onPlanChange: (planId: string) => void;
+  plans?: PlanOption[];
+}

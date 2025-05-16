@@ -1,7 +1,5 @@
 
-interface LegalDisclaimerProps {
-  isPaidPlan: boolean;
-}
+import { LegalDisclaimerProps } from "./types";
 
 const LegalDisclaimer = ({ isPaidPlan }: LegalDisclaimerProps) => {
   return (

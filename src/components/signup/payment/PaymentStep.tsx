@@ -1,30 +1,23 @@
 
-import { useState } from "react";
 import { useSignup } from "@/contexts/SignupContext";
 import PlanOptions from "./PlanOptions";
 import PaymentDetails from "./PaymentDetails";
 import LegalDisclaimer from "./LegalDisclaimer";
-import { plans } from "./planData";
-import { usePaymentLogic } from "./usePaymentLogic";
 import { PaymentStepProps } from "./types";
+import { usePaymentStep } from "./usePaymentStep";
 
 const PaymentStep = ({ data, updateData }: PaymentStepProps) => {
-  const { signupData } = useSignup();
-  const [firstName] = useState<string>(signupData.firstName || '');
-  
   const {
+    firstName,
     selectedPlan,
     showPaymentInfo,
     paymentInfo,
+    isPaidPlan,
     handlePlanChange,
     handlePaymentInfoChange,
     validatePaymentInfo,
     processPayment
-  } = usePaymentLogic(data?.subscriptionLevel, updateData);
-
-  // Check if the selected plan requires payment
-  const selectedPlanDetails = plans.find(plan => plan.id === selectedPlan);
-  const isPaidPlan = selectedPlanDetails && !selectedPlanDetails.isFree;
+  } = usePaymentStep(data, updateData);
 
   return (
     <div className="space-y-6">
