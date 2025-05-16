@@ -38,7 +38,6 @@ const PaymentStep = ({ data, updateData }: PaymentStepProps) => {
       </div>
       
       <PlanOptions 
-        plans={plans}
         selectedPlan={selectedPlan}
         onPlanChange={handlePlanChange}
       />

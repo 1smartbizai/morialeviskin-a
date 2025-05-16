@@ -3,14 +3,20 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-import { plans } from "./planData";
+import { plans as defaultPlans } from "./planData";
+import { PlanOption } from "./types";
 
 interface PlanOptionsProps {
   selectedPlan: string;
   onPlanChange: (planId: string) => void;
+  plans?: PlanOption[];
 }
 
-const PlanOptions = ({ selectedPlan, onPlanChange }: PlanOptionsProps) => {
+const PlanOptions = ({ 
+  selectedPlan, 
+  onPlanChange, 
+  plans = defaultPlans 
+}: PlanOptionsProps) => {
   return (
     <RadioGroup 
       value={selectedPlan} 
