@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Bug } from "lucide-react";
 
 const otpSchema = z.object({
   otp: z.string().min(6, "נדרש קוד בן 6 ספרות").max(6),
@@ -21,6 +21,11 @@ interface OtpStepProps {
   onVerified: (isNewUser: boolean) => void;
   onBack: () => void;
 }
+
+// Simple utility to check if we're running in development mode
+const isDevelopmentMode = () => {
+  return import.meta.env.DEV;
+};
 
 const OtpStep = ({ phone, onVerified, onBack }: OtpStepProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -87,6 +92,16 @@ const OtpStep = ({ phone, onVerified, onBack }: OtpStepProps) => {
     } finally {
       setResendLoading(false);
     }
+  };
+
+  // Function to bypass OTP verification in development mode
+  const handleDevBypass = () => {
+    toast({
+      title: "מצב פיתוח - דילוג על אימות",
+      description: "מדלג על שלב האימות במצב פיתוח",
+    });
+    // Pass true to indicate this is a new user for the fullest testing experience
+    onVerified(true);
   };
 
   // Auto-submit when OTP is complete
@@ -161,6 +176,25 @@ const OtpStep = ({ phone, onVerified, onBack }: OtpStepProps) => {
               {resendLoading ? "שולח..." : "שלח קוד חדש"}
             </Button>
           </div>
+          
+          {/* Development bypass button */}
+          {isDevelopmentMode() && (
+            <div className="mt-6 pt-4 border-t border-muted">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleDevBypass}
+                className="w-full text-sm bg-muted/50 border-dashed"
+              >
+                <Bug className="h-4 w-4 mr-2" /> 
+                דלג על אימות (מצב פיתוח בלבד)
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                אפשרות זו זמינה במצב פיתוח בלבד
+              </p>
+            </div>
+          )}
         </div>
       </form>
     </Form>
