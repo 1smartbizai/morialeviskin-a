@@ -110,7 +110,7 @@ const SignupContent = () => {
   };
 
   const handleNext = async () => {
-    // Scroll to top before proceeding
+    // Always scroll to top before proceeding
     scrollToTop();
     
     // Check for step-specific validation before proceeding
@@ -125,18 +125,36 @@ const SignupContent = () => {
     
     // Payment step validation
     if (currentStep === STEP_COMPONENTS.PAYMENT) {
-      // Access the processPayment function directly from the PaymentStep component
-      // This requires the component to expose this function
-      const PaymentStepComponent = require('./PaymentStep').default;
       const isPaidPlan = signupData.subscriptionLevel !== 'free';
       
-      if (isPaidPlan && PaymentStepComponent.processPayment) {
+      if (isPaidPlan) {
         setIsLoading(true);
-        const success = await PaymentStepComponent.processPayment();
-        setIsLoading(false);
-        
-        if (!success) {
-          return; // Don't proceed if payment failed
+        try {
+          // Access the processPayment function from the payment step
+          const PaymentStepComponent = require('./payment').PaymentStep;
+          
+          if (PaymentStepComponent.processPayment) {
+            const success = await PaymentStepComponent.processPayment();
+            
+            if (!success) {
+              setIsLoading(false);
+              toast({
+                variant: "destructive",
+                title: "שגיאה בתהליך התשלום",
+                description: "ניתן לבחור בתוכנית חינמית במקום או לנסות שוב מאוחר יותר"
+              });
+              return; // Don't proceed if payment failed
+            }
+          }
+        } catch (error) {
+          console.error("שגיאה בתהליך התשלום:", error);
+          setIsLoading(false);
+          toast({
+            variant: "destructive",
+            title: "שגיאה בתהליך התשלום",
+            description: "ניתן לבחור בתוכנית חינמית במקום או לנסות שוב מאוחר יותר"
+          });
+          return;
         }
       }
     }
@@ -199,6 +217,10 @@ const SignupContent = () => {
       
       // Handle final step navigation to dashboard
       if (currentStep === STEP_COMPONENTS.SUCCESS) {
+        toast({
+          title: "התהליך הושלם בהצלחה!",
+          description: "העסק שלך מוכן לשימוש. מעבר למערכת..."
+        });
         navigate('/admin');
       } else {
         // Move to next step
@@ -217,7 +239,7 @@ const SignupContent = () => {
   };
 
   const handlePrevious = () => {
-    // Scroll to top before proceeding
+    // Always scroll to top before proceeding
     scrollToTop();
     
     if (currentStep > 0) {

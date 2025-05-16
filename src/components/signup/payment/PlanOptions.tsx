@@ -1,18 +1,16 @@
 
-import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-import { PlanOption } from "./types";
+import { plans } from "./planData";
 
 interface PlanOptionsProps {
-  plans: PlanOption[];
   selectedPlan: string;
   onPlanChange: (planId: string) => void;
 }
 
-const PlanOptions = ({ plans, selectedPlan, onPlanChange }: PlanOptionsProps) => {
+const PlanOptions = ({ selectedPlan, onPlanChange }: PlanOptionsProps) => {
   return (
     <RadioGroup 
       value={selectedPlan} 
@@ -49,8 +47,8 @@ const PlanOptions = ({ plans, selectedPlan, onPlanChange }: PlanOptionsProps) =>
             <div className="mb-4 mt-2">
               <div className="text-lg font-semibold">{plan.name}</div>
               <div className="text-2xl font-bold mt-1">
-                {plan.price === 0 ? 'חינם' : `${formatCurrency(plan.price / 100)}`}
-                {plan.price > 0 && <span className="text-sm text-muted-foreground font-normal">/חודש</span>}
+                {plan.price === 0 ? 'חינם' : (plan.priceLabel || formatCurrency(plan.price / 100))}
+                {!plan.priceLabel && plan.price > 0 && <span className="text-sm text-muted-foreground font-normal"> לחודש</span>}
                 {plan.trialDays && <span className="text-sm text-muted-foreground font-normal"> ל-{plan.trialDays} יום</span>}
               </div>
             </div>

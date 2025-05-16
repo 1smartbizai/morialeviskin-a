@@ -12,6 +12,7 @@ export const usePaymentLogic = (initialPlan: string, updateData: (data: any) => 
     cardExpiry: "",
     cardCvv: "",
     cardholderName: "",
+    errors: {}
   });
 
   // Update selected plan in parent component when changed
@@ -46,26 +47,63 @@ export const usePaymentLogic = (initialPlan: string, updateData: (data: any) => 
   const handlePaymentInfoChange = (field: string, value: string) => {
     setPaymentInfo(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
+      errors: {
+        ...prev.errors,
+        [field]: undefined // Clear error when field changes
+      }
     }));
   };
 
-  // Validate payment information
+  // Validate payment information with clear Hebrew error messages
   const validatePaymentInfo = () => {
     const { cardNumber, cardExpiry, cardCvv, cardholderName } = paymentInfo;
+    const errors: PaymentInfoState['errors'] = {};
     
     // Skip validation for free plan
     if (selectedPlan === 'free') {
       return true;
     }
     
-    // Perform basic validation
-    const isCardNumberValid = cardNumber.replace(/\s/g, '').length === 16;
-    const isExpiryValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry);
-    const isCvvValid = /^\d{3,4}$/.test(cardCvv);
-    const isNameValid = cardholderName.trim().length > 0;
+    // Perform validation with Hebrew messages
+    if (!cardholderName.trim()) {
+      errors.cardholderName = "אנא הזיני את שם בעל/ת הכרטיס";
+    }
     
-    const isValid = isCardNumberValid && isExpiryValid && isCvvValid && isNameValid;
+    const cleanCardNumber = cardNumber.replace(/\s/g, '');
+    if (!cleanCardNumber) {
+      errors.cardNumber = "אנא הזיני את מספר הכרטיס";
+    } else if (cleanCardNumber.length !== 16 || !/^\d+$/.test(cleanCardNumber)) {
+      errors.cardNumber = "מספר כרטיס לא תקין, יש להזין 16 ספרות";
+    }
+    
+    if (!cardExpiry) {
+      errors.cardExpiry = "אנא הזיני את תוקף הכרטיס";
+    } else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry)) {
+      errors.cardExpiry = "פורמט לא תקין, יש להזין MM/YY";
+    } else {
+      // Check if card is expired
+      const [month, year] = cardExpiry.split('/');
+      const expiryDate = new Date(2000 + parseInt(year), parseInt(month) - 1);
+      const today = new Date();
+      if (expiryDate < today) {
+        errors.cardExpiry = "הכרטיס פג תוקף";
+      }
+    }
+    
+    if (!cardCvv) {
+      errors.cardCvv = "אנא הזיני את קוד האבטחה";
+    } else if (!/^\d{3,4}$/.test(cardCvv)) {
+      errors.cardCvv = "קוד אבטחה לא תקין (3-4 ספרות)";
+    }
+    
+    // Update state with errors
+    setPaymentInfo(prev => ({
+      ...prev,
+      errors
+    }));
+    
+    const isValid = Object.keys(errors).length === 0;
     setIsPaymentValid(isValid);
     
     return isValid;

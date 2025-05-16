@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { CreditCard } from "lucide-react";
@@ -35,11 +34,16 @@ const PaymentDetails = ({
               <input
                 id="cardholderName"
                 placeholder="ישראלה ישראלי"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground"
+                className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground ${
+                  paymentInfo.errors?.cardholderName ? 'border-destructive' : 'border-input'
+                }`}
                 value={paymentInfo.cardholderName}
                 onChange={(e) => onPaymentInfoChange('cardholderName', e.target.value)}
                 onBlur={onValidate}
               />
+              {paymentInfo.errors?.cardholderName && (
+                <span className="text-xs text-destructive">{paymentInfo.errors.cardholderName}</span>
+              )}
             </div>
             
             <div className="grid gap-2">
@@ -47,11 +51,16 @@ const PaymentDetails = ({
               <input
                 id="cardNumber"
                 placeholder="4580 1234 5678 9012"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground"
+                className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground ${
+                  paymentInfo.errors?.cardNumber ? 'border-destructive' : 'border-input'
+                }`}
                 value={paymentInfo.cardNumber}
                 onChange={(e) => onPaymentInfoChange('cardNumber', e.target.value)}
                 onBlur={onValidate}
               />
+              {paymentInfo.errors?.cardNumber && (
+                <span className="text-xs text-destructive">{paymentInfo.errors.cardNumber}</span>
+              )}
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -60,22 +69,32 @@ const PaymentDetails = ({
                 <input
                   id="expiry"
                   placeholder="12/25"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground"
+                  className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground ${
+                    paymentInfo.errors?.cardExpiry ? 'border-destructive' : 'border-input'
+                  }`}
                   value={paymentInfo.cardExpiry}
                   onChange={(e) => onPaymentInfoChange('cardExpiry', e.target.value)}
                   onBlur={onValidate}
                 />
+                {paymentInfo.errors?.cardExpiry && (
+                  <span className="text-xs text-destructive">{paymentInfo.errors.cardExpiry}</span>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="cvc">CVV</Label>
                 <input
                   id="cvc"
                   placeholder="123"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground"
+                  className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground ${
+                    paymentInfo.errors?.cardCvv ? 'border-destructive' : 'border-input'
+                  }`}
                   value={paymentInfo.cardCvv}
                   onChange={(e) => onPaymentInfoChange('cardCvv', e.target.value)}
                   onBlur={onValidate}
                 />
+                {paymentInfo.errors?.cardCvv && (
+                  <span className="text-xs text-destructive">{paymentInfo.errors.cardCvv}</span>
+                )}
               </div>
             </div>
           </div>

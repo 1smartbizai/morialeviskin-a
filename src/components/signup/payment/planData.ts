@@ -1,7 +1,5 @@
 
-import { PlanOption } from "./types";
-
-export const plans: PlanOption[] = [
+export const plans = [
   {
     id: "free",
     name: "חינמי",
@@ -26,6 +24,7 @@ export const plans: PlanOption[] = [
       "מעקב תשלומים",
       "הודעות SMS",
     ],
+    priceLabel: "29.90₪ לחודש"
   },
   {
     id: "pro",
@@ -41,6 +40,7 @@ export const plans: PlanOption[] = [
       "חיבור לרשתות חברתיות",
     ],
     recommended: true,
+    priceLabel: "99₪ לחודש"
   },
   {
     id: "gold",
@@ -56,5 +56,6 @@ export const plans: PlanOption[] = [
       "מיתוג מותאם אישית",
       "תמיכה בעדיפות גבוהה",
     ],
+    priceLabel: "199₪ לחודש"
   },
 ];

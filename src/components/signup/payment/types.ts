@@ -1,12 +1,7 @@
 
-export interface PlanOption {
-  id: string;
-  name: string;
-  price: number;
-  features: string[];
-  isFree?: boolean;
-  trialDays?: number;
-  recommended?: boolean;
+export interface PaymentStepProps {
+  data: Partial<any>;
+  updateData: (data: any) => void;
 }
 
 export interface PaymentInfoState {
@@ -14,12 +9,21 @@ export interface PaymentInfoState {
   cardExpiry: string;
   cardCvv: string;
   cardholderName: string;
+  errors?: {
+    cardNumber?: string;
+    cardExpiry?: string;
+    cardCvv?: string;
+    cardholderName?: string;
+  };
 }
 
-export interface PaymentStepProps {
-  data?: {
-    subscriptionLevel?: string;
-    [key: string]: any;
-  };
-  updateData: (data: any) => void;
+export interface PlanOption {
+  id: string;
+  name: string;
+  price: number;
+  features: string[];
+  recommended?: boolean;
+  isFree?: boolean;
+  trialDays?: number;
+  priceLabel?: string;
 }
