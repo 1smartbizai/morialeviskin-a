@@ -78,8 +78,8 @@ export const createUserAndBusiness = async (
     if (businessError) throw businessError;
     
     toast({
-      title: "החשבון נוצר בהצלחה!",
-      description: "ברוכה הבאה ל-Bellevo"
+      title: `ברוכה הבאה, ${signupData.firstName}!`,
+      description: "החשבון שלך נוצר בהצלחה. אנו נלווה אותך בתהליך הקמת העסק."
     });
   } else {
     // This might happen if email confirmation is required

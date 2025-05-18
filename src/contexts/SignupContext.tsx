@@ -16,6 +16,7 @@ export interface SignupData {
   lastName: string;
   email: string;
   password: string;
+  confirmPassword?: string;
   phone: string;
   businessName: string;
   logo?: File;
@@ -47,6 +48,10 @@ export interface SignupData {
   whatsappIntegration?: boolean;
   // Validation states
   isPersonalInfoValid: boolean;
+  verificationStep: {
+    emailSent: boolean;
+    phoneSent: boolean;
+  };
 }
 
 interface SignupContextType {
@@ -75,6 +80,7 @@ const defaultSignupData: SignupData = {
   lastName: "",
   email: "",
   password: "",
+  confirmPassword: "",
   phone: "",
   businessName: "",
   usesDefaultLogo: true,
@@ -100,6 +106,10 @@ const defaultSignupData: SignupData = {
   isPhoneVerified: false,
   isPersonalInfoValid: false,
   trialEndDate: undefined,
+  verificationStep: {
+    emailSent: false,
+    phoneSent: false
+  }
 };
 
 const SignupContext = createContext<SignupContextType | undefined>(undefined);

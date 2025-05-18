@@ -1,4 +1,6 @@
+
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
+import VerificationStep from "@/components/signup/VerificationStep";
 import VisualIdentityStep from "@/components/signup/VisualIdentityStep";
 import BrandSettingsStep from "@/components/signup/BrandSettingsStep";
 import PaymentStep from "./payment/PaymentStep";
@@ -22,11 +24,12 @@ interface StepRendererProps {
 // Define step configuration for better organization
 export const STEP_COMPONENTS = {
   PERSONAL_INFO: 0,
-  VISUAL_IDENTITY: 1,
-  BRAND_SETTINGS: 2,
-  WORKING_HOURS: 3,
-  PAYMENT: 4,
-  SUCCESS: 5
+  VERIFICATION: 1,
+  VISUAL_IDENTITY: 2,
+  BRAND_SETTINGS: 3,
+  WORKING_HOURS: 4,
+  PAYMENT: 5,
+  SUCCESS: 6
 };
 
 const StepRenderer = ({ 
@@ -44,6 +47,9 @@ const StepRenderer = ({
   switch (currentStep) {
     case STEP_COMPONENTS.PERSONAL_INFO:
       return <PersonalInfoStep />;
+      
+    case STEP_COMPONENTS.VERIFICATION:
+      return <VerificationStep />;
       
     case STEP_COMPONENTS.VISUAL_IDENTITY:
       return <VisualIdentityStep />;

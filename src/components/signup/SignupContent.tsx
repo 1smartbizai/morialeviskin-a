@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,6 +65,11 @@ const SignupContent = () => {
         // If we get a new session, try to load saved data
         if (newSession && event === 'SIGNED_IN') {
           loadSavedSignupData(newSession.user.id, updateSignupData);
+          
+          // Check if user has verified their email
+          if (newSession.user.email_confirmed_at) {
+            updateSignupData({ isEmailVerified: true });
+          }
         }
       }
     );
@@ -93,9 +97,18 @@ const SignupContent = () => {
     setIsLoading(true);
     try {
       await sendVerificationEmail(signupData.email);
+      
+      // Update the verification step state
+      updateSignupData({ 
+        verificationStep: {
+          ...signupData.verificationStep,
+          emailSent: true
+        }
+      });
+      
       toast({
         title: "נשלח אימות חדש",
-        description: "נא לבדוק את תיבת הדוא\"ל שלך"
+        description: `היי ${signupData.firstName}, נא לבדוק את תיבת הדוא"ל שלך`
       });
     } catch (error: any) {
       console.error("שגיאה בשליחת האימות:", error);
@@ -163,7 +176,7 @@ const SignupContent = () => {
     setIsLoading(true);
     
     try {
-      // If this is the first step, we create the user account 
+      // If this is the first step (Personal Info), we create the user account 
       if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) {
         // Generate business domain and ID
         const { domain, id } = generateBusinessIdentifiers(signupData.businessName);
@@ -177,9 +190,14 @@ const SignupContent = () => {
             
             if (result?.session) {
               toast({
-                title: "נוצר חשבון בהצלחה!",
-                description: `שלום ${signupData.firstName}, המשיכי להגדיר את העסק שלך`
+                title: `ברוכה הבאה, ${signupData.firstName}!`,
+                description: "החשבון שלך נוצר בהצלחה. עכשיו עליך לאמת את כתובת האימייל שלך להמשך התהליך."
               });
+              
+              // Now we'll move to the verification step instead of the next step
+              setCurrentStep(STEP_COMPONENTS.VERIFICATION);
+              setIsLoading(false);
+              return; // Exit early since we're now handling redirection differently
             }
           } catch (accountError: any) {
             console.error("שגיאה ביצירת החשבון:", accountError);
@@ -188,10 +206,44 @@ const SignupContent = () => {
               title: "שגיאה ביצירת החשבון",
               description: accountError.message || "אנא נסי שנית מאוחר יותר"
             });
+            setIsLoading(false);
             return; // Don't proceed if account creation failed
           }
         }
+        
+        // If we reach here with a session, we should go to verification step
+        setCurrentStep(STEP_COMPONENTS.VERIFICATION);
+        setIsLoading(false);
+        return;
       } 
+      // If user is on verification step, don't proceed unless verified
+      else if (currentStep === STEP_COMPONENTS.VERIFICATION) {
+        if (!signupData.isEmailVerified) {
+          toast({
+            variant: "warning",
+            title: "אימות דוא\"ל נדרש",
+            description: `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך. בדקי את תיבת הדואר הנכנס שלך.`
+          });
+          setIsLoading(false);
+          return;
+        }
+        
+        // If verified, we'll redirect to login before continuing setup
+        toast({
+          title: "אימות הושלם בהצלחה!",
+          description: "עכשיו את יכולה להיכנס למערכת ולהמשיך בהקמת העסק שלך."
+        });
+        
+        // Save the verification state
+        if (session?.user?.id) {
+          await saveSignupData(currentStep, signupData, session.user.id);
+        }
+        
+        // Redirect to login
+        navigate('/login');
+        setIsLoading(false);
+        return;
+      }
       // If this is the visual identity step, handle logo upload
       else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && session?.user?.id) {
         // Only handle logo upload if we're using a custom logo and have a logo file
@@ -219,7 +271,7 @@ const SignupContent = () => {
       if (currentStep === STEP_COMPONENTS.SUCCESS) {
         toast({
           title: "התהליך הושלם בהצלחה!",
-          description: "העסק שלך מוכן לשימוש. מעבר למערכת..."
+          description: `${signupData.firstName}, העסק שלך מוכן לשימוש. מעבר למערכת...`
         });
         navigate('/admin');
       } else {
@@ -242,16 +294,32 @@ const SignupContent = () => {
     // Always scroll to top before proceeding
     scrollToTop();
     
-    if (currentStep > 0) {
+    // If at the verification step, go back to personal info
+    if (currentStep === STEP_COMPONENTS.VERIFICATION) {
+      setCurrentStep(STEP_COMPONENTS.PERSONAL_INFO);
+    }
+    // For all other steps
+    else if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  // Get the step title, considering the new verification step
+  const getStepTitle = () => {
+    // If we're on the verification step, use a custom title
+    if (currentStep === STEP_COMPONENTS.VERIFICATION) {
+      return "אימות חשבון";
+    }
+    
+    // Otherwise use the title from the steps array
+    return steps[Math.min(currentStep, steps.length - 1)].title;
   };
 
   return (
     <div ref={containerRef}>
       <Card className="w-full" dir="rtl">
         <CardHeader>
-          <CardTitle>{steps[currentStep].title}</CardTitle>
+          <CardTitle>{getStepTitle()}</CardTitle>
           <SignupProgress />
         </CardHeader>
         <CardContent>
