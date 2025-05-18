@@ -14,7 +14,7 @@ const SignupProgress = () => {
       <div className="flex gap-1">
         {steps.map((step, index) => (
           <div 
-            key={step.id}
+            key={index} // Using index as key since 'id' property doesn't exist
             className={`h-2 flex-1 rounded-full transition-colors ${
               index <= currentStep ? 'bg-primary' : 'bg-muted'
             }`}

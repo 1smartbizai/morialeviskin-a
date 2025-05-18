@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -220,7 +221,8 @@ const SignupContent = () => {
       else if (currentStep === STEP_COMPONENTS.VERIFICATION) {
         if (!signupData.isEmailVerified) {
           toast({
-            variant: "warning",
+            // Change from "warning" (invalid) to "destructive" (valid variant)
+            variant: "destructive", 
             title: "אימות דוא\"ל נדרש",
             description: `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך. בדקי את תיבת הדואר הנכנס שלך.`
           });
