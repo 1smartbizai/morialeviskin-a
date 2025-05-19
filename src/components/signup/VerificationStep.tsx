@@ -228,7 +228,7 @@ const VerificationStep = () => {
       </Alert>
 
       {!signupData.isPhoneVerified && (
-        <Alert variant="outline" className="bg-yellow-50 border-yellow-200">
+        <Alert variant="default" className="bg-yellow-50 border-yellow-200">
           <AlertTitle className="flex items-center gap-2">
             <Phone className="h-5 w-5 text-yellow-600" />
             <span>אימות טלפון מומלץ</span>

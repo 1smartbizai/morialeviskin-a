@@ -246,7 +246,7 @@ const SignupContent = () => {
         // If phone is not verified, show a warning but allow to proceed
         if (!signupData.isPhoneVerified) {
           toast({
-            variant: "warning",
+            variant: "default", // Changed from "warning" to "default" to fix TypeScript error
             title: "אזהרה: מספר הטלפון לא אומת", 
             description: `${signupData.firstName}, את ממשיכה ללא אימות מספר הטלפון. ניתן לאמת אותו מאוחר יותר.`
           });
