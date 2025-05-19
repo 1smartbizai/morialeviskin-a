@@ -20,6 +20,7 @@ import {
 import { handleLogoUpload } from "@/utils/signup/storageUtils";
 import { generateBusinessIdentifiers } from "@/utils/signup/helpers";
 import { initStorage } from "@/utils/initStorage";
+import VerificationReminder from "@/components/signup/success/VerificationReminder";
 
 const SignupContent = () => {
   const navigate = useNavigate();
@@ -229,28 +230,26 @@ const SignupContent = () => {
         setIsLoading(false);
         return;
       } 
-      // If user is on verification step, don't proceed unless verified
+      // If user is on verification step, check email verification (phone is optional)
       else if (currentStep === STEP_COMPONENTS.VERIFICATION) {
-        // Check both email and phone verification
-        if (!signupData.isEmailVerified || !signupData.isPhoneVerified) {
-          // Determine the message based on what's verified
-          let message = "";
-          
-          if (!signupData.isEmailVerified && !signupData.isPhoneVerified) {
-            message = `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל והטלפון שלך כדי להמשיך.`;
-          } else if (!signupData.isEmailVerified) {
-            message = `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך.`;
-          } else {
-            message = `${signupData.firstName}, עלייך לאמת את מספר הטלפון שלך כדי להמשיך.`;
-          }
-          
+        // Check email verification - phone verification is optional
+        if (!signupData.isEmailVerified) {
           toast({
             variant: "destructive", 
-            title: "נדרש אימות",
-            description: message
+            title: "נדרש אימות אימייל",
+            description: `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך.`
           });
           setIsLoading(false);
           return;
+        }
+        
+        // If phone is not verified, show a warning but allow to proceed
+        if (!signupData.isPhoneVerified) {
+          toast({
+            variant: "warning",
+            title: "אזהרה: מספר הטלפון לא אומת", 
+            description: `${signupData.firstName}, את ממשיכה ללא אימות מספר הטלפון. ניתן לאמת אותו מאוחר יותר.`
+          });
         }
         
         // Save verification state
@@ -342,6 +341,19 @@ const SignupContent = () => {
           <SignupProgress />
         </CardHeader>
         <CardContent>
+          {/* If phone is not verified and we're past verification step, show reminder */}
+          {!signupData.isPhoneVerified && 
+           signupData.isEmailVerified && 
+           currentStep > STEP_COMPONENTS.VERIFICATION && (
+            <div className="mb-4">
+              <VerificationReminder
+                isEmailVerified={signupData.isEmailVerified}
+                isPhoneVerified={signupData.isPhoneVerified}
+                onResendVerification={handleResendVerification}
+              />
+            </div>
+          )}
+
           <StepRenderer 
             currentStep={currentStep}
             businessName={signupData.businessName}

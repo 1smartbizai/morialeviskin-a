@@ -6,8 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useSignup } from "@/contexts/SignupContext";
-import { CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, EyeOff, Info } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { toast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
+import { checkEmailExists, checkPhoneExists } from "@/utils/signup/authUtils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Create the validation schema with Hebrew error messages
 const phoneRegex = /^0\d{8,9}$/;
@@ -66,6 +70,10 @@ const PersonalInfoStep = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [emailExists, setEmailExists] = useState(false);
+  const [phoneExists, setPhoneExists] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(personalInfoSchema),
@@ -85,10 +93,68 @@ const PersonalInfoStep = () => {
   const isValid = form.formState.isValid;
   const isDirty = form.formState.isDirty;
   
-  // Update SignupContext with form validity
+  // Update SignupContext with form validity - consider account existence checks
   useEffect(() => {
-    updateSignupData({ isPersonalInfoValid: isValid && isDirty });
-  }, [isValid, isDirty, updateSignupData]);
+    updateSignupData({ isPersonalInfoValid: isValid && isDirty && !emailExists && !phoneExists });
+  }, [isValid, isDirty, emailExists, phoneExists, updateSignupData]);
+
+  // Check for existing email with debounce
+  useEffect(() => {
+    const email = form.getValues("email");
+    if (!email || !emailRegex.test(email)) return;
+
+    const checkEmail = async () => {
+      setIsCheckingEmail(true);
+      try {
+        const exists = await checkEmailExists(email);
+        setEmailExists(exists);
+        
+        if (exists) {
+          toast({
+            title: "אימייל כבר רשום",
+            description: "כתובת האימייל הזו כבר רשומה במערכת. אפשר להתחבר או לבחור כתובת אחרת.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error("שגיאה בבדיקת האימייל:", error);
+      } finally {
+        setIsCheckingEmail(false);
+      }
+    };
+
+    const timer = setTimeout(checkEmail, 800);
+    return () => clearTimeout(timer);
+  }, [form.watch("email")]);
+
+  // Check for existing phone with debounce
+  useEffect(() => {
+    const phone = form.getValues("phone");
+    if (!phone || !phoneRegex.test(phone)) return;
+
+    const checkPhone = async () => {
+      setIsCheckingPhone(true);
+      try {
+        const exists = await checkPhoneExists(phone);
+        setPhoneExists(exists);
+        
+        if (exists) {
+          toast({
+            title: "מספר טלפון כבר רשום",
+            description: "מספר הטלפון הזה כבר רשום במערכת. אפשר להתחבר או לבחור מספר אחר.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error("שגיאה בבדיקת מספר הטלפון:", error);
+      } finally {
+        setIsCheckingPhone(false);
+      }
+    };
+
+    const timer = setTimeout(checkPhone, 800);
+    return () => clearTimeout(timer);
+  }, [form.watch("phone")]);
 
   // Update global state when form values change
   const handleFormChange = (field: string, value: string) => {
@@ -113,6 +179,18 @@ const PersonalInfoStep = () => {
   return (
     <Form {...form}>
       <form className="space-y-6" dir="rtl">
+        {(emailExists || phoneExists) && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4 text-blue-500" />
+            <AlertDescription>
+              נראה שיש לך כבר משתמש במערכת.{" "}
+              <Link to="/admin/login" className="text-primary font-semibold hover:underline">
+                כדאי להתחבר כאן
+              </Link>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -185,18 +263,32 @@ const PersonalInfoStep = () => {
             <FormItem>
               <FormLabel>דוא״ל *</FormLabel>
               <FormControl>
-                <Input 
-                  {...field} 
-                  placeholder="your@email.com" 
-                  type="email"
-                  dir="ltr"
-                  className="text-left"
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleFormChange("email", e.target.value);
-                  }}
-                />
+                <div className="relative">
+                  <Input 
+                    {...field} 
+                    placeholder="your@email.com" 
+                    type="email"
+                    dir="ltr"
+                    className={`text-left ${emailExists ? 'border-red-500' : ''}`}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleFormChange("email", e.target.value);
+                      if (emailExists) setEmailExists(false);
+                    }}
+                  />
+                  {isCheckingEmail && (
+                    <div className="absolute inset-y-0 left-3 flex items-center">
+                      <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                  )}
+                  {emailExists && (
+                    <div className="absolute inset-y-0 right-3 flex items-center">
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    </div>
+                  )}
+                </div>
               </FormControl>
+              {emailExists && <p className="text-xs text-red-500 mt-1">כתובת אימייל זו כבר רשומה במערכת</p>}
               <FormMessage />
             </FormItem>
           )}
@@ -299,17 +391,31 @@ const PersonalInfoStep = () => {
             <FormItem>
               <FormLabel>מספר טלפון *</FormLabel>
               <FormControl>
-                <Input 
-                  {...field} 
-                  placeholder="הכניסי מספר טלפון ישראלי (מתחיל ב-0)"
-                  dir="ltr"
-                  className="text-left"
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleFormChange("phone", e.target.value);
-                  }}
-                />
+                <div className="relative">
+                  <Input 
+                    {...field} 
+                    placeholder="הכניסי מספר טלפון ישראלי (מתחיל ב-0)"
+                    dir="ltr"
+                    className={`text-left ${phoneExists ? 'border-red-500' : ''}`}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleFormChange("phone", e.target.value);
+                      if (phoneExists) setPhoneExists(false);
+                    }}
+                  />
+                  {isCheckingPhone && (
+                    <div className="absolute inset-y-0 left-3 flex items-center">
+                      <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                  )}
+                  {phoneExists && (
+                    <div className="absolute inset-y-0 right-3 flex items-center">
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    </div>
+                  )}
+                </div>
               </FormControl>
+              {phoneExists && <p className="text-xs text-red-500 mt-1">מספר טלפון זה כבר רשום במערכת</p>}
               <FormMessage />
             </FormItem>
           )}

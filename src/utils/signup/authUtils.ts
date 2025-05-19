@@ -15,12 +15,12 @@ export const sendVerificationEmail = async (email: string) => {
     throw new Error("כתובת דוא\"ל נדרשת");
   }
   
-  // Use the correct function to send email verification with proper redirect
+  // Updated to redirect to login page with verified flag
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: false,
-      emailRedirectTo: window.location.origin + '/signup?verified=true'
+      emailRedirectTo: window.location.origin + '/admin/login?verified=true'
     }
   });
   
@@ -30,6 +30,44 @@ export const sendVerificationEmail = async (email: string) => {
     title: "נשלח אימות דוא\"ל",
     description: "אנא בדקי את תיבת הדואר שלך לקישור האימות"
   });
+};
+
+/**
+ * Check if an email is already registered in the system
+ */
+export const checkEmailExists = async (email: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false
+      }
+    });
+    
+    // If no error, the email exists
+    return !error;
+  } catch (error) {
+    console.error("Error checking email existence:", error);
+    return false;
+  }
+};
+
+/**
+ * Check if a phone number is already registered in the system
+ */
+export const checkPhoneExists = async (phone: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('business_owners')
+      .select('id')
+      .eq('phone', phone)
+      .maybeSingle();
+    
+    return !!data;
+  } catch (error) {
+    console.error("Error checking phone existence:", error);
+    return false;
+  }
 };
 
 /**
@@ -48,7 +86,8 @@ export const createUserAndBusiness = async (
         first_name: signupData.firstName,
         last_name: signupData.lastName,
       },
-      emailRedirectTo: window.location.origin + '/signup?verified=true'
+      // Updated to redirect to login page with verified flag
+      emailRedirectTo: window.location.origin + '/admin/login?verified=true'
     }
   });
 
@@ -85,7 +124,7 @@ export const createUserAndBusiness = async (
     // This might happen if email confirmation is required
     toast({
       title: "נשלח אליך אימות בדוא\"ל",
-      description: "אנא אמתי את חשבונך כדי להמשיך"
+      description: "אנא אמתי את חשבונך בלחיצה על הקישור שנשלח אליך כדי להמשיך"
     });
   }
 

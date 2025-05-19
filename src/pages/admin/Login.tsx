@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +19,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Define the form schema with validation
 const loginSchema = z.object({
@@ -32,13 +33,27 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   
   // Business branding - In a real app, these would come from the database
   const businessLogo = "/placeholder.svg"; // Placeholder logo
   const businessName = "Bellevo";
   const businessPrimaryColor = "var(--primary)";
+
+  // Check for verified parameter in URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const verified = params.get('verified') === 'true';
+    
+    if (verified) {
+      setIsVerified(true);
+      // Clean up URL without reloading the page
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [location]);
 
   // Initialize the form
   const form = useForm<LoginFormValues>({
@@ -108,6 +123,16 @@ const Login = () => {
               התחברות לניהול העסק
             </p>
           </div>
+          
+          {isVerified && (
+            <Alert className="mb-6 bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              <AlertTitle className="text-green-600">האימייל שלך אומת בהצלחה!</AlertTitle>
+              <AlertDescription>
+                כעת אפשר להתחבר ולהמשיך בתהליך הקמת העסק.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

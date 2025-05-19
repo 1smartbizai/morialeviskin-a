@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import { CheckCircle, Mail, Phone, RefreshCw } from "lucide-react";
+import { CheckCircle, Mail, Phone, RefreshCw, AlertTriangle } from "lucide-react";
 import { useSignup } from "@/contexts/SignupContext";
 import { sendVerificationEmail } from "@/utils/signup/authUtils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkUrlForVerification } from "@/utils/signup/authUtils";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const otpSchema = z.object({
   otp: z.string().length(6, "נדרש קוד אימות בן 6 ספרות")
@@ -212,9 +213,31 @@ const VerificationStep = () => {
       <div className="text-center">
         <h2 className="text-2xl font-bold">שלום {signupData.firstName}!</h2>
         <p className="mt-2 text-muted-foreground">
-          החשבון שלך נוצר בהצלחה! כעת עלייך לאמת את כתובת האימייל ומספר הטלפון שלך כדי להמשיך בהקמת העסק.
+          החשבון שלך נוצר בהצלחה! כעת עלייך לאמת את כתובת האימייל שלך כדי להמשיך בהקמת העסק.
         </p>
       </div>
+      
+      <Alert variant="default" className="bg-blue-50 border-blue-200">
+        <AlertTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5 text-blue-600" />
+          <span>אימות אימייל נדרש</span>
+        </AlertTitle>
+        <AlertDescription>
+          לחצי על הקישור שנשלח לדוא"ל שלך כדי לאמת את החשבון. אם לא קיבלת את ההודעה, בדקי בתיקיית הדואר הזבל או לחצי על "שלח אימות שוב".
+        </AlertDescription>
+      </Alert>
+
+      {!signupData.isPhoneVerified && (
+        <Alert variant="outline" className="bg-yellow-50 border-yellow-200">
+          <AlertTitle className="flex items-center gap-2">
+            <Phone className="h-5 w-5 text-yellow-600" />
+            <span>אימות טלפון מומלץ</span>
+          </AlertTitle>
+          <AlertDescription>
+            מומלץ לאמת גם את מספר הטלפון שלך לצורך אבטחה נוספת וגישה לכל יכולות המערכת. ניתן להמשיך ללא אימות טלפון אם כתובת האימייל שלך מאומתת.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
@@ -236,22 +259,27 @@ const VerificationStep = () => {
               </div>
               
               {!signupData.isEmailVerified && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={handleResendEmailVerification}
-                  disabled={sendingEmailVerification}
-                >
-                  {sendingEmailVerification ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      שולח...
-                    </>
-                  ) : (
-                    "שלח אימות שוב"
-                  )}
-                </Button>
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    אחרי שתלחצי על הקישור שנשלח אליך, תועברי להתחברות למערכת.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleResendEmailVerification}
+                    disabled={sendingEmailVerification}
+                  >
+                    {sendingEmailVerification ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        שולח...
+                      </>
+                    ) : (
+                      "שלח אימות שוב"
+                    )}
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>
@@ -343,10 +371,10 @@ const VerificationStep = () => {
       <div className="bg-primary/10 p-4 rounded-md">
         <h3 className="font-semibold">מה עכשיו?</h3>
         <p className="text-sm mt-1">
-          {signupData.firstName}, אחרי שתאמתי את האימייל והטלפון שלך, תוכלי להמשיך בהקמת העסק.
+          {signupData.firstName}, אחרי שתאמתי את האימייל שלך, תוכלי להמשיך בהקמת העסק.
           {!signupData.isEmailVerified && " יש לאמת את האימייל על ידי לחיצה על הקישור שנשלח אליך."}
-          {!signupData.isPhoneVerified && signupData.isEmailVerified && " עכשיו נשאר רק לאמת את מספר הטלפון שלך."}
-          {signupData.isEmailVerified && signupData.isPhoneVerified && " כל האימותים הושלמו בהצלחה! ניתן להמשיך בתהליך."}
+          {(!signupData.isPhoneVerified && signupData.isEmailVerified) && " מומלץ גם לאמת את מספר הטלפון שלך, אך ניתן להמשיך גם בלעדיו."}
+          {(signupData.isEmailVerified && signupData.isPhoneVerified) && " כל האימותים הושלמו בהצלחה! ניתן להמשיך בתהליך."}
         </p>
       </div>
     </div>
