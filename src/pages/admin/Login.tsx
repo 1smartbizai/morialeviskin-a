@@ -21,6 +21,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Mail, Lock, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Google } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 // Define the form schema with validation
 const loginSchema = z.object({
@@ -103,6 +105,30 @@ const Login = () => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/admin`
+        }
+      });
+      
+      if (error) throw error;
+      
+      // The actual redirect is handled by Supabase OAuth flow
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      toast({
+        variant: "destructive",
+        title: "שגיאה בהתחברות עם Google",
+        description: "אירעה שגיאה בתהליך ההתחברות, נסה שנית"
+      });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 rtl">
       <Card className="w-full max-w-md mx-auto border border-muted">
@@ -133,6 +159,29 @@ const Login = () => {
               </AlertDescription>
             </Alert>
           )}
+
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={loginWithGoogle}
+              className="w-full flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              <Google className="h-5 w-5" />
+              המשך עם Google
+            </Button>
+          </div>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t"></span>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                או התחבר עם אימייל וסיסמה
+              </span>
+            </div>
+          </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
