@@ -15,12 +15,12 @@ export const sendVerificationEmail = async (email: string) => {
     throw new Error("כתובת דוא\"ל נדרשת");
   }
   
-  // Use the correct function to send email verification
+  // Use the correct function to send email verification with proper redirect
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: false,
-      emailRedirectTo: window.location.origin + '/admin'
+      emailRedirectTo: window.location.origin + '/signup?verified=true'
     }
   });
   
@@ -48,7 +48,7 @@ export const createUserAndBusiness = async (
         first_name: signupData.firstName,
         last_name: signupData.lastName,
       },
-      emailRedirectTo: window.location.origin + '/admin'
+      emailRedirectTo: window.location.origin + '/signup?verified=true'
     }
   });
 
@@ -91,3 +91,10 @@ export const createUserAndBusiness = async (
 
   return data;
 };
+
+// Helper function to check URL parameters for verification status
+export const checkUrlForVerification = (): boolean => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('verified') === 'true';
+};
+

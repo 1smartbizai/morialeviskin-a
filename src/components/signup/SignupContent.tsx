@@ -14,7 +14,8 @@ import {
 } from "@/utils/signup/signupDataService";
 import { 
   createUserAndBusiness,
-  sendVerificationEmail 
+  sendVerificationEmail,
+  checkUrlForVerification 
 } from "@/utils/signup/authUtils";
 import { handleLogoUpload } from "@/utils/signup/storageUtils";
 import { generateBusinessIdentifiers } from "@/utils/signup/helpers";
@@ -54,6 +55,17 @@ const SignupContent = () => {
         setSession(data.session);
         // Try to load existing signup data if available
         loadSavedSignupData(data.session.user.id, updateSignupData);
+        
+        // Check if user has verified email
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.email_confirmed_at) {
+          updateSignupData({ isEmailVerified: true });
+        }
+      }
+      
+      // Check if URL indicates verification
+      if (checkUrlForVerification()) {
+        updateSignupData({ isEmailVerified: true });
       }
     };
     
@@ -219,32 +231,37 @@ const SignupContent = () => {
       } 
       // If user is on verification step, don't proceed unless verified
       else if (currentStep === STEP_COMPONENTS.VERIFICATION) {
-        if (!signupData.isEmailVerified) {
+        // Check both email and phone verification
+        if (!signupData.isEmailVerified || !signupData.isPhoneVerified) {
+          // Determine the message based on what's verified
+          let message = "";
+          
+          if (!signupData.isEmailVerified && !signupData.isPhoneVerified) {
+            message = `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל והטלפון שלך כדי להמשיך.`;
+          } else if (!signupData.isEmailVerified) {
+            message = `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך.`;
+          } else {
+            message = `${signupData.firstName}, עלייך לאמת את מספר הטלפון שלך כדי להמשיך.`;
+          }
+          
           toast({
-            // Change from "warning" (invalid) to "destructive" (valid variant)
             variant: "destructive", 
-            title: "אימות דוא\"ל נדרש",
-            description: `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך. בדקי את תיבת הדואר הנכנס שלך.`
+            title: "נדרש אימות",
+            description: message
           });
           setIsLoading(false);
           return;
         }
         
-        // If verified, we'll redirect to login before continuing setup
-        toast({
-          title: "אימות הושלם בהצלחה!",
-          description: "עכשיו את יכולה להיכנס למערכת ולהמשיך בהקמת העסק שלך."
-        });
-        
-        // Save the verification state
+        // Save verification state
         if (session?.user?.id) {
           await saveSignupData(currentStep, signupData, session.user.id);
+          
+          // Now proceed to visual identity step
+          setCurrentStep(STEP_COMPONENTS.VISUAL_IDENTITY);
+          setIsLoading(false);
+          return;
         }
-        
-        // Redirect to login
-        navigate('/login');
-        setIsLoading(false);
-        return;
       }
       // If this is the visual identity step, handle logo upload
       else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && session?.user?.id) {
