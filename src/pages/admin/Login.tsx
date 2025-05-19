@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { z } from "zod";
@@ -6,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 // UI Components
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Mail, Lock, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Google } from "lucide-react";
+import { GoogleIcon } from "@/components/icons/GoogleIcon";
 import { Separator } from "@/components/ui/separator";
 
 // Define the form schema with validation
@@ -39,6 +39,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { loginWithGoogle } = useAuth();
   
   // Business branding - In a real app, these would come from the database
   const businessLogo = "/placeholder.svg"; // Placeholder logo
@@ -105,19 +106,9 @@ const Login = () => {
     }
   };
 
-  const loginWithGoogle = async () => {
-    setIsLoading(true);
+  const handleGoogleLogin = async () => {
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/admin`
-        }
-      });
-      
-      if (error) throw error;
-      
-      // The actual redirect is handled by Supabase OAuth flow
+      await loginWithGoogle();
     } catch (error: any) {
       console.error("Google login error:", error);
       toast({
@@ -125,7 +116,6 @@ const Login = () => {
         title: "שגיאה בהתחברות עם Google",
         description: "אירעה שגיאה בתהליך ההתחברות, נסה שנית"
       });
-      setIsLoading(false);
     }
   };
 
@@ -163,11 +153,11 @@ const Login = () => {
           <div className="mb-6">
             <Button 
               variant="outline" 
-              onClick={loginWithGoogle}
+              onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center gap-2"
               disabled={isLoading}
             >
-              <Google className="h-5 w-5" />
+              <GoogleIcon className="h-5 w-5" />
               המשך עם Google
             </Button>
           </div>
