@@ -3,7 +3,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { User, Session } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -13,16 +12,21 @@ interface AuthContextType {
   sendOTP: (phone: string) => Promise<{ success: boolean; error?: string; isNewUser?: boolean }>;
   verifyOTP: (phone: string, token: string) => Promise<{ success: boolean; error?: string; isNewUser?: boolean }>;
   loginWithGoogle: () => Promise<void>;
+  navigate: (path: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+interface AuthProviderProps {
+  children: ReactNode;
+  navigate: (path: string) => void;
+}
+
+export function AuthProvider({ children, navigate }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -230,7 +234,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut, 
       sendOTP, 
       verifyOTP,
-      loginWithGoogle
+      loginWithGoogle,
+      navigate
     }}>
       {children}
     </AuthContext.Provider>

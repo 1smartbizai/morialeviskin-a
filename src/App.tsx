@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { initStorage } from "./utils/initStorage";
 import { useEffect } from "react";
@@ -53,14 +53,20 @@ const InitializeApp = () => {
   return null;
 };
 
+// Create a wrapper component that has access to navigation
+const AuthProviderWithNavigation = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate();
+  return <AuthProvider navigate={(path) => navigate(path)}>{children}</AuthProvider>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <InitializeApp />
-        <BrowserRouter>
+    <BrowserRouter>
+      <AuthProviderWithNavigation>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <InitializeApp />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Landing />} />
@@ -105,9 +111,9 @@ const App = () => (
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+        </TooltipProvider>
+      </AuthProviderWithNavigation>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
