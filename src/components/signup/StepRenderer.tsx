@@ -1,6 +1,6 @@
 
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
-import VerificationStep from "@/components/signup/VerificationStep";
+import { VerificationStep } from "@/components/signup/verification";
 import VisualIdentityStep from "@/components/signup/VisualIdentityStep";
 import BrandSettingsStep from "@/components/signup/BrandSettingsStep";
 import PaymentStep from "./payment/PaymentStep";
