@@ -36,10 +36,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (event === 'SIGNED_IN') {
           console.log("User signed in:", session?.user);
           
-          // Check if this is a new user (you could check additional tables)
-          checkUserType(session?.user).then(userType => {
+          // Check if this is a new user or incomplete signup
+          checkUserType(session?.user).then(({ userType, signupStep }) => {
             if (userType === 'new') {
               // Redirect new users to the signup flow to complete profile
+              toast({
+                title: "ברוך הבא!",
+                description: "עכשיו נמשיך את תהליך ההרשמה שלך."
+              });
+              navigate('/signup');
+            } else if (userType === 'incomplete_signup' && signupStep) {
+              // User has started signup but not completed it - redirect to the proper step
+              toast({
+                title: "ברוך השב!",
+                description: "נמשיך מהנקודה שבה הפסקת בתהליך ההרשמה."
+              });
               navigate('/signup');
             } else {
               // Returning users go to admin dashboard
@@ -58,27 +69,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
   
-  // Helper to determine if user is new or existing
-  const checkUserType = async (user: User | null): Promise<'new' | 'existing'> => {
-    if (!user) return 'new';
+  // Enhanced helper to determine if user is new, has incomplete signup, or is existing
+  const checkUserType = async (user: User | null): Promise<{userType: 'new' | 'incomplete_signup' | 'existing', signupStep?: number}> => {
+    if (!user) return { userType: 'new' };
     
     try {
-      // Check if we already have a business_owners record for this user
+      // Check if we have a business_owners record for this user
       const { data, error } = await supabase
         .from('business_owners')
-        .select('id')
+        .select('id, metadata')
         .eq('user_id', user.id)
         .maybeSingle();
       
       if (error) throw error;
       
       // If no record exists, treat as new user
-      return data ? 'existing' : 'new';
+      if (!data) return { userType: 'new' };
+      
+      // Check if signup is complete by examining metadata
+      const metadata = data.metadata as any;
+      const isSignupComplete = metadata?.isSignupComplete === true;
+      
+      if (!isSignupComplete && metadata?.currentStep !== undefined) {
+        // User has started but not completed signup
+        return { 
+          userType: 'incomplete_signup',
+          signupStep: metadata.currentStep
+        };
+      }
+      
+      // User exists and has completed signup
+      return { userType: 'existing' };
     } catch (error) {
       console.error("Error checking user type:", error);
-      return 'new'; // Default to treating as new user if check fails
+      return { userType: 'new' }; // Default to treating as new user if check fails
     }
   };
 
@@ -97,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Send OTP function
+  // Send OTP function with enhanced error handling
   const sendOTP = async (phone: string) => {
     try {
       const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
@@ -119,11 +145,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true, isNewUser };
     } catch (error: any) {
       console.error('Error sending OTP:', error);
-      return { success: false, error: error.message };
+      
+      // Provide more descriptive error messages based on common failure cases
+      let errorMessage = error.message;
+      if (error.message?.includes('rate limit')) {
+        errorMessage = "נסיונות רבים מדי. נא להמתין לפני נסיון נוסף";
+      } else if (error.message?.includes('phone_confirmation')) {
+        errorMessage = "בעיה באימות מספר הטלפון. אנא וודא שהמספר תקין";
+      }
+      
+      return { success: false, error: errorMessage };
     }
   };
 
-  // Verify OTP function
+  // Verify OTP function with enhanced feedback
   const verifyOTP = async (phone: string, token: string) => {
     try {
       const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
@@ -136,6 +171,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error;
 
+      // Personalized success notification
+      toast({
+        title: "אימות מוצלח!",
+        description: "מספר הטלפון אומת בהצלחה"
+      });
+
       // Check if this is a new user
       const { data: existingClients } = await supabase
         .from('clients')
@@ -147,11 +188,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true, isNewUser };
     } catch (error: any) {
       console.error('Error verifying OTP:', error);
-      return { success: false, error: error.message };
+      
+      // Provide more user-friendly error messages
+      let errorMessage = "קוד האימות שגוי או שפג תוקפו";
+      if (error.message?.includes('expired')) {
+        errorMessage = "קוד האימות פג תוקף. אנא בקש קוד חדש";
+      }
+      
+      return { success: false, error: errorMessage };
     }
   };
   
-  // Google login function
+  // Google login function with improved error handling
   const loginWithGoogle = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({

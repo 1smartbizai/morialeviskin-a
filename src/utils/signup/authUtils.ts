@@ -36,7 +36,10 @@ export const sendVerificationEmail = async (email: string) => {
  * Check if an email is already registered in the system
  */
 export const checkEmailExists = async (email: string): Promise<boolean> => {
+  if (!email || !email.includes('@')) return false;
+  
   try {
+    // First check if email might be in auth.users table
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -44,8 +47,16 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       }
     });
     
-    // If no error, the email exists
-    return !error;
+    // No error means the email exists in auth system
+    if (!error) {
+      return true;
+    }
+    
+    // Also check business_owners table directly
+    const { data: business } = await supabase
+      .rpc('check_email_exists', { email_to_check: email.toLowerCase().trim() });
+    
+    return business === true;
   } catch (error) {
     console.error("Error checking email existence:", error);
     return false;
@@ -56,14 +67,32 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
  * Check if a phone number is already registered in the system
  */
 export const checkPhoneExists = async (phone: string): Promise<boolean> => {
+  if (!phone || phone.length < 9) return false;
+  
   try {
+    // Format phone number for consistent checking
+    let formattedPhone = phone;
+    if (formattedPhone.startsWith('0')) {
+      formattedPhone = '+972' + formattedPhone.substring(1);
+    } else if (!formattedPhone.startsWith('+')) {
+      formattedPhone = '+972' + formattedPhone;
+    }
+    
+    // Check business_owners table for the phone number
     const { data, error } = await supabase
       .from('business_owners')
       .select('id')
-      .eq('phone', phone)
+      .eq('phone', formattedPhone)
       .maybeSingle();
     
-    return !!data;
+    // Also check clients table
+    const { data: clientData } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('phone', formattedPhone)
+      .maybeSingle();
+    
+    return !!data || !!clientData;
   } catch (error) {
     console.error("Error checking phone existence:", error);
     return false;
@@ -77,6 +106,12 @@ export const createUserAndBusiness = async (
   signupData: SignupData, 
   setSession: (session: any) => void
 ) => {
+  // Double-check for existing email before attempting to create
+  const emailExists = await checkEmailExists(signupData.email);
+  if (emailExists) {
+    throw new Error("כתובת האימייל כבר רשומה במערכת. ניתן להתחבר באמצעות הכתובת הזו או לבחור כתובת אחרת.");
+  }
+  
   // Create user in Supabase Auth
   const { data, error } = await supabase.auth.signUp({
     email: signupData.email,
@@ -98,7 +133,12 @@ export const createUserAndBusiness = async (
     setSession(data.session);
     
     // Create metadata object with initial values
-    const metadata = signupDataToMetadata(signupData) as Json;
+    const metadata = {
+      ...signupDataToMetadata(signupData),
+      isSignupComplete: false,
+      currentStep: 1, // Verification step
+      lastUpdated: new Date().toISOString()
+    } as Json;
     
     // Initialize business owner record with metadata
     const { error: businessError } = await supabase
@@ -123,7 +163,7 @@ export const createUserAndBusiness = async (
   } else {
     // This might happen if email confirmation is required
     toast({
-      title: "נשלח אליך אימות בדוא\"ל",
+      title: `היי ${signupData.firstName}, נשלח אליך אימות בדוא"ל`,
       description: "אנא אמתי את חשבונך בלחיצה על הקישור שנשלח אליך כדי להמשיך"
     });
   }
@@ -136,4 +176,3 @@ export const checkUrlForVerification = (): boolean => {
   const params = new URLSearchParams(window.location.search);
   return params.get('verified') === 'true';
 };
-

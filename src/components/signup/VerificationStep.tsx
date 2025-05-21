@@ -1,131 +1,100 @@
 
 import { useState, useEffect } from "react";
-import {
-  Card,
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSignup } from "@/contexts/SignupContext";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, CheckCircle2, Mail, Phone, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  Card, 
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle 
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { toast } from "@/hooks/use-toast";
-import { CheckCircle, Mail, Phone, RefreshCw, AlertTriangle } from "lucide-react";
-import { useSignup } from "@/contexts/SignupContext";
-import { sendVerificationEmail } from "@/utils/signup/authUtils";
-import { useAuth } from "@/contexts/AuthContext";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { checkUrlForVerification } from "@/utils/signup/authUtils";
-import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-const otpSchema = z.object({
-  otp: z.string().length(6, "נדרש קוד אימות בן 6 ספרות")
-});
-
-type OtpFormValues = z.infer<typeof otpSchema>;
 
 const VerificationStep = () => {
-  const { signupData, updateSignupData, session } = useSignup();
-  const { sendOTP, verifyOTP } = useAuth();
-  const [sendingEmailVerification, setSendingEmailVerification] = useState(false);
-  const [sendingPhoneVerification, setSendingPhoneVerification] = useState(false);
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
-  
-  const form = useForm<OtpFormValues>({
-    resolver: zodResolver(otpSchema),
-    defaultValues: {
-      otp: ""
-    }
-  });
+  const { signupData, updateSignupData } = useSignup();
+  const { user, sendOTP } = useAuth();
+  const { toast } = useToast();
+  const [isLoadingEmail, setIsLoadingEmail] = useState(false);
+  const [isLoadingPhone, setIsLoadingPhone] = useState(false);
+  const [otpToken, setOtpToken] = useState("");
+  const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
 
-  // Check for URL verification parameter on mount
+  // Check email verification status on component mount
   useEffect(() => {
-    const checkVerification = async () => {
-      // Check if URL indicates email verification was successful
-      if (checkUrlForVerification()) {
-        // Update the verification status
-        updateSignupData({ isEmailVerified: true });
-        
-        // Remove the parameter from URL to prevent repeated state updates
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        toast({
-          title: "אימות אימייל הצליח",
-          description: "כתובת האימייל שלך אומתה בהצלחה!"
-        });
-      }
-      
-      // Check with Supabase if email is already verified
-      if (session?.user) {
-        try {
-          const { data } = await supabase.auth.getUser();
-          if (data?.user?.email_confirmed_at) {
-            updateSignupData({ isEmailVerified: true });
-          }
-        } catch (error) {
-          console.error("שגיאה בבדיקת סטטוס אימות:", error);
-        }
-      }
-    };
-    
-    checkVerification();
-  }, [session]);
+    if (user?.email_confirmed_at) {
+      updateSignupData({ isEmailVerified: true });
+    }
+  }, [user, updateSignupData]);
 
-  const handleResendEmailVerification = async () => {
+  const handleSendEmailVerification = async () => {
     if (!signupData.email) {
       toast({
         variant: "destructive",
-        title: "אין כתובת דוא\"ל זמינה",
-        description: "אירעה שגיאה בשליחת האימות. אנא נסי שנית מאוחר יותר."
+        title: "אין כתובת דוא״ל",
+        description: "לא ניתן לשלוח אימות דוא״ל"
       });
       return;
     }
-
-    setSendingEmailVerification(true);
+    
+    setIsLoadingEmail(true);
     try {
-      await sendVerificationEmail(signupData.email);
-      updateSignupData({ 
+      // Using type assertion here to satisfy TypeScript
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: signupData.email,
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: `${signupData.firstName}, נשלח לך אימייל אימות חדש`,
+        description: "בדקי את תיבת הדואר שלך (כולל ספאם) ולחצי על הקישור כדי לאמת את החשבון"
+      });
+      
+      // Update verification step state
+      updateSignupData({
         verificationStep: {
           ...signupData.verificationStep,
           emailSent: true
         }
       });
-    } catch (error) {
-      console.error("שגיאה בשליחת האימות:", error);
+    } catch (error: any) {
+      console.error("שגיאה בשליחת אימות דוא״ל:", error);
       toast({
         variant: "destructive",
-        title: "שגיאה בשליחת האימות",
-        description: "אירעה שגיאה בשליחת האימות. אנא נסי שנית מאוחר יותר."
+        title: "שגיאה בשליחת אימות דוא״ל",
+        description: error.message || "אנא נסי שוב מאוחר יותר"
       });
     } finally {
-      setSendingEmailVerification(false);
+      setIsLoadingEmail(false);
     }
   };
 
-  const handleResendPhoneVerification = async () => {
+  const handleSendPhoneVerification = async () => {
     if (!signupData.phone) {
       toast({
         variant: "destructive",
-        title: "אין מספר טלפון זמין",
-        description: "אירעה שגיאה בשליחת האימות. אנא נסי שנית מאוחר יותר."
+        title: "אין מספר טלפון",
+        description: "לא ניתן לשלוח אימות לטלפון"
       });
       return;
     }
     
-    setSendingPhoneVerification(true);
+    setIsLoadingPhone(true);
     try {
-      // Format phone with international code if not provided
-      let formattedPhone = signupData.phone.trim();
+      // Format phone number if needed
+      let formattedPhone = signupData.phone;
       if (!formattedPhone.startsWith('+')) {
-        // Assuming Israeli phone number if no country code provided
         if (formattedPhone.startsWith('0')) {
-          formattedPhone = '+972' + formattedPhone.substring(1);
+          formattedPhone = `+972${formattedPhone.substring(1)}`;
         } else {
-          formattedPhone = '+972' + formattedPhone;
+          formattedPhone = `+972${formattedPhone}`;
         }
       }
       
@@ -133,250 +102,232 @@ const VerificationStep = () => {
       
       if (result.success) {
         toast({
-          title: "הודעת אימות נשלחה",
-          description: `הודעת אימות SMS נשלחה למספר ${signupData.phone}`,
+          title: `${signupData.firstName}, נשלח לך קוד אימות`,
+          description: "בדקי את ההודעות בטלפון שלך והזיני את הקוד שקיבלת"
         });
         
-        updateSignupData({ 
+        setPhoneVerificationSent(true);
+        
+        // Update verification step state
+        updateSignupData({
           verificationStep: {
             ...signupData.verificationStep,
             phoneSent: true
           }
         });
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || "שגיאה בשליחת קוד האימות");
       }
-    } catch (error) {
-      console.error("שגיאה בשליחת האימות:", error);
+    } catch (error: any) {
+      console.error("שגיאה בשליחת אימות טלפון:", error);
       toast({
         variant: "destructive",
-        title: "שגיאה בשליחת האימות",
-        description: "אירעה שגיאה בשליחת האימות. אנא נסי שנית מאוחר יותר."
+        title: "שגיאה בשליחת אימות לטלפון",
+        description: error.message || "אנא נסי שוב מאוחר יותר"
       });
     } finally {
-      setSendingPhoneVerification(false);
+      setIsLoadingPhone(false);
     }
   };
 
-  const handleVerifyOTP = async (values: OtpFormValues) => {
-    if (!signupData.phone) {
+  const handleVerifyPhone = async () => {
+    if (!otpToken || !signupData.phone) {
       toast({
         variant: "destructive",
-        title: "אין מספר טלפון זמין",
-        description: "אירעה שגיאה באימות הקוד. אנא נסי שנית מאוחר יותר."
+        title: "נתונים חסרים",
+        description: "נא להזין את קוד האימות"
       });
       return;
     }
     
-    setVerifyingOtp(true);
+    setIsLoadingPhone(true);
     try {
-      // Format phone with international code if not provided
-      let formattedPhone = signupData.phone.trim();
+      // Format phone number if needed
+      let formattedPhone = signupData.phone;
       if (!formattedPhone.startsWith('+')) {
-        // Assuming Israeli phone number if no country code provided
         if (formattedPhone.startsWith('0')) {
-          formattedPhone = '+972' + formattedPhone.substring(1);
+          formattedPhone = `+972${formattedPhone.substring(1)}`;
         } else {
-          formattedPhone = '+972' + formattedPhone;
+          formattedPhone = `+972${formattedPhone}`;
         }
       }
       
-      const result = await verifyOTP(formattedPhone, values.otp);
+      // Call to supabase to verify the OTP
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: otpToken,
+        type: 'sms',
+      });
       
-      if (result.success) {
-        updateSignupData({ isPhoneVerified: true });
-        toast({
-          title: "אימות טלפון הצליח",
-          description: "מספר הטלפון שלך אומת בהצלחה!"
-        });
-        form.reset();
-      } else {
-        toast({
-          variant: "destructive",
-          title: "קוד שגוי",
-          description: "הקוד שהוזן אינו תקין, נסי שוב"
-        });
-      }
-    } catch (error) {
+      if (error) throw error;
+      
+      // Update the verification status in the signup data
+      updateSignupData({ isPhoneVerified: true });
+      
+      toast({
+        title: `מצוין, ${signupData.firstName}!`,
+        description: "מספר הטלפון אומת בהצלחה"
+      });
+    } catch (error: any) {
+      console.error("שגיאה באימות מספר טלפון:", error);
       toast({
         variant: "destructive",
-        title: "שגיאה באימות הקוד",
-        description: "אירעה שגיאה באימות הקוד. אנא נסי שנית."
+        title: "שגיאה באימות מספר הטלפון",
+        description: error.message?.includes('expired') 
+          ? "קוד האימות פג תוקף. אנא בקשי קוד חדש"
+          : "קוד האימות שגוי. אנא נסי שנית"
       });
     } finally {
-      setVerifyingOtp(false);
+      setIsLoadingPhone(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">שלום {signupData.firstName}!</h2>
-        <p className="mt-2 text-muted-foreground">
-          החשבון שלך נוצר בהצלחה! כעת עלייך לאמת את כתובת האימייל שלך כדי להמשיך בהקמת העסק.
+    <div className="space-y-8" dir="rtl">
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">אימות חשבון</h2>
+        <p className="text-sm text-muted-foreground">
+          {signupData.firstName}, לפני שנמשיך בתהליך ההרשמה, אנא אמתי את הפרטים שלך.
+          <br />
+          האימות עוזר לנו להבטיח את אבטחת החשבון שלך.
         </p>
       </div>
-      
-      <Alert variant="default" className="bg-blue-50 border-blue-200">
-        <AlertTitle className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-blue-600" />
-          <span>אימות אימייל נדרש</span>
-        </AlertTitle>
-        <AlertDescription>
-          לחצי על הקישור שנשלח לדוא"ל שלך כדי לאמת את החשבון. אם לא קיבלת את ההודעה, בדקי בתיקיית הדואר הזבל או לחצי על "שלח אימות שוב".
-        </AlertDescription>
-      </Alert>
 
-      {!signupData.isPhoneVerified && (
-        <Alert variant="default" className="bg-yellow-50 border-yellow-200">
-          <AlertTitle className="flex items-center gap-2">
-            <Phone className="h-5 w-5 text-yellow-600" />
-            <span>אימות טלפון מומלץ</span>
-          </AlertTitle>
-          <AlertDescription>
-            מומלץ לאמת גם את מספר הטלפון שלך לצורך אבטחה נוספת וגישה לכל יכולות המערכת. ניתן להמשיך ללא אימות טלפון אם כתובת האימייל שלך מאומתת.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Email Verification */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            אימות כתובת דוא״ל
+          </CardTitle>
+          <CardDescription>
+            בדקי את תיבת הדוא״ל שלך בכתובת <strong>{signupData.email}</strong> וודאי שלחצת על הקישור שנשלח אליך
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {signupData.isEmailVerified ? (
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <AlertTitle className="text-green-700">כתובת הדוא״ל אומתה בהצלחה!</AlertTitle>
+              <AlertDescription className="text-green-600">
+                תודה, {signupData.firstName}! כתובת הדוא״ל {signupData.email} אומתה בהצלחה.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert className="bg-amber-50 border-amber-200">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertTitle className="text-amber-700">נדרש אימות דוא״ל</AlertTitle>
+              <AlertDescription className="text-amber-600">
+                {signupData.verificationStep.emailSent ? 
+                  `היי ${signupData.firstName}, שלחנו לך אימייל לכתובת ${signupData.email}. אנא לחצי על הקישור שבאימייל כדי להמשיך.` : 
+                  "לחצי על הכפתור למטה לשליחת אימייל אימות"}
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter>
+          {!signupData.isEmailVerified && (
+            <Button
+              onClick={handleSendEmailVerification}
+              disabled={isLoadingEmail}
+              className="w-full"
+            >
+              {isLoadingEmail ? "שולח..." : (signupData.verificationStep.emailSent ? "שלח שוב" : "שלח אימייל אימות")}
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" /> אימות אימייל
-            </CardTitle>
-            <CardDescription>
-              נשלח לך דוא״ל עם קישור לאימות כתובת האימייל שלך
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 text-sm">
-                <span>{signupData.email}</span>
-                {signupData.isEmailVerified ? (
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                ) : null}
-              </div>
-              
-              {!signupData.isEmailVerified && (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    אחרי שתלחצי על הקישור שנשלח אליך, תועברי להתחברות למערכת.
-                  </p>
+      {/* Phone Verification */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="h-5 w-5" />
+            אימות מספר טלפון
+          </CardTitle>
+          <CardDescription>
+            {signupData.isPhoneVerified ? 
+              `מספר הטלפון ${signupData.phone} אומת בהצלחה` : 
+              `אמתי את מספר הטלפון ${signupData.phone} על ידי הזנת קוד שישלח לך בהודעת SMS`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {signupData.isPhoneVerified ? (
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <AlertTitle className="text-green-700">מספר הטלפון אומת בהצלחה!</AlertTitle>
+              <AlertDescription className="text-green-600">
+                מצוין! מספר הטלפון {signupData.phone} אומת בהצלחה.
+              </AlertDescription>
+            </Alert>
+          ) : phoneVerificationSent ? (
+            <>
+              <Alert className="bg-amber-50 border-amber-200">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <AlertTitle className="text-amber-700">הזיני את קוד האימות</AlertTitle>
+                <AlertDescription className="text-amber-600">
+                  שלחנו קוד בן 6 ספרות למספר {signupData.phone}. הקוד תקף למשך 10 דקות.
+                </AlertDescription>
+              </Alert>
+              <div className="space-y-2">
+                <Input
+                  placeholder="הזיני את קוד האימות"
+                  value={otpToken}
+                  onChange={(e) => setOtpToken(e.target.value)}
+                  className="text-center text-lg tracking-widest"
+                  dir="ltr"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleVerifyPhone}
+                    disabled={isLoadingPhone || !otpToken}
+                    className="flex-1"
+                  >
+                    {isLoadingPhone ? "מאמת..." : "אמת קוד"}
+                  </Button>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={handleResendEmailVerification}
-                    disabled={sendingEmailVerification}
+                    onClick={handleSendPhoneVerification}
+                    disabled={isLoadingPhone}
                   >
-                    {sendingEmailVerification ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        שולח...
-                      </>
-                    ) : (
-                      "שלח אימות שוב"
-                    )}
+                    שלח קוד חדש
                   </Button>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5" /> אימות טלפון
-            </CardTitle>
-            <CardDescription>
-              {signupData.isPhoneVerified ? 
-                "מספר הטלפון אומת בהצלחה" : 
-                "נשלח אליך SMS לאימות מספר הטלפון שלך"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 text-sm">
-                <span>{signupData.phone}</span>
-                {signupData.isPhoneVerified ? (
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                ) : null}
+                </div>
               </div>
-              
-              {!signupData.isPhoneVerified && !signupData.verificationStep.phoneSent && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={handleResendPhoneVerification}
-                  disabled={sendingPhoneVerification}
-                >
-                  {sendingPhoneVerification ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      שולח...
-                    </>
-                  ) : (
-                    "שלח קוד אימות"
-                  )}
-                </Button>
-              )}
-              
-              {!signupData.isPhoneVerified && signupData.verificationStep.phoneSent && (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleVerifyOTP)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="otp"
-                      render={({ field }) => (
-                        <FormItem dir="rtl">
-                          <FormLabel>קוד אימות</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="הזן קוד בן 6 ספרות" maxLength={6} dir="ltr" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="flex justify-between">
-                      <Button
-                        type="submit"
-                        size="sm"
-                        disabled={verifyingOtp || !form.formState.isValid}
-                      >
-                        {verifyingOtp ? "מאמת..." : "אמת קוד"}
-                      </Button>
-                      
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleResendPhoneVerification}
-                        disabled={sendingPhoneVerification}
-                      >
-                        שלח שוב
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </>
+          ) : (
+            <>
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertTriangle className="h-4 w-4 text-blue-500" />
+                <AlertTitle className="text-blue-700">אימות טלפון אופציונלי</AlertTitle>
+                <AlertDescription className="text-blue-600">
+                  אימות מספר הטלפון מאפשר יותר אבטחה ונוחות, אך אינו חובה בשלב זה.
+                </AlertDescription>
+              </Alert>
+              <Button
+                variant="secondary"
+                onClick={handleSendPhoneVerification}
+                disabled={isLoadingPhone}
+                className="w-full"
+              >
+                {isLoadingPhone ? "שולח..." : "שלח קוד אימות לטלפון"}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-      <div className="bg-primary/10 p-4 rounded-md">
-        <h3 className="font-semibold">מה עכשיו?</h3>
-        <p className="text-sm mt-1">
-          {signupData.firstName}, אחרי שתאמתי את האימייל שלך, תוכלי להמשיך בהקמת העסק.
-          {!signupData.isEmailVerified && " יש לאמת את האימייל על ידי לחיצה על הקישור שנשלח אליך."}
-          {(!signupData.isPhoneVerified && signupData.isEmailVerified) && " מומלץ גם לאמת את מספר הטלפון שלך, אך ניתן להמשיך גם בלעדיו."}
-          {(signupData.isEmailVerified && signupData.isPhoneVerified) && " כל האימותים הושלמו בהצלחה! ניתן להמשיך בתהליך."}
-        </p>
-      </div>
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription className="text-sm">
+          {signupData.isEmailVerified ? 
+            <span className="text-green-700">כתובת הדוא״ל אומתה בהצלחה! </span> : 
+            <span className="text-red-700">נדרש אימות של כתובת הדוא״ל כדי להמשיך. </span>}
+          {signupData.isPhoneVerified ? 
+            <span className="text-green-700">מספר הטלפון אומת בהצלחה! </span> : 
+            <span className="text-amber-700">אימות מספר הטלפון אינו חובה בשלב זה. </span>}
+        </AlertDescription>
+      </Alert>
     </div>
   );
 };

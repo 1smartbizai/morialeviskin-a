@@ -61,12 +61,23 @@ const SignupContent = () => {
         const { data: userData } = await supabase.auth.getUser();
         if (userData?.user?.email_confirmed_at) {
           updateSignupData({ isEmailVerified: true });
+          
+          // Show success toast when email is verified
+          toast({
+            title: "כתובת הדוא\"ל אומתה בהצלחה!",
+            description: "תודה! כעת ניתן להמשיך בתהליך ההרשמה"
+          });
         }
       }
       
       // Check if URL indicates verification
       if (checkUrlForVerification()) {
         updateSignupData({ isEmailVerified: true });
+        
+        toast({
+          title: "כתובת הדוא\"ל אומתה בהצלחה!",
+          description: "תודה! כעת ניתן להמשיך בתהליך ההרשמה"
+        });
       }
     };
     
@@ -83,6 +94,12 @@ const SignupContent = () => {
           // Check if user has verified their email
           if (newSession.user.email_confirmed_at) {
             updateSignupData({ isEmailVerified: true });
+            
+            // Show success toast
+            toast({
+              title: "כתובת הדוא\"ל אומתה בהצלחה!",
+              description: "תודה! כעת ניתן להמשיך בתהליך ההרשמה"
+            });
           }
         }
       }
@@ -144,10 +161,22 @@ const SignupContent = () => {
     if (currentStep === STEP_COMPONENTS.PERSONAL_INFO && !signupData.isPersonalInfoValid) {
       toast({
         variant: "destructive",
-        title: "אנא השלימי את כל שדות החובה",
+        title: `${signupData.firstName}, אנא השלימי את כל שדות החובה`,
         description: "יש למלא את כל השדות בצורה תקינה לפני המשך התהליך"
       });
       return;
+    }
+    
+    // Verification step validation with personalized message
+    if (currentStep === STEP_COMPONENTS.VERIFICATION) {
+      if (!signupData.isEmailVerified) {
+        toast({
+          variant: "destructive",
+          title: "נדרש אימות אימייל",
+          description: `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך.`
+        });
+        return;
+      }
     }
     
     // Payment step validation
@@ -167,7 +196,7 @@ const SignupContent = () => {
               setIsLoading(false);
               toast({
                 variant: "destructive",
-                title: "שגיאה בתהליך התשלום",
+                title: `${signupData.firstName}, שגיאה בתהליך התשלום`,
                 description: "ניתן לבחור בתוכנית חינמית במקום או לנסות שוב מאוחר יותר"
               });
               return; // Don't proceed if payment failed
@@ -178,7 +207,7 @@ const SignupContent = () => {
           setIsLoading(false);
           toast({
             variant: "destructive",
-            title: "שגיאה בתהליך התשלום",
+            title: `${signupData.firstName}, שגיאה בתהליך התשלום`,
             description: "ניתן לבחור בתוכנית חינמית במקום או לנסות שוב מאוחר יותר"
           });
           return;
@@ -218,7 +247,7 @@ const SignupContent = () => {
             toast({
               variant: "destructive",
               title: "שגיאה ביצירת החשבון",
-              description: accountError.message || "אנא נסי שנית מאוחר יותר"
+              description: accountError.message || `${signupData.firstName}, אנא נסי שנית מאוחר יותר`
             });
             setIsLoading(false);
             return; // Don't proceed if account creation failed
@@ -243,10 +272,30 @@ const SignupContent = () => {
           return;
         }
         
+        // Save current step to metadata for resuming later
+        if (session?.user?.id) {
+          const metadata = {
+            isSignupComplete: false,
+            currentStep: STEP_COMPONENTS.VISUAL_IDENTITY,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          const { error } = await supabase
+            .from('business_owners')
+            .update({ 
+              metadata: metadata
+            })
+            .eq('user_id', session.user.id);
+            
+          if (error) {
+            console.error("Error saving signup progress:", error);
+          }
+        }
+        
         // If phone is not verified, show a warning but allow to proceed
         if (!signupData.isPhoneVerified) {
           toast({
-            variant: "default", // Changed from "warning" to "default" to fix TypeScript error
+            variant: "default", 
             title: "אזהרה: מספר הטלפון לא אומת", 
             description: `${signupData.firstName}, את ממשיכה ללא אימות מספר הטלפון. ניתן לאמת אותו מאוחר יותר.`
           });
@@ -264,6 +313,18 @@ const SignupContent = () => {
       }
       // If this is the visual identity step, handle logo upload
       else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && session?.user?.id) {
+        // Update metadata with current step
+        const metadata = {
+          isSignupComplete: false,
+          currentStep: STEP_COMPONENTS.BRAND_SETTINGS,
+          lastUpdated: new Date().toISOString()
+        };
+        
+        await supabase
+          .from('business_owners')
+          .update({ metadata })
+          .eq('user_id', session.user.id);
+          
         // Only handle logo upload if we're using a custom logo and have a logo file
         if (!signupData.usesDefaultLogo && signupData.logo) {
           try {
@@ -282,6 +343,34 @@ const SignupContent = () => {
       } 
       // For other steps, save the current data if we have a session
       else if (session?.user?.id) {
+        // Update metadata with current step for all other steps
+        let nextStep = currentStep + 1;
+        
+        // For the last step, mark signup as complete
+        if (nextStep >= STEP_COMPONENTS.SUCCESS) {
+          const metadata = {
+            isSignupComplete: true,
+            currentStep: nextStep,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          await supabase
+            .from('business_owners')
+            .update({ metadata })
+            .eq('user_id', session.user.id);
+        } else {
+          const metadata = {
+            isSignupComplete: false,
+            currentStep: nextStep,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          await supabase
+            .from('business_owners')
+            .update({ metadata })
+            .eq('user_id', session.user.id);
+        }
+        
         await saveSignupData(currentStep, signupData, session.user.id);
       }
       
@@ -300,7 +389,7 @@ const SignupContent = () => {
       toast({
         variant: "destructive",
         title: "שגיאה בתהליך ההרשמה",
-        description: error.message || "אנא נסי שנית"
+        description: error.message || `${signupData.firstName}, אנא נסי שנית`
       });
       console.error('שגיאה בתהליך ההרשמה:', error);
     } finally {
