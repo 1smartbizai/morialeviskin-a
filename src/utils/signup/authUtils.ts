@@ -52,9 +52,11 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       return true;
     }
     
-    // Also check business_owners table directly
+    // Also check business_owners table directly using RPC
     const { data: business } = await supabase
-      .rpc('check_email_exists', { email_to_check: email.toLowerCase().trim() });
+      .rpc('check_email_exists', { 
+        email_to_check: email.toLowerCase().trim() 
+      });
     
     return business === true;
   } catch (error) {
