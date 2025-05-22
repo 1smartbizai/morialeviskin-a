@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { SignupData } from "@/contexts/SignupContext";
@@ -53,17 +52,11 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
     }
     
     // Also check business_owners table directly using RPC
-    // Using a properly typed parameter object for the RPC call
-    interface EmailCheckParams {
-      email_to_check: string;
-    }
-    
-    const params: EmailCheckParams = {
-      email_to_check: email.toLowerCase().trim()
-    };
-    
+    // Use the generic type parameter to specify the expected parameter and return types
     const { data: business } = await supabase
-      .rpc('check_email_exists', params);
+      .rpc<boolean>('check_email_exists', {
+        email_to_check: email.toLowerCase().trim()
+      });
     
     return business === true;
   } catch (error) {
