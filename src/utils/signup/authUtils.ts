@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { SignupData } from "@/contexts/SignupContext";
@@ -51,14 +52,18 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       return true;
     }
     
-    // For the RPC call, we need to use the generic with the correct structure
-    // First type argument is the return type, second is the params type
-    const { data: business } = await supabase
-      .rpc('check_email_exists', {
-        email_to_check: email.toLowerCase().trim()
-      }) as { data: boolean };
+    // Define the parameter type for the RPC call
+    interface EmailCheckParams {
+      email_to_check: string;
+    }
     
-    return business === true;
+    // Properly type the RPC call with both return type and params type
+    const { data } = await supabase.rpc<boolean, EmailCheckParams>(
+      'check_email_exists', 
+      { email_to_check: email.toLowerCase().trim() }
+    );
+    
+    return data === true;
   } catch (error) {
     console.error("Error checking email existence:", error);
     return false;
