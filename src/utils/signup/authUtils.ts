@@ -57,8 +57,8 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       email_to_check: string;
     }
     
-    // Properly type the RPC call with both return type and params type
-    const { data } = await supabase.rpc<boolean, EmailCheckParams>(
+    // Use any for the return type to bypass the type constraint issue
+    const { data } = await supabase.rpc<any, EmailCheckParams>(
       'check_email_exists', 
       { email_to_check: email.toLowerCase().trim() }
     );
