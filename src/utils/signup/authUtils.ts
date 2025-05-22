@@ -51,10 +51,12 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       return true;
     }
     
+    // Define the parameter and return types for the RPC call
+    type EmailCheckParams = { email_to_check: string };
+    
     // Also check business_owners table directly using RPC
-    // Use the generic type parameter to specify the expected parameter and return types
     const { data: business } = await supabase
-      .rpc<boolean>('check_email_exists', {
+      .rpc<boolean, EmailCheckParams>('check_email_exists', {
         email_to_check: email.toLowerCase().trim()
       });
     
