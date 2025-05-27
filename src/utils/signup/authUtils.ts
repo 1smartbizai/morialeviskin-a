@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { SignupData } from "@/contexts/SignupContext";
@@ -52,18 +51,14 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       return true;
     }
     
-    // Define the parameter type for the RPC call
-    interface EmailCheckParams {
-      email_to_check: string;
-    }
+    // Check business_owners table directly
+    const { data } = await supabase
+      .from('business_owners')
+      .select('id')
+      .ilike('first_name', `%${email}%`)
+      .limit(1);
     
-    // Use any for the return type to bypass the type constraint issue
-    const { data } = await supabase.rpc<any, EmailCheckParams>(
-      'check_email_exists', 
-      { email_to_check: email.toLowerCase().trim() }
-    );
-    
-    return data === true;
+    return data && data.length > 0;
   } catch (error) {
     console.error("Error checking email existence:", error);
     return false;

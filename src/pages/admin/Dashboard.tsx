@@ -2,11 +2,14 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChartBar, UserX } from "lucide-react";
+import { Calendar, ChartBar } from "lucide-react";
 import DailyOverview from "@/components/dashboard/DailyOverview";
 import AIInsights from "@/components/dashboard/AIInsights";
 import RiskyClients from "@/components/dashboard/RiskyClients";
+import NewBusinessDashboard from "@/components/dashboard/NewBusinessDashboard";
+import OnboardingTour from "@/components/onboarding/OnboardingTour";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useBusinessOnboarding } from "@/hooks/useBusinessOnboarding";
 
 // Mock data for the dashboard
 const appointmentsToday = [
@@ -44,6 +47,8 @@ const riskyClients = [
 
 const AdminDashboard = () => {
   const [todayDate, setTodayDate] = useState("");
+  const [showTour, setShowTour] = useState(false);
+  const { isNewBusiness, hasCompletedTour, businessData, hasAnyData, isLoading } = useBusinessOnboarding();
   
   useEffect(() => {
     // Get current date in Hebrew format
@@ -56,7 +61,42 @@ const AdminDashboard = () => {
     };
     setTodayDate(date.toLocaleDateString('he-IL', options));
   }, []);
-  
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-beauty-primary"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // Show new business onboarding if this is a new business
+  if (isNewBusiness && businessData) {
+    return (
+      <AdminLayout>
+        {showTour && (
+          <OnboardingTour
+            onComplete={() => setShowTour(false)}
+            onSkip={() => setShowTour(false)}
+            primaryColor={businessData.primary_color}
+          />
+        )}
+        <NewBusinessDashboard
+          businessName={businessData.business_name}
+          ownerName={businessData.first_name}
+          primaryColor={businessData.primary_color}
+          accentColor={businessData.accent_color}
+          logoUrl={businessData.logo_url}
+          onStartTour={() => setShowTour(true)}
+        />
+      </AdminLayout>
+    );
+  }
+
+  // Show regular dashboard for established businesses
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -64,6 +104,11 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-beauty-dark">לוח בקרה</h1>
             <p className="text-muted-foreground">{todayDate}</p>
+            {businessData && (
+              <p className="text-sm text-muted-foreground">
+                {businessData.business_name}
+              </p>
+            )}
           </div>
           <div className="mt-4 md:mt-0 flex gap-2">
             <Button className="bg-beauty-primary hover:bg-opacity-90">

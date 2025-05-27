@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   Calendar, 
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBusinessOnboarding } from "@/hooks/useBusinessOnboarding";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { businessData } = useBusinessOnboarding();
   
   const navigationItems = [
     { name: "Dashboard", path: "/admin", icon: ChartBar },
@@ -44,10 +46,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const handleNotificationClick = () => {
     toast({
-      title: "No new notifications",
-      description: "You're all caught up!"
+      title: "אין התראות חדשות",
+      description: "הכל מעודכן!"
     });
   };
+
+  // Use business colors if available, otherwise fallback to defaults
+  const primaryColor = businessData?.primary_color || "#6A0DAD";
+  const accentColor = businessData?.accent_color || "#5AA9E6";
+  const businessName = businessData?.business_name || "GlowUp Suite";
 
   return (
     <div className="flex h-screen bg-beauty-neutral overflow-hidden">
@@ -61,8 +68,21 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="h-full flex flex-col">
           {/* Branding */}
           <div className="px-4 py-6 border-b border-beauty-accent">
-            <h2 className="text-2xl font-medium text-beauty-dark">GlowUp Suite</h2>
-            <p className="text-sm text-gray-500">Admin Portal</p>
+            <div className="flex items-center gap-3">
+              {businessData?.logo_url && (
+                <img 
+                  src={businessData.logo_url} 
+                  alt={businessName}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              )}
+              <div>
+                <h2 className="text-xl font-medium" style={{ color: primaryColor }}>
+                  {businessName}
+                </h2>
+                <p className="text-sm text-gray-500">מערכת ניהול</p>
+              </div>
+            </div>
           </div>
           
           {/* Navigation */}
@@ -75,9 +95,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   className={cn(
                     "group flex items-center px-3 py-3 text-sm font-medium rounded-md",
                     location.pathname === item.path
-                      ? "text-white bg-beauty-primary"
+                      ? "text-white"
                       : "text-beauty-dark hover:bg-beauty-accent"
                   )}
+                  style={location.pathname === item.path ? { backgroundColor: primaryColor } : {}}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
                   {item.name}
@@ -93,7 +114,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               className="group flex items-center px-3 py-3 text-sm font-medium rounded-md text-beauty-dark hover:bg-beauty-accent"
             >
               <Settings className="mr-3 h-5 w-5" />
-              Settings
+              הגדרות
             </Link>
           </div>
         </div>
@@ -136,8 +157,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => toast({
-                  title: "Messages",
-                  description: "No new messages"
+                  title: "הודעות",
+                  description: "אין הודעות חדשות"
                 })}
               >
                 <MessageSquare className="h-5 w-5" />
@@ -145,9 +166,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 rounded-full bg-beauty-primary text-white"
+                className="h-8 w-8 rounded-full text-white"
+                style={{ backgroundColor: primaryColor }}
               >
-                A
+                {businessData?.first_name?.[0] || 'A'}
               </Button>
             </div>
           </div>
