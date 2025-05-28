@@ -116,8 +116,10 @@ const DailyMotivation = () => {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      const savedQuoteIndex = preferences?.metadata?.daily_quote_index;
-      const savedQuoteDate = preferences?.metadata?.daily_quote_date;
+      // שימוש ב-widget_order לשמירת מידע הציטוט
+      const quoteData = preferences?.widget_order as any;
+      const savedQuoteIndex = quoteData?.daily_quote_index;
+      const savedQuoteDate = quoteData?.daily_quote_date;
 
       if (savedQuoteDate === today && savedQuoteIndex !== undefined) {
         // השתמש בציטוט השמור
@@ -153,7 +155,7 @@ const DailyMotivation = () => {
           .from('user_preferences')
           .upsert({
             user_id: user.id,
-            metadata: {
+            widget_order: {
               daily_quote_index: quoteIndex,
               daily_quote_date: today,
               daily_motivation: true

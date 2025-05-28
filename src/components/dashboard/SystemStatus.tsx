@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 interface SystemService {
   id: string;
   name: string;
+  displayName: string;
   status: 'healthy' | 'warning' | 'error' | 'unknown';
   last_checked: string;
   details: any;
@@ -87,13 +88,13 @@ const SystemStatus = () => {
       if (error) throw error;
 
       // מיזוג עם הגדרות השירותים
-      const mergedServices = serviceConfigs.map(config => {
+      const mergedServices: SystemService[] = serviceConfigs.map(config => {
         const dbService = data?.find(d => d.service_name === config.name);
         return {
           id: dbService?.id || `new-${config.name}`,
           name: config.name,
           displayName: config.displayName,
-          status: dbService?.status || 'unknown',
+          status: (dbService?.status as 'healthy' | 'warning' | 'error' | 'unknown') || 'unknown',
           last_checked: dbService?.last_checked || new Date().toISOString(),
           details: dbService?.details || {},
           icon: config.icon,
@@ -165,7 +166,7 @@ const SystemStatus = () => {
           last_query: 'business_owners lookup'
         }
       );
-    } catch (error) {
+    } catch (error: any) {
       await upsertServiceStatus('database', 'error', {
         error: error.message,
         response_time: Date.now() - startTime
@@ -197,7 +198,7 @@ const SystemStatus = () => {
         last_transaction: null
       });
 
-    } catch (error) {
+    } catch (error: any) {
       await upsertServiceStatus('calendar', 'error', {
         error: error.message
       });
@@ -233,7 +234,7 @@ const SystemStatus = () => {
         retention_days: 30
       });
 
-    } catch (error) {
+    } catch (error: any) {
       await upsertServiceStatus('system', 'error', {
         error: error.message,
         response_time: Date.now() - startTime
