@@ -2,14 +2,21 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChartBar } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import DailyOverview from "@/components/dashboard/DailyOverview";
 import AIInsights from "@/components/dashboard/AIInsights";
 import RiskyClients from "@/components/dashboard/RiskyClients";
 import NewBusinessDashboard from "@/components/dashboard/NewBusinessDashboard";
 import OnboardingTour from "@/components/onboarding/OnboardingTour";
+import MonthlyGoals from "@/components/dashboard/MonthlyGoals";
+import SmartNotifications from "@/components/dashboard/SmartNotifications";
+import QuickHelp from "@/components/dashboard/QuickHelp";
+import SystemStatus from "@/components/dashboard/SystemStatus";
+import ProfitabilityCalculator from "@/components/dashboard/ProfitabilityCalculator";
+import DailyMotivation from "@/components/dashboard/DailyMotivation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useBusinessOnboarding } from "@/hooks/useBusinessOnboarding";
+import { useNavigate } from "react-router-dom";
 
 // Mock data for the dashboard
 const appointmentsToday = [
@@ -49,6 +56,7 @@ const AdminDashboard = () => {
   const [todayDate, setTodayDate] = useState("");
   const [showTour, setShowTour] = useState(false);
   const { isNewBusiness, hasCompletedTour, businessData, hasAnyData, isLoading } = useBusinessOnboarding();
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Get current date in Hebrew format
@@ -99,71 +107,130 @@ const AdminDashboard = () => {
   // Show regular dashboard for established businesses
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+      <div className="space-y-6" dir="rtl">
+        {/* כותרת דשבורד */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center animate-fade-in">
           <div>
-            <h1 className="text-3xl font-bold text-beauty-dark">לוח בקרה</h1>
+            <h1 className="text-3xl font-bold text-beauty-dark mb-1">הלוח הראשי שלי</h1>
             <p className="text-muted-foreground">{todayDate}</p>
             {businessData && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-beauty-primary font-medium">
                 {businessData.business_name}
               </p>
             )}
           </div>
           <div className="mt-4 md:mt-0 flex gap-2">
-            <Button className="bg-beauty-primary hover:bg-opacity-90">
-              <Calendar className="ml-2 h-4 w-4" /> תור חדש
+            <Button 
+              className="bg-beauty-primary hover:bg-opacity-90 animate-scale-in"
+              onClick={() => navigate('/admin/appointments')}
+            >
+              <Plus className="ml-2 h-4 w-4" /> תור חדש
             </Button>
           </div>
         </div>
 
-        {/* Daily Overview */}
-        <DailyOverview 
-          appointmentsCount={appointmentsToday.length} 
-          todayIncome={1240} 
-          unpaidDebts={570}
-        />
+        {/* מוטיבציה יומית */}
+        <DailyMotivation />
 
-        {/* AI Insights */}
-        <AIInsights />
-
-        {/* Risky Clients */}
-        <RiskyClients clients={riskyClients} />
-
-        {/* Today's Appointments */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>לוח זמנים להיום</CardTitle>
-            <CardDescription>יש לך {appointmentsToday.length} פגישות היום</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {appointmentsToday.map((appointment) => (
-                <div key={appointment.id} className="flex items-center p-4 rounded-lg bg-beauty-accent">
-                  <div className="ml-4 flex-shrink-0 w-14 text-center">
-                    <div className="font-medium text-beauty-primary">{appointment.time}</div>
-                    <div className="text-xs text-muted-foreground">{appointment.duration}</div>
-                  </div>
-                  <div className="flex-grow min-w-0">
-                    <div className="font-medium truncate">{appointment.client}</div>
-                    <div className="text-sm text-muted-foreground">{appointment.service}</div>
-                  </div>
-                  <Button variant="outline" size="sm" className="mr-3">לצפייה</Button>
-                </div>
-              ))}
-              {appointmentsToday.length === 0 && (
-                <div className="text-center py-6 text-muted-foreground">
-                  אין פגישות להיום
-                </div>
-              )}
-              <div className="text-center mt-4">
-                <Button variant="link" className="text-beauty-primary">
-                  לוח זמנים מלא
-                </Button>
-              </div>
+        {/* Grid ראשי של הדשבורד */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* עמודה שמאלית - תוכן ראשי */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* סקירה יומית */}
+            <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <DailyOverview 
+                appointmentsCount={appointmentsToday.length} 
+                todayIncome={1240} 
+                unpaidDebts={570}
+              />
             </div>
-          </CardContent>
-        </Card>
+
+            {/* יעדים חודשיים */}
+            <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <MonthlyGoals />
+            </div>
+
+            {/* תובנות AI */}
+            <div className="animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <AIInsights />
+            </div>
+
+            {/* לקוחות בסיכון */}
+            <div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
+              <RiskyClients clients={riskyClients} />
+            </div>
+
+            {/* התורים של היום */}
+            <Card className="animate-fade-in hover:shadow-md transition-all duration-300" style={{ animationDelay: '500ms' }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-beauty-primary" />
+                  התורים שלי היום
+                </CardTitle>
+                <CardDescription>יש לך {appointmentsToday.length} פגישות היום</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {appointmentsToday.map((appointment, index) => (
+                    <div 
+                      key={appointment.id} 
+                      className="flex items-center p-4 rounded-lg bg-beauty-accent hover:bg-beauty-accent/80 transition-all duration-200 animate-scale-in cursor-pointer"
+                      style={{ animationDelay: `${600 + index * 100}ms` }}
+                      onClick={() => navigate('/admin/appointments')}
+                    >
+                      <div className="ml-4 flex-shrink-0 w-14 text-center">
+                        <div className="font-medium text-beauty-primary">{appointment.time}</div>
+                        <div className="text-xs text-muted-foreground">{appointment.duration}</div>
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <div className="font-medium truncate">{appointment.client}</div>
+                        <div className="text-sm text-muted-foreground">{appointment.service}</div>
+                      </div>
+                      <Button variant="outline" size="sm" className="mr-3 hover-scale">לצפייה</Button>
+                    </div>
+                  ))}
+                  {appointmentsToday.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">אין תורים היום</p>
+                      <p className="text-sm">זה הזמן המושלם לתכנן את יום המחר</p>
+                    </div>
+                  )}
+                  <div className="text-center mt-4">
+                    <Button 
+                      variant="link" 
+                      className="text-beauty-primary hover-scale"
+                      onClick={() => navigate('/admin/calendar')}
+                    >
+                      לוח הזמנים המלא שלי
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* עמודה ימנית - ווידג'טים צדדיים */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* התראות חכמות */}
+            <div className="animate-fade-in" style={{ animationDelay: '600ms' }}>
+              <SmartNotifications />
+            </div>
+
+            {/* מחשבון רווחיות */}
+            <div className="animate-fade-in" style={{ animationDelay: '700ms' }}>
+              <ProfitabilityCalculator />
+            </div>
+
+            {/* סטטוס מערכת */}
+            <div className="animate-fade-in" style={{ animationDelay: '800ms' }}>
+              <SystemStatus />
+            </div>
+          </div>
+        </div>
+
+        {/* כפתור עזרה צף */}
+        <QuickHelp />
       </div>
     </AdminLayout>
   );

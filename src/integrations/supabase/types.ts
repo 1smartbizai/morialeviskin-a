@@ -767,6 +767,42 @@ export type Database = {
           },
         ]
       }
+      monthly_goals: {
+        Row: {
+          created_at: string
+          current_new_clients: number
+          current_revenue: number
+          id: string
+          month_year: string
+          new_clients_goal: number
+          revenue_goal: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_new_clients?: number
+          current_revenue?: number
+          id?: string
+          month_year: string
+          new_clients_goal?: number
+          revenue_goal?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_new_clients?: number
+          current_revenue?: number
+          id?: string
+          month_year?: string
+          new_clients_goal?: number
+          revenue_goal?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           created_at: string | null
@@ -887,6 +923,78 @@ export type Database = {
           question?: string
           question_type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      smart_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          read_at: string | null
+          related_id: string | null
+          scheduled_for: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          read_at?: string | null
+          related_id?: string | null
+          scheduled_for?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          read_at?: string | null
+          related_id?: string | null
+          scheduled_for?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_status: {
+        Row: {
+          created_at: string
+          details: Json | null
+          id: string
+          last_checked: string
+          service_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          last_checked?: string
+          service_name: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          last_checked?: string
+          service_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1031,6 +1139,42 @@ export type Database = {
           price?: number
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          daily_motivation: boolean | null
+          dark_mode: boolean | null
+          dashboard_layout: string | null
+          id: string
+          notifications_enabled: boolean | null
+          updated_at: string
+          user_id: string
+          widget_order: Json | null
+        }
+        Insert: {
+          created_at?: string
+          daily_motivation?: boolean | null
+          dark_mode?: boolean | null
+          dashboard_layout?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+          widget_order?: Json | null
+        }
+        Update: {
+          created_at?: string
+          daily_motivation?: boolean | null
+          dark_mode?: boolean | null
+          dashboard_layout?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id?: string
+          widget_order?: Json | null
         }
         Relationships: []
       }
