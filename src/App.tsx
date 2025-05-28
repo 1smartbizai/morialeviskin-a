@@ -41,7 +41,8 @@ import BusinessSettings from "./pages/admin/BusinessSettings";
 import MessagesAndAutomations from "./pages/admin/MessagesAndAutomations";
 import ClientMessages from "./pages/client/Messages";
 import FeedbackSurvey from "./pages/client/FeedbackSurvey";
-import ClientSettings from "./pages/client/Settings"; // Add this import
+import ClientSettings from "./pages/client/Settings";
+import BusinessSuccessPage from "./pages/BusinessSuccessPage";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/signup" element={<BusinessOwnerSignup />} />
+            <Route path="/business-success" element={<BusinessSuccessPage />} />
             <Route path="/client/auth" element={<ClientAuth />} />
             
             {/* Admin Auth routes */}

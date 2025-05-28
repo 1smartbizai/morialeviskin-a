@@ -2,10 +2,16 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Stars } from "lucide-react";
 import { useSignup } from "@/contexts/SignupContext";
+import { useNavigate } from "react-router-dom";
 
 const DashboardCTA = () => {
+  const navigate = useNavigate();
   const { signupData } = useSignup();
   const { firstName, businessName } = signupData;
+  
+  const handleNavigateToSuccess = () => {
+    navigate("/business-success");
+  };
   
   return (
     <>
@@ -13,10 +19,11 @@ const DashboardCTA = () => {
         <Button 
           variant="default" 
           size="lg" 
+          onClick={handleNavigateToSuccess}
           className="w-full sm:w-auto text-base px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
         >
           <span>
-            {firstName ? `${firstName}, ` : ''}היכנסי ללוח הבקרה
+            {firstName ? `${firstName}, ` : ''}המשיכי לסיכום העסק
           </span>
           <ArrowRight className="ml-1 h-5 w-5" />
         </Button>
