@@ -1,108 +1,109 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Plus, 
-  Calendar, 
-  Users, 
-  MessageSquare, 
-  CreditCard, 
-  BarChart3, 
-  Settings,
-  Sparkles
-} from "lucide-react";
+import { Calendar, Users, CreditCard, MessageSquare, BarChart3, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { FeatureGate, PlanBadge } from "@/components/plan-gating";
+import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 
 const QuickActions = () => {
   const navigate = useNavigate();
-
+  const { isFeatureLocked, getFeatureRequiredPlan } = usePlanPermissions();
+  
   const actions = [
     {
       title: "תור חדש",
-      description: "הוסף תור חדש ללקוח",
-      icon: Plus,
-      color: "from-blue-500 to-blue-600",
-      bgColor: "from-blue-50 to-blue-100",
-      onClick: () => navigate('/admin/appointments')
+      description: "קבע תור ללקוח",
+      icon: Calendar,
+      onClick: () => navigate("/admin/appointments"),
+      color: "from-blue-500 to-blue-600"
     },
     {
       title: "לקוח חדש",
-      description: "הוסף לקוח חדש למערכת",
+      description: "הוסף לקוח למערכת",
       icon: Users,
-      color: "from-green-500 to-green-600", 
-      bgColor: "from-green-50 to-green-100",
-      onClick: () => navigate('/admin/clients')
-    },
-    {
-      title: "הודעה חדשה",
-      description: "שלח הודעה ללקוחות",
-      icon: MessageSquare,
+      onClick: () => navigate("/admin/clients"),
       color: "from-purple-500 to-purple-600",
-      bgColor: "from-purple-50 to-purple-100",
-      onClick: () => navigate('/admin/messages')
+      feature: "unlimited_clients" as const
     },
     {
       title: "תשלום חדש",
-      description: "רשום תשלום חדש",
+      description: "רשום תשלום",
       icon: CreditCard,
-      color: "from-orange-500 to-orange-600",
-      bgColor: "from-orange-50 to-orange-100",
-      onClick: () => navigate('/admin/payments')
+      onClick: () => navigate("/admin/payments"),
+      color: "from-green-500 to-green-600"
+    },
+    {
+      title: "שלח הודעה",
+      description: "הודעה ללקוחות",
+      icon: MessageSquare,
+      onClick: () => navigate("/admin/messages"),
+      color: "from-pink-500 to-pink-600",
+      feature: "sms_messaging" as const
     },
     {
       title: "דוחות",
-      description: "צפה בדוחות ותחזיות",
+      description: "צפה בביצועים",
       icon: BarChart3,
-      color: "from-teal-500 to-teal-600",
-      bgColor: "from-teal-50 to-teal-100",
-      onClick: () => navigate('/admin/insights')
+      onClick: () => navigate("/admin/analytics"),
+      color: "from-orange-500 to-orange-600",
+      feature: "advanced_analytics" as const
     },
     {
       title: "הגדרות",
-      description: "נהל את העסק שלך",
+      description: "נהל את העסק",
       icon: Settings,
-      color: "from-gray-500 to-gray-600",
-      bgColor: "from-gray-50 to-gray-100",
-      onClick: () => navigate('/admin/business-settings')
+      onClick: () => navigate("/admin/business-settings"),
+      color: "from-gray-500 to-gray-600"
     }
   ];
 
   return (
-    <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-purple-50/30 hover:shadow-xl transition-all duration-500">
-      <CardHeader className="bg-gradient-to-l from-purple-50 to-pink-50 pb-4">
+    <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-gray-50/50 hover:shadow-2xl transition-all duration-500">
+      <CardHeader className="bg-gradient-to-l from-blue-50 to-purple-50 rounded-t-lg">
         <CardTitle className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg text-white">
-            <Sparkles className="h-5 w-5" />
+          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg text-white">
+            <Calendar className="h-5 w-5" />
           </div>
           <div>
             <h3 className="text-xl font-bold text-gray-800">פעולות מהירות</h3>
-            <p className="text-sm text-gray-600">מה את רוצה לעשות היום?</p>
+            <p className="text-sm text-gray-600">גישה מהירה לכל מה שחשוב</p>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {actions.map((action, index) => (
-            <Button
-              key={action.title}
-              variant="ghost"
-              className="h-auto p-0 hover:scale-105 transition-all duration-300 animate-fade-in group"
-              style={{ animationDelay: `${index * 100}ms` }}
-              onClick={action.onClick}
-            >
-              <div className={`w-full p-4 rounded-xl bg-gradient-to-br ${action.bgColor} group-hover:shadow-md transition-all duration-300`}>
-                <div className="flex flex-col items-center text-center space-y-3">
-                  <div className={`p-3 rounded-lg bg-gradient-to-br ${action.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <action.icon className="h-6 w-6" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {actions.map((action, index) => {
+            const isLocked = action.feature && isFeatureLocked(action.feature);
+            const requiredPlan = action.feature && getFeatureRequiredPlan(action.feature);
+            
+            return (
+              <div key={action.title} className="relative">
+                <Button
+                  variant="outline"
+                  className={`w-full h-24 flex flex-col items-center justify-center p-4 hover:shadow-lg transition-all duration-300 hover:scale-105 group border-gray-200 ${
+                    isLocked ? 'opacity-60 cursor-not-allowed' : 'hover:border-purple-300'
+                  }`}
+                  onClick={isLocked ? undefined : action.onClick}
+                  disabled={isLocked}
+                >
+                  <div className={`p-2 rounded-lg bg-gradient-to-br ${action.color} text-white mb-2 group-hover:scale-110 transition-transform duration-300`}>
+                    <action.icon className="h-5 w-5" />
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800 text-sm">{action.title}</h4>
-                    <p className="text-xs text-gray-600 mt-1">{action.description}</p>
+                  <div className="text-center">
+                    <div className="font-medium text-sm">{action.title}</div>
+                    <div className="text-xs text-gray-500 mt-1">{action.description}</div>
                   </div>
-                </div>
+                </Button>
+                
+                {isLocked && requiredPlan && (
+                  <div className="absolute -top-2 -left-2">
+                    <PlanBadge plan={requiredPlan} size="sm" />
+                  </div>
+                )}
               </div>
-            </Button>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>

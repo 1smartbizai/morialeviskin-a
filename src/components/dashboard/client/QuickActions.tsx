@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { Calendar, MessageSquare, Award, Droplet, Settings } from "lucide-react";
+import { Calendar, MessageSquare, Award, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useFeedbackSurvey } from "@/hooks/useFeedbackSurvey";
+import { FeatureGate } from "@/components/plan-gating";
 
 interface QuickActionsProps {
   hasPendingFeedback?: boolean;
@@ -23,25 +24,29 @@ const QuickActions = ({ hasPendingFeedback = false }: QuickActionsProps) => {
         </Button>
       </Link>
       
-      <Link to="/client/messages">
-        <Button
-          variant="outline"
-          className="w-full h-auto py-4 flex flex-col items-center"
-        >
-          <MessageSquare className="h-5 w-5 mb-2" />
-          <span>הודעות</span>
-        </Button>
-      </Link>
+      <FeatureGate feature="sms_messaging" showBadge={true}>
+        <Link to="/client/messages">
+          <Button
+            variant="outline"
+            className="w-full h-auto py-4 flex flex-col items-center"
+          >
+            <MessageSquare className="h-5 w-5 mb-2" />
+            <span>הודעות</span>
+          </Button>
+        </Link>
+      </FeatureGate>
       
-      <Link to="/client/rewards">
-        <Button
-          variant="outline"
-          className="w-full h-auto py-4 flex flex-col items-center"
-        >
-          <Award className="h-5 w-5 mb-2" />
-          <span>הטבות</span>
-        </Button>
-      </Link>
+      <FeatureGate feature="loyalty_program" showBadge={true}>
+        <Link to="/client/rewards">
+          <Button
+            variant="outline"
+            className="w-full h-auto py-4 flex flex-col items-center"
+          >
+            <Award className="h-5 w-5 mb-2" />
+            <span>הטבות</span>
+          </Button>
+        </Link>
+      </FeatureGate>
       
       <Link to="/client/settings">
         <Button
