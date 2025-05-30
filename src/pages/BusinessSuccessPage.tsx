@@ -57,8 +57,8 @@ const BusinessSuccessPage = () => {
     );
   }
 
-  const businessName = businessData.business_name;
-  const ownerName = `${businessData.first_name} ${businessData.last_name}`;
+  const businessName = businessData.business_name || "העסק שלך";
+  const ownerName = `${businessData.first_name || ""} ${businessData.last_name || ""}`.trim() || "בעלת העסק";
   const primaryColor = businessData.primary_color || "#6A0DAD";
 
   const quickActions = [
@@ -69,7 +69,7 @@ const BusinessSuccessPage = () => {
       action: () => navigate("/admin/business-management")
     },
     {
-      title: "הוסיפי לקוחות",
+      title: "הוסיפי לקוחות", 
       description: "התחילי לנהל את בסיס הלקוחות",
       icon: Users,
       action: () => navigate("/admin/clients")
@@ -175,24 +175,31 @@ const BusinessSuccessPage = () => {
             <h2 className="text-2xl font-bold mb-6 text-center">צעדים ראשונים</h2>
             
             <div className="grid md:grid-cols-3 gap-4 mb-8">
-              {quickActions.map((action, index) => (
-                <Card 
-                  key={action.title}
-                  className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-gray-100 hover:border-purple-200"
-                  onClick={action.action}
-                >
-                  <CardContent className="p-6 text-center">
-                    <div 
-                      className="p-4 rounded-full mx-auto mb-4 w-fit"
-                      style={{ backgroundColor: `${primaryColor}20` }}
-                    >
-                      <action.icon className="h-8 w-8" style={{ color: primaryColor }} />
-                    </div>
-                    <h3 className="font-bold mb-2">{action.title}</h3>
-                    <p className="text-sm text-gray-600">{action.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              {quickActions.map((action, index) => {
+                // Safe check to ensure action and all its properties exist
+                if (!action || !action.title || !action.description || !action.icon) {
+                  return null;
+                }
+                
+                return (
+                  <Card 
+                    key={action.title}
+                    className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-gray-100 hover:border-purple-200"
+                    onClick={action.action}
+                  >
+                    <CardContent className="p-6 text-center">
+                      <div 
+                        className="p-4 rounded-full mx-auto mb-4 w-fit"
+                        style={{ backgroundColor: `${primaryColor}20` }}
+                      >
+                        <action.icon className="h-8 w-8" style={{ color: primaryColor }} />
+                      </div>
+                      <h3 className="font-bold mb-2">{action.title}</h3>
+                      <p className="text-sm text-gray-600">{action.description}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
             
             <div className="text-center space-y-4">

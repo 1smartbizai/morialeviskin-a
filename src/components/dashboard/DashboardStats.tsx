@@ -13,7 +13,7 @@ const DashboardStats = ({ appointmentsToday, monthlyRevenue, newClients, satisfa
   const stats = [
     {
       title: "תורים היום",
-      value: appointmentsToday.toString(),
+      value: appointmentsToday?.toString() || "0",
       change: "+2 מאתמול",
       changeType: "positive" as const,
       icon: Calendar,
@@ -22,7 +22,7 @@ const DashboardStats = ({ appointmentsToday, monthlyRevenue, newClients, satisfa
     },
     {
       title: "הכנסות החודש",
-      value: `₪${monthlyRevenue.toLocaleString()}`,
+      value: `₪${(monthlyRevenue || 0).toLocaleString()}`,
       change: "+15% מחודש קודם",
       changeType: "positive" as const,
       icon: DollarSign,
@@ -31,7 +31,7 @@ const DashboardStats = ({ appointmentsToday, monthlyRevenue, newClients, satisfa
     },
     {
       title: "לקוחות חדשים",
-      value: newClients.toString(),
+      value: (newClients || 0).toString(),
       change: "+3 השבוע",
       changeType: "positive" as const,
       icon: Users,
@@ -40,7 +40,7 @@ const DashboardStats = ({ appointmentsToday, monthlyRevenue, newClients, satisfa
     },
     {
       title: "דירוג שביעות רצון",
-      value: satisfactionRate.toString(),
+      value: (satisfactionRate || 0).toString(),
       change: "+0.2 מחודש קודם",
       changeType: "positive" as const,
       icon: Star,
@@ -51,45 +51,52 @@ const DashboardStats = ({ appointmentsToday, monthlyRevenue, newClients, satisfa
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-      {stats.map((stat, index) => (
-        <Card 
-          key={stat.title}
-          className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in hover:scale-105 cursor-pointer group"
-          style={{ animationDelay: `${index * 100}ms` }}
-        >
-          <CardContent className="p-0">
-            <div className={`bg-gradient-to-br ${stat.bgColor} p-6 relative overflow-hidden`}>
-              {/* Background decoration */}
-              <div className="absolute top-0 right-0 w-16 h-16 opacity-10">
-                <stat.icon className="w-full h-full" />
-              </div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <stat.icon className="h-6 w-6" />
-                  </div>
-                  <div className={`text-xs px-2 py-1 rounded-full ${
-                    stat.changeType === 'positive' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    <TrendingUp className="h-3 w-3 inline ml-1" />
-                    {stat.change}
-                  </div>
+      {stats.map((stat, index) => {
+        // Safe check to ensure stat and all its properties exist
+        if (!stat || !stat.title || !stat.value || !stat.icon) {
+          return null;
+        }
+        
+        return (
+          <Card 
+            key={stat.title}
+            className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 animate-fade-in hover:scale-105 cursor-pointer group"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <CardContent className="p-0">
+              <div className={`bg-gradient-to-br ${stat.bgColor} p-6 relative overflow-hidden`}>
+                {/* Background decoration */}
+                <div className="absolute top-0 right-0 w-16 h-16 opacity-10">
+                  <stat.icon className="w-full h-full" />
                 </div>
                 
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-600">{stat.title}</h3>
-                  <p className="text-3xl font-bold text-gray-800 group-hover:scale-105 transition-transform duration-300">
-                    {stat.value}
-                  </p>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <stat.icon className="h-6 w-6" />
+                    </div>
+                    <div className={`text-xs px-2 py-1 rounded-full ${
+                      stat.changeType === 'positive' 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      <TrendingUp className="h-3 w-3 inline ml-1" />
+                      {stat.change}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-medium text-gray-600">{stat.title}</h3>
+                    <p className="text-3xl font-bold text-gray-800 group-hover:scale-105 transition-transform duration-300">
+                      {stat.value}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };

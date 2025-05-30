@@ -24,7 +24,7 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
   
   // Calculate progress percentage for current step
   // Note: We use steps.length to calculate progress, the verification step is "special" and not reflected in the progress
-  const totalSteps = steps.length;
+  const totalSteps = steps?.length || 6;
   const currentStepIndex = currentStep === STEP_COMPONENTS.VERIFICATION 
     ? 0 // Keep at 0% for verification step 
     : currentStep > STEP_COMPONENTS.VERIFICATION 
@@ -39,7 +39,7 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
     
     if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) return "המשך";
     if (currentStep === STEP_COMPONENTS.VERIFICATION) {
-      if (signupData.isEmailVerified) return "המשך להקמת העסק";
+      if (signupData?.isEmailVerified) return "המשך להקמת העסק";
       return "אני מבינה";
     }
     if (currentStep === STEP_COMPONENTS.SUCCESS) return "מעבר למערכת";
