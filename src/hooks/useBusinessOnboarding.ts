@@ -11,6 +11,7 @@ interface BusinessData {
   primary_color: string;
   accent_color: string;
   logo_url: string | null;
+  subscription_level: string | null;
   metadata: any;
 }
 

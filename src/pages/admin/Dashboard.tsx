@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,8 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useBusinessOnboarding } from "@/hooks/useBusinessOnboarding";
 import { useNavigate } from "react-router-dom";
+import { FeatureGate } from "@/components/plan-gating";
+import { BarChart3, Brain, Sparkles } from "lucide-react";
 
 // Mock data for the dashboard
 const appointmentsToday = [
@@ -195,7 +196,21 @@ const AdminDashboard = () => {
             {/* תרשימים ואנליטיקה */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in" style={{ animationDelay: '400ms' }}>
               <AppointmentChart />
-              <RevenueChart />
+              <FeatureGate 
+                feature="advanced_analytics"
+                fallback={
+                  <Card className="h-full flex items-center justify-center">
+                    <div className="text-center p-6">
+                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">דוחות הכנסות מתקדמים</h3>
+                      <p className="text-sm text-muted-foreground">זמין בתכנית Pro ומעלה</p>
+                    </div>
+                  </Card>
+                }
+                showUpgradePrompt={true}
+              >
+                <RevenueChart />
+              </FeatureGate>
             </div>
 
             {/* יעדים חודשיים */}
@@ -205,7 +220,29 @@ const AdminDashboard = () => {
 
             {/* תובנות AI */}
             <div className="animate-fade-in" style={{ animationDelay: '600ms' }}>
-              <AIInsights />
+              <FeatureGate 
+                feature="ai_insights"
+                fallback={
+                  <Card className="h-full">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Brain className="h-5 w-5" />
+                        תובנות AI
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center py-8">
+                      <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="font-medium mb-2">תובנות חכמות מבוססות AI</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        קבלי המלצות מותאמות אישית לשיפור העסק שלך
+                      </p>
+                    </CardContent>
+                  </Card>
+                }
+                showUpgradePrompt={true}
+              >
+                <AIInsights />
+              </FeatureGate>
             </div>
 
             {/* לקוחות בסיכון */}
@@ -301,7 +338,25 @@ const AdminDashboard = () => {
 
             {/* מחשבון רווחיות */}
             <div className="animate-fade-in" style={{ animationDelay: '1000ms' }}>
-              <ProfitabilityCalculator />
+              <FeatureGate 
+                feature="custom_reports"
+                fallback={
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>מחשבון רווחיות</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center py-6">
+                      <DollarSign className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground">
+                        זמין בתכנית Gold ומעלה
+                      </p>
+                    </CardContent>
+                  </Card>
+                }
+                showUpgradePrompt={true}
+              >
+                <ProfitabilityCalculator />
+              </FeatureGate>
             </div>
 
             {/* סטטוס מערכת */}
