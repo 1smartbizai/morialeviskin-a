@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -167,60 +166,10 @@ const SignupContent = () => {
       return;
     }
     
-    // Verification step validation with personalized message
-    if (currentStep === STEP_COMPONENTS.VERIFICATION) {
-      if (!signupData.isEmailVerified) {
-        toast({
-          variant: "destructive",
-          title: "נדרש אימות אימייל",
-          description: `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך.`
-        });
-        return;
-      }
-    }
-    
-    // Payment step validation
-    if (currentStep === STEP_COMPONENTS.PAYMENT) {
-      const isPaidPlan = signupData.subscriptionLevel !== 'free';
-      
-      if (isPaidPlan) {
-        setIsLoading(true);
-        try {
-          // Access the processPayment function from the payment step
-          const PaymentStepComponent = require('./payment').PaymentStep;
-          
-          if (PaymentStepComponent.processPayment) {
-            const success = await PaymentStepComponent.processPayment();
-            
-            if (!success) {
-              setIsLoading(false);
-              toast({
-                variant: "destructive",
-                title: `${signupData.firstName}, שגיאה בתהליך התשלום`,
-                description: "ניתן לבחור בתוכנית חינמית במקום או לנסות שוב מאוחר יותר"
-              });
-              return; // Don't proceed if payment failed
-            }
-          }
-        } catch (error) {
-          console.error("שגיאה בתהליך התשלום:", error);
-          setIsLoading(false);
-          toast({
-            variant: "destructive",
-            title: `${signupData.firstName}, שגיאה בתהליך התשלום`,
-            description: "ניתן לבחור בתוכנית חינמית במקום או לנסות שוב מאוחר יותר"
-          });
-          return;
-        }
-      }
-    }
-    
-    // Continue with the signup process
-    setIsLoading(true);
-    
-    try {
-      // If this is the first step (Personal Info), we create the user account 
-      if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) {
+    // Plan selection step - create user account
+    if (currentStep === STEP_COMPONENTS.PLAN_SELECTION) {
+      setIsLoading(true);
+      try {
         // Generate business domain and ID
         const { domain, id } = generateBusinessIdentifiers(signupData.businessName);
         updateSignupData({ businessDomain: domain, businessId: id });
@@ -234,13 +183,13 @@ const SignupContent = () => {
             if (result?.session) {
               toast({
                 title: `ברוכה הבאה, ${signupData.firstName}!`,
-                description: "החשבון שלך נוצר בהצלחה. עכשיו עליך לאמת את כתובת האימייל שלך להמשך התהליך."
+                description: "החשבון שלך נוצר בהצלחה. כעת עליך לאמת את כתובת האימייל שלך."
               });
               
-              // Now we'll move to the verification step instead of the next step
+              // Move to verification step
               setCurrentStep(STEP_COMPONENTS.VERIFICATION);
               setIsLoading(false);
-              return; // Exit early since we're now handling redirection differently
+              return;
             }
           } catch (accountError: any) {
             console.error("שגיאה ביצירת החשבון:", accountError);
@@ -250,17 +199,44 @@ const SignupContent = () => {
               description: accountError.message || `${signupData.firstName}, אנא נסי שנית מאוחר יותר`
             });
             setIsLoading(false);
-            return; // Don't proceed if account creation failed
+            return;
           }
         }
         
-        // If we reach here with a session, we should go to verification step
+        // If we reach here with a session, go to verification step
         setCurrentStep(STEP_COMPONENTS.VERIFICATION);
         setIsLoading(false);
         return;
-      } 
-      // If user is on verification step, check email verification (phone is optional)
-      else if (currentStep === STEP_COMPONENTS.VERIFICATION) {
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "שגיאה בתהליך ההרשמה",
+          description: error.message || `${signupData.firstName}, אנא נסי שנית`
+        });
+        console.error('שגיאה בתהליך ההרשמה:', error);
+        setIsLoading(false);
+        return;
+      }
+    }
+    
+    // Verification step validation with personalized message
+    if (currentStep === STEP_COMPONENTS.VERIFICATION) {
+      if (!signupData.isEmailVerified) {
+        toast({
+          variant: "destructive",
+          title: "נדרש אימות אימייל",
+          description: `${signupData.firstName}, עלייך לאמת את כתובת הדוא"ל שלך כדי להמשיך.`
+        });
+        return;
+      }
+    }
+    
+    // Continue with the signup process
+    setIsLoading(true);
+    
+    try {
+      // If this is the verification step, check email verification (phone is optional)
+      if (currentStep === STEP_COMPONENTS.VERIFICATION) {
         // Check email verification - phone verification is optional
         if (!signupData.isEmailVerified) {
           toast({
@@ -276,7 +252,7 @@ const SignupContent = () => {
         if (session?.user?.id) {
           const metadata = {
             isSignupComplete: false,
-            currentStep: STEP_COMPONENTS.VISUAL_IDENTITY,
+            currentStep: STEP_COMPONENTS.BUSINESS_SETUP,
             lastUpdated: new Date().toISOString()
           };
           
@@ -305,8 +281,8 @@ const SignupContent = () => {
         if (session?.user?.id) {
           await saveSignupData(currentStep, signupData, session.user.id);
           
-          // Now proceed to visual identity step
-          setCurrentStep(STEP_COMPONENTS.VISUAL_IDENTITY);
+          // Now proceed to business setup step
+          setCurrentStep(STEP_COMPONENTS.BUSINESS_SETUP);
           setIsLoading(false);
           return;
         }
@@ -347,7 +323,7 @@ const SignupContent = () => {
         let nextStep = currentStep + 1;
         
         // For the last step, mark signup as complete
-        if (nextStep >= STEP_COMPONENTS.SUCCESS) {
+        if (nextStep >= STEP_COMPONENTS.WELCOME_COMPLETE) {
           const metadata = {
             isSignupComplete: true,
             currentStep: nextStep,
@@ -375,7 +351,7 @@ const SignupContent = () => {
       }
       
       // Handle final step navigation to dashboard
-      if (currentStep === STEP_COMPONENTS.SUCCESS) {
+      if (currentStep === STEP_COMPONENTS.WELCOME_COMPLETE) {
         toast({
           title: "התהליך הושלם בהצלחה!",
           description: `${signupData.firstName}, העסק שלך מוכן לשימוש. מעבר למערכת...`
@@ -401,9 +377,9 @@ const SignupContent = () => {
     // Always scroll to top before proceeding
     scrollToTop();
     
-    // If at the verification step, go back to personal info
+    // If at the verification step, go back to plan selection
     if (currentStep === STEP_COMPONENTS.VERIFICATION) {
-      setCurrentStep(STEP_COMPONENTS.PERSONAL_INFO);
+      setCurrentStep(STEP_COMPONENTS.PLAN_SELECTION);
     }
     // For all other steps
     else if (currentStep > 0) {
@@ -411,7 +387,7 @@ const SignupContent = () => {
     }
   };
 
-  // Get the step title, considering the new verification step
+  // Get the step title, considering the new steps structure
   const getStepTitle = () => {
     // If we're on the verification step, use a custom title
     if (currentStep === STEP_COMPONENTS.VERIFICATION) {

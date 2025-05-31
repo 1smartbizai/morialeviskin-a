@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Home } from "lucide-react";
 import { useSignup } from "@/contexts/SignupContext";
 import { STEP_COMPONENTS } from "./StepRenderer";
+import { useNavigate } from "react-router-dom";
 
 interface NavigationProps {
   onNext: () => void;
@@ -24,6 +25,7 @@ export const steps = [
 
 const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
   const { currentStep, isLoading, signupData } = useSignup();
+  const navigate = useNavigate();
   
   // Calculate progress percentage for current step
   const totalSteps = steps?.length || 9;
@@ -33,7 +35,7 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
   const getNextButtonText = () => {
     if (isLoading) return "טוען...";
     
-    if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) return "המשך לבחירת תכנית";
+    if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) return "המשך";
     if (currentStep === STEP_COMPONENTS.PLAN_SELECTION) return "פתח חשבון";
     if (currentStep === STEP_COMPONENTS.VERIFICATION) {
       if (signupData?.isEmailVerified) return "המשך להקמת העסק";
@@ -42,6 +44,24 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
     if (currentStep === STEP_COMPONENTS.WELCOME_COMPLETE) return "מעבר למערכת";
     return "המשך";
   };
+
+  // Determine previous button text/action
+  const getPreviousButtonAction = () => {
+    if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) {
+      return {
+        text: "חזרה לעמוד הבית",
+        icon: <Home className="h-4 w-4" />,
+        action: () => navigate("/")
+      };
+    }
+    return {
+      text: "חזרה",
+      icon: <ChevronRight className="h-4 w-4" />,
+      action: onPrevious
+    };
+  };
+
+  const previousAction = getPreviousButtonAction();
 
   // Hide navigation on welcome complete step until setup is done
   if (currentStep === STEP_COMPONENTS.WELCOME_COMPLETE) {
@@ -64,12 +84,12 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
     <div className="flex justify-between items-center mt-8 pt-6 border-t">
       <Button
         variant="outline"
-        onClick={onPrevious}
-        disabled={currentStep === 0 || isLoading}
+        onClick={previousAction.action}
+        disabled={isLoading}
         className="flex items-center gap-2 hover-scale"
       >
-        <ChevronRight className="h-4 w-4" />
-        חזרה
+        {previousAction.icon}
+        {previousAction.text}
       </Button>
 
       <div className="text-sm text-muted-foreground">

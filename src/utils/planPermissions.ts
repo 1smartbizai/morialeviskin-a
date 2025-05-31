@@ -1,4 +1,3 @@
-
 import { SignupData } from "@/contexts/SignupContext";
 
 // Define available subscription plans
@@ -20,7 +19,8 @@ export type FeatureName =
   | 'loyalty_program'
   | 'custom_reports'
   | 'multi_staff'
-  | 'api_access';
+  | 'api_access'
+  | 'social_media_integration';
 
 // Feature definitions with plan requirements
 export const FEATURE_PERMISSIONS: Record<FeatureName, {
@@ -100,6 +100,12 @@ export const FEATURE_PERMISSIONS: Record<FeatureName, {
     category: 'integrations',
     name: 'גישה ל-API',
     description: 'חיבור למערכות חיצוניות'
+  },
+  social_media_integration: {
+    requiredPlan: 'gold',
+    category: 'integrations',
+    name: 'רשתות חברתיות',
+    description: 'חיבור לאינסטגרם ופייסבוק'
   }
 };
 
