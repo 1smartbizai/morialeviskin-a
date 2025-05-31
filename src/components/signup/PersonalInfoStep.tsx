@@ -5,8 +5,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useSignup } from "@/contexts/SignupContext";
-import { CheckCircle2, XCircle, Eye, EyeOff, Info } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, EyeOff, Info, Home } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
@@ -65,7 +66,11 @@ const calculatePasswordStrength = (password: string): number => {
   return strength;
 };
 
-const PersonalInfoStep = () => {
+interface PersonalInfoStepProps {
+  onCreateAccount?: () => void;
+}
+
+const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
   const { signupData, updateSignupData } = useSignup();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -86,7 +91,7 @@ const PersonalInfoStep = () => {
       phone: signupData.phone || "",
       businessName: signupData.businessName || "",
     },
-    mode: "onChange", // Enable real-time validation
+    mode: "onChange",
   });
 
   // Track form validity for the parent component
@@ -177,34 +182,91 @@ const PersonalInfoStep = () => {
   const strengthInfo = getPasswordStrengthInfo(passwordStrength);
 
   return (
-    <Form {...form}>
-      <form className="space-y-6" dir="rtl">
-        {(emailExists || phoneExists) && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <Info className="h-4 w-4 text-blue-500" />
-            <AlertDescription>
-              נראה שיש לך כבר משתמש במערכת.{" "}
-              <Link to="/admin/login" className="text-primary font-semibold hover:underline">
-                כדאי להתחבר כאן
-              </Link>
-            </AlertDescription>
-          </Alert>
-        )}
+    <div className="space-y-6 animate-fade-in" dir="rtl">
+      {/* Header Section */}
+      <div className="text-center space-y-3">
+        <h1 className="text-3xl font-bold text-primary">
+          בואי ניצור חשבון ב-Bellevo
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          מלאי את הפרטים הבאים כדי להתחיל את המסע שלך עם Bellevo - הפלטפורמה שמעצימה את העסק שלך
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Form {...form}>
+        <form className="space-y-6 max-w-2xl mx-auto">
+          {(emailExists || phoneExists) && (
+            <Alert className="bg-blue-50 border-blue-200 animate-fade-in">
+              <Info className="h-4 w-4 text-blue-500" />
+              <AlertDescription>
+                נראה שיש לך כבר משתמש במערכת.{" "}
+                <Link to="/admin/login" className="text-primary font-semibold hover:underline">
+                  כדאי להתחבר כאן
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium">שם פרטי *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="הכניסי את שמך הפרטי"
+                      className="h-12 text-base"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleFormChange("firstName", e.target.value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium">שם משפחה *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      placeholder="הכניסי את שם המשפחה שלך"
+                      className="h-12 text-base"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleFormChange("lastName", e.target.value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <FormField
             control={form.control}
-            name="firstName"
+            name="businessName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>שם פרטי *</FormLabel>
+                <FormLabel className="text-base font-medium">שם העסק *</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="הכניסי את שמך הפרטי"
+                    placeholder="הכניסי את שם העסק שלך"
+                    className="h-12 text-base"
                     onChange={(e) => {
                       field.onChange(e);
-                      handleFormChange("firstName", e.target.value);
+                      handleFormChange("businessName", e.target.value);
                     }}
                   />
                 </FormControl>
@@ -215,217 +277,221 @@ const PersonalInfoStep = () => {
 
           <FormField
             control={form.control}
-            name="lastName"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>שם משפחה *</FormLabel>
+                <FormLabel className="text-base font-medium">דוא״ל *</FormLabel>
                 <FormControl>
-                  <Input 
-                    {...field} 
-                    placeholder="הכניסי את שם המשפחה שלך"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      handleFormChange("lastName", e.target.value);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="businessName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>שם העסק *</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field} 
-                  placeholder="הכניסי את שם העסק שלך"
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleFormChange("businessName", e.target.value);
-                  }}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>דוא״ל *</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input 
-                    {...field} 
-                    placeholder="your@email.com" 
-                    type="email"
-                    dir="ltr"
-                    className={`text-left ${emailExists ? 'border-red-500' : ''}`}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      handleFormChange("email", e.target.value);
-                      if (emailExists) setEmailExists(false);
-                    }}
-                  />
-                  {isCheckingEmail && (
-                    <div className="absolute inset-y-0 left-3 flex items-center">
-                      <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                    </div>
-                  )}
-                  {emailExists && (
-                    <div className="absolute inset-y-0 right-3 flex items-center">
-                      <XCircle className="h-4 w-4 text-red-500" />
-                    </div>
-                  )}
-                </div>
-              </FormControl>
-              {emailExists && <p className="text-xs text-red-500 mt-1">כתובת אימייל זו כבר רשומה במערכת</p>}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>סיסמה *</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input 
-                    {...field} 
-                    placeholder="בחרי סיסמה" 
-                    type={passwordVisible ? "text" : "password"}
-                    dir="ltr"
-                    className="text-left pr-3 pl-10"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      handleFormChange("password", e.target.value);
-                      setPasswordStrength(calculatePasswordStrength(e.target.value));
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 left-0 px-3 flex items-center text-sm"
-                    onClick={() => setPasswordVisible(!passwordVisible)}
-                  >
-                    {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                  {field.value && (
-                    <div className="absolute inset-y-0 right-3 flex items-center">
-                      {passwordRegex.test(field.value) ? 
-                        <CheckCircle2 className="h-4 w-4 text-green-500" /> : 
+                  <div className="relative">
+                    <Input 
+                      {...field} 
+                      placeholder="your@email.com" 
+                      type="email"
+                      dir="ltr"
+                      className={`h-12 text-base text-left ${emailExists ? 'border-red-500' : ''}`}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleFormChange("email", e.target.value);
+                        if (emailExists) setEmailExists(false);
+                      }}
+                    />
+                    {isCheckingEmail && (
+                      <div className="absolute inset-y-0 left-3 flex items-center">
+                        <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                      </div>
+                    )}
+                    {emailExists && (
+                      <div className="absolute inset-y-0 right-3 flex items-center">
                         <XCircle className="h-4 w-4 text-red-500" />
-                      }
-                    </div>
-                  )}
-                </div>
-              </FormControl>
-              <div className="mt-2">
-                <Progress value={passwordStrength} className={strengthInfo.color} />
-                {field.value && (
-                  <div className="flex justify-between text-xs mt-1">
-                    <span>חוזק הסיסמה: {strengthInfo.label}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                הסיסמה חייבת להכיל לפחות 8 תווים, אות אחת ומספר אחד
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                </FormControl>
+                {emailExists && <p className="text-xs text-red-500 mt-1">כתובת אימייל זו כבר רשומה במערכת</p>}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>אימות סיסמה *</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input 
-                    {...field} 
-                    placeholder="הקלידי שוב את הסיסמה" 
-                    type={confirmPasswordVisible ? "text" : "password"}
-                    dir="ltr"
-                    className="text-left pr-3 pl-10"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 left-0 px-3 flex items-center text-sm"
-                    onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
-                  >
-                    {confirmPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                  {field.value && form.getValues("password") && (
-                    <div className="absolute inset-y-0 right-3 flex items-center">
-                      {field.value === form.getValues("password") ? 
-                        <CheckCircle2 className="h-4 w-4 text-green-500" /> : 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium">סיסמה *</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input 
+                        {...field} 
+                        placeholder="בחרי סיסמה" 
+                        type={passwordVisible ? "text" : "password"}
+                        dir="ltr"
+                        className="h-12 text-base text-left pr-3 pl-10"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleFormChange("password", e.target.value);
+                          setPasswordStrength(calculatePasswordStrength(e.target.value));
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 left-0 px-3 flex items-center text-sm"
+                        onClick={() => setPasswordVisible(!passwordVisible)}
+                      >
+                        {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                      {field.value && (
+                        <div className="absolute inset-y-0 right-3 flex items-center">
+                          {passwordRegex.test(field.value) ? 
+                            <CheckCircle2 className="h-4 w-4 text-green-500" /> : 
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          }
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <div className="mt-2">
+                    <Progress value={passwordStrength} className={strengthInfo.color} />
+                    {field.value && (
+                      <div className="flex justify-between text-xs mt-1">
+                        <span>חוזק הסיסמה: {strengthInfo.label}</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    הסיסמה חייבת להכיל לפחות 8 תווים, אות אחת ומספר אחד
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium">אימות סיסמה *</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input 
+                        {...field} 
+                        placeholder="הקלידי שוב את הסיסמה" 
+                        type={confirmPasswordVisible ? "text" : "password"}
+                        dir="ltr"
+                        className="h-12 text-base text-left pr-3 pl-10"
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 left-0 px-3 flex items-center text-sm"
+                        onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                      >
+                        {confirmPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                      {field.value && form.getValues("password") && (
+                        <div className="absolute inset-y-0 right-3 flex items-center">
+                          {field.value === form.getValues("password") ? 
+                            <CheckCircle2 className="h-4 w-4 text-green-500" /> : 
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          }
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-medium">מספר טלפון *</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input 
+                      {...field} 
+                      placeholder="הכניסי מספר טלפון ישראלי (מתחיל ב-0)"
+                      dir="ltr"
+                      className={`h-12 text-base text-left ${phoneExists ? 'border-red-500' : ''}`}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleFormChange("phone", e.target.value);
+                        if (phoneExists) setPhoneExists(false);
+                      }}
+                    />
+                    {isCheckingPhone && (
+                      <div className="absolute inset-y-0 left-3 flex items-center">
+                        <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                      </div>
+                    )}
+                    {phoneExists && (
+                      <div className="absolute inset-y-0 right-3 flex items-center">
                         <XCircle className="h-4 w-4 text-red-500" />
-                      }
-                    </div>
-                  )}
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                      </div>
+                    )}
+                  </div>
+                </FormControl>
+                {phoneExists && <p className="text-xs text-red-500 mt-1">מספר טלפון זה כבר רשום במערכת</p>}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="text-sm text-muted-foreground">
+            * שדות חובה
+          </div>
+        </form>
+      </Form>
 
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>מספר טלפון *</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input 
-                    {...field} 
-                    placeholder="הכניסי מספר טלפון ישראלי (מתחיל ב-0)"
-                    dir="ltr"
-                    className={`text-left ${phoneExists ? 'border-red-500' : ''}`}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      handleFormChange("phone", e.target.value);
-                      if (phoneExists) setPhoneExists(false);
-                    }}
-                  />
-                  {isCheckingPhone && (
-                    <div className="absolute inset-y-0 left-3 flex items-center">
-                      <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                    </div>
-                  )}
-                  {phoneExists && (
-                    <div className="absolute inset-y-0 right-3 flex items-center">
-                      <XCircle className="h-4 w-4 text-red-500" />
-                    </div>
-                  )}
-                </div>
-              </FormControl>
-              {phoneExists && <p className="text-xs text-red-500 mt-1">מספר טלפון זה כבר רשום במערכת</p>}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="text-sm text-muted-foreground">
-          * שדות חובה
-        </div>
-      </form>
-    </Form>
+      {/* Navigation Buttons */}
+      <div className="flex justify-between items-center pt-6 border-t">
+        <Link to="/">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2 hover-scale"
+          >
+            <Home className="h-4 w-4" />
+            חזרה לעמוד הבית
+          </Button>
+        </Link>
+
+        <Button 
+          onClick={() => {
+            if (!isValid || emailExists || phoneExists) {
+              toast({
+                title: "אנא השלימי את כל השדות",
+                description: "יש למלא את כל השדות בצורה תקינה לפני המעבר לשלב הבא",
+                variant: "destructive"
+              });
+              return;
+            }
+            // Save form data to context
+            const formData = form.getValues();
+            updateSignupData({
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              password: formData.password,
+              phone: formData.phone,
+              businessName: formData.businessName
+            });
+            if (onCreateAccount) {
+              onCreateAccount();
+            }
+          }}
+          disabled={!isValid || emailExists || phoneExists}
+          className="px-8 py-3 text-lg font-semibold hover-scale"
+          size="lg"
+        >
+          המשך לבחירת תכנית
+        </Button>
+      </div>
+    </div>
   );
 };
 

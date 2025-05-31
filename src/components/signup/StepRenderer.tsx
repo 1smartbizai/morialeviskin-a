@@ -1,11 +1,13 @@
 
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
+import PlanSelectionStep from "@/components/signup/PlanSelectionStep";
 import { VerificationStep } from "@/components/signup/verification";
 import VisualIdentityStep from "@/components/signup/VisualIdentityStep";
 import BrandSettingsStep from "@/components/signup/BrandSettingsStep";
-import PaymentStep from "./payment/PaymentStep";
+import BusinessSetupStep from "@/components/signup/BusinessSetupStep";
+import IntegrationsStep from "@/components/signup/IntegrationsStep";
 import WorkingHoursStep from "@/components/signup/WorkingHoursStep";
-import SuccessStep from "@/components/signup/SuccessStep";
+import WelcomeCompleteStep from "@/components/signup/WelcomeCompleteStep";
 import { SignupData } from "@/contexts/SignupContext";
 
 // Define interface for StepRendererProps to ensure type safety
@@ -19,17 +21,20 @@ interface StepRendererProps {
   onResendVerification: () => void;
   signupData: SignupData;
   updateSignupData: (data: Partial<SignupData>) => void;
+  onCreateAccount?: () => void;
 }
 
 // Define step configuration for better organization
 export const STEP_COMPONENTS = {
   PERSONAL_INFO: 0,
-  VERIFICATION: 1,
-  VISUAL_IDENTITY: 2,
-  BRAND_SETTINGS: 3,
-  WORKING_HOURS: 4,
-  PAYMENT: 5,
-  SUCCESS: 6
+  PLAN_SELECTION: 1,
+  VERIFICATION: 2,
+  BUSINESS_SETUP: 3,
+  VISUAL_IDENTITY: 4,
+  BRAND_SETTINGS: 5,
+  INTEGRATIONS: 6,
+  WORKING_HOURS: 7,
+  WELCOME_COMPLETE: 8
 };
 
 const StepRenderer = ({ 
@@ -41,15 +46,31 @@ const StepRenderer = ({
   isPhoneVerified,
   onResendVerification,
   signupData,
-  updateSignupData
+  updateSignupData,
+  onCreateAccount
 }: StepRendererProps) => {
   // Use a switch statement for clear step rendering logic
   switch (currentStep) {
     case STEP_COMPONENTS.PERSONAL_INFO:
-      return <PersonalInfoStep />;
+      return (
+        <PersonalInfoStep 
+          onCreateAccount={onCreateAccount}
+        />
+      );
+      
+    case STEP_COMPONENTS.PLAN_SELECTION:
+      return (
+        <PlanSelectionStep 
+          data={signupData}
+          updateData={updateSignupData}
+        />
+      );
       
     case STEP_COMPONENTS.VERIFICATION:
       return <VerificationStep />;
+      
+    case STEP_COMPONENTS.BUSINESS_SETUP:
+      return <BusinessSetupStep />;
       
     case STEP_COMPONENTS.VISUAL_IDENTITY:
       return <VisualIdentityStep />;
@@ -57,20 +78,15 @@ const StepRenderer = ({
     case STEP_COMPONENTS.BRAND_SETTINGS:
       return <BrandSettingsStep />;
       
+    case STEP_COMPONENTS.INTEGRATIONS:
+      return <IntegrationsStep />;
+      
     case STEP_COMPONENTS.WORKING_HOURS:
       return <WorkingHoursStep />;
       
-    case STEP_COMPONENTS.PAYMENT:
+    case STEP_COMPONENTS.WELCOME_COMPLETE:
       return (
-        <PaymentStep 
-          data={signupData}
-          updateData={updateSignupData}
-        />
-      );
-      
-    case STEP_COMPONENTS.SUCCESS:
-      return (
-        <SuccessStep 
+        <WelcomeCompleteStep 
           businessName={businessName} 
           businessDomain={businessDomain}
           businessId={businessId}
@@ -81,7 +97,11 @@ const StepRenderer = ({
       );
       
     default:
-      return <PersonalInfoStep />;
+      return (
+        <PersonalInfoStep 
+          onCreateAccount={onCreateAccount}
+        />
+      );
   }
 };
 

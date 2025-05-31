@@ -12,10 +12,13 @@ interface NavigationProps {
 // Define step configuration for UI display
 export const steps = [
   { title: "פרטים אישיים" },
+  { title: "בחירת תכנית" },
+  { title: "אימות חשבון" },
+  { title: "הגדרות עסק" },
   { title: "זהות ויזואלית" },
   { title: "הגדרות מותג" },
+  { title: "אינטגרציות" },
   { title: "שעות פעילות" },
-  { title: "מנוי" },
   { title: "סיום" },
 ];
 
@@ -23,28 +26,39 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
   const { currentStep, isLoading, signupData } = useSignup();
   
   // Calculate progress percentage for current step
-  // Note: We use steps.length to calculate progress, the verification step is "special" and not reflected in the progress
-  const totalSteps = steps?.length || 6;
-  const currentStepIndex = currentStep === STEP_COMPONENTS.VERIFICATION 
-    ? 0 // Keep at 0% for verification step 
-    : currentStep > STEP_COMPONENTS.VERIFICATION 
-      ? currentStep - 1 // Adjust for verification step in progress calculation
-      : currentStep;
-  
-  const progress = ((currentStepIndex) / (totalSteps - 1)) * 100;
+  const totalSteps = steps?.length || 9;
+  const progress = (currentStep / (totalSteps - 1)) * 100;
 
   // Determine button text based on the current step
   const getNextButtonText = () => {
     if (isLoading) return "טוען...";
     
-    if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) return "המשך";
+    if (currentStep === STEP_COMPONENTS.PERSONAL_INFO) return "המשך לבחירת תכנית";
+    if (currentStep === STEP_COMPONENTS.PLAN_SELECTION) return "פתח חשבון";
     if (currentStep === STEP_COMPONENTS.VERIFICATION) {
       if (signupData?.isEmailVerified) return "המשך להקמת העסק";
       return "אני מבינה";
     }
-    if (currentStep === STEP_COMPONENTS.SUCCESS) return "מעבר למערכת";
+    if (currentStep === STEP_COMPONENTS.WELCOME_COMPLETE) return "מעבר למערכת";
     return "המשך";
   };
+
+  // Hide navigation on welcome complete step until setup is done
+  if (currentStep === STEP_COMPONENTS.WELCOME_COMPLETE) {
+    return (
+      <div className="flex justify-center items-center mt-8 pt-6 border-t">
+        <Button
+          onClick={onNext}
+          disabled={isLoading}
+          className="px-8 py-3 text-lg font-semibold flex items-center gap-2 hover-scale"
+          size="lg"
+        >
+          {getNextButtonText()}
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-between items-center mt-8 pt-6 border-t">
@@ -52,7 +66,7 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
         variant="outline"
         onClick={onPrevious}
         disabled={currentStep === 0 || isLoading}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 hover-scale"
       >
         <ChevronRight className="h-4 w-4" />
         חזרה
@@ -65,7 +79,7 @@ const SignupNavigation = ({ onNext, onPrevious }: NavigationProps) => {
       <Button
         onClick={onNext}
         disabled={isLoading}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 hover-scale"
       >
         {getNextButtonText()}
         <ChevronLeft className="h-4 w-4" />
