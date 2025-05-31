@@ -2,7 +2,17 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { PLAN_PERMISSIONS, type PlanType, type FeatureKey } from "@/utils/planPermissions";
+import { 
+  FEATURE_PERMISSIONS, 
+  PLAN_HIERARCHY,
+  PLAN_INFO,
+  type PlanType, 
+  type FeatureName,
+  hasFeatureAccess,
+  getRequiredPlan,
+  getUpgradePath,
+  getCurrentPlan
+} from "@/utils/planPermissions";
 
 export const usePlanPermissions = () => {
   const { user } = useAuth();
@@ -29,32 +39,43 @@ export const usePlanPermissions = () => {
     enabled: !!user?.id
   });
 
-  // Default to 'free' if no plan is found
-  const currentPlan: PlanType = (businessData?.subscription_level as PlanType) || 'free';
+  // Get current plan using the utility function
+  const currentPlan: PlanType = getCurrentPlan(businessData?.subscription_level);
 
-  const isFeatureLocked = (feature: FeatureKey): boolean => {
-    const requiredPlan = PLAN_PERMISSIONS[feature];
-    if (!requiredPlan) return false;
-    
-    const planHierarchy: PlanType[] = ['free', 'pro', 'gold'];
-    const currentPlanIndex = planHierarchy.indexOf(currentPlan);
-    const requiredPlanIndex = planHierarchy.indexOf(requiredPlan);
-    
-    return currentPlanIndex < requiredPlanIndex;
+  const isFeatureLocked = (feature: FeatureName): boolean => {
+    return !hasFeatureAccess(currentPlan, feature);
   };
 
-  const getFeatureRequiredPlan = (feature: FeatureKey): PlanType | null => {
-    return PLAN_PERMISSIONS[feature] || null;
+  const getFeatureRequiredPlan = (feature: FeatureName): PlanType => {
+    return getRequiredPlan(feature);
   };
 
-  const canAccessFeature = (feature: FeatureKey): boolean => {
-    return !isFeatureLocked(feature);
+  const canAccessFeature = (feature: FeatureName): boolean => {
+    return hasFeatureAccess(currentPlan, feature);
+  };
+
+  const checkFeatureAccess = (feature: FeatureName): boolean => {
+    return hasFeatureAccess(currentPlan, feature);
+  };
+
+  const getUpgradePathForFeature = (feature: FeatureName): PlanType | null => {
+    return getUpgradePath(currentPlan, feature);
+  };
+
+  const getCurrentPlanInfo = () => {
+    return {
+      plan: currentPlan,
+      ...PLAN_INFO[currentPlan]
+    };
   };
 
   return {
     currentPlan,
     isFeatureLocked,
     getFeatureRequiredPlan,
-    canAccessFeature
+    canAccessFeature,
+    checkFeatureAccess,
+    getUpgradePathForFeature,
+    getCurrentPlanInfo
   };
 };
