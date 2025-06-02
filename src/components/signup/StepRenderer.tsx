@@ -1,10 +1,8 @@
-
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
 import PlanSelectionStep from "@/components/signup/PlanSelectionStep";
 import { VerificationStep } from "@/components/signup/verification";
 import WelcomeVerificationStep from "@/components/signup/verification/WelcomeVerificationStep";
-import VisualIdentityStep from "@/components/signup/VisualIdentityStep";
-import BrandSettingsStep from "@/components/signup/BrandSettingsStep";
+import BrandIdentityStep from "@/components/signup/BrandIdentityStep";
 import BusinessSetupStep from "@/components/signup/BusinessSetupStep";
 import IntegrationsStep from "@/components/signup/IntegrationsStep";
 import WorkingHoursStep from "@/components/signup/WorkingHoursStep";
@@ -31,11 +29,10 @@ export const STEP_COMPONENTS = {
   PLAN_SELECTION: 1,
   VERIFICATION: 2,
   BUSINESS_SETUP: 3,
-  VISUAL_IDENTITY: 4,
-  BRAND_SETTINGS: 5,
-  INTEGRATIONS: 6,
-  WORKING_HOURS: 7,
-  WELCOME_COMPLETE: 8
+  BRAND_IDENTITY: 4,
+  INTEGRATIONS: 5,
+  WORKING_HOURS: 6,
+  WELCOME_COMPLETE: 7
 };
 
 const StepRenderer = ({ 
@@ -73,11 +70,8 @@ const StepRenderer = ({
     case STEP_COMPONENTS.BUSINESS_SETUP:
       return <BusinessSetupStep />;
       
-    case STEP_COMPONENTS.VISUAL_IDENTITY:
-      return <VisualIdentityStep />;
-      
-    case STEP_COMPONENTS.BRAND_SETTINGS:
-      return <BrandSettingsStep />;
+    case STEP_COMPONENTS.BRAND_IDENTITY:
+      return <BrandIdentityStep />;
       
     case STEP_COMPONENTS.INTEGRATIONS:
       return <IntegrationsStep />;

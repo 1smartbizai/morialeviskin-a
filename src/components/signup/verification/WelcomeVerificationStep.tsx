@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/components/ui/use-toast";
-import { CheckCircle2, Mail, MessageSquare, ArrowRight, Sparkles, User } from "lucide-react";
+import { CheckCircle2, Mail, MessageSquare, ArrowRight, Sparkles, User, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface WelcomeVerificationStepProps {
@@ -199,7 +199,7 @@ const WelcomeVerificationStep = ({ onComplete }: WelcomeVerificationStepProps) =
               כדי להתחיל, בואי נוודא שכל הפרטים שלך מאומתים ומוכנים לשימוש.
             </span>
           </p>
-        </CardContent>
+        </CardHeader>
       </Card>
 
       {/* Verification Steps */}

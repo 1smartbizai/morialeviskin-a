@@ -19,6 +19,14 @@ export interface SignupData {
   confirmPassword?: string;
   phone: string;
   businessName: string;
+  businessDescription?: string;
+  businessAddress?: string;
+  businessCity?: string;
+  businessPhone?: string;
+  businessEmail?: string;
+  instagram?: string;
+  facebook?: string;
+  website?: string;
   profileImage?: File;
   profileImageUrl?: string;
   logo?: File;

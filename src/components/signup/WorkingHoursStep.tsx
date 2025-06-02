@@ -1,343 +1,367 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { useState } from "react";
 import { useSignup } from "@/contexts/SignupContext";
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { CalendarClock, Mail, Globe, Phone, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
-interface DayConfig {
-  active: boolean;
-  start: string;
-  end: string;
-}
-
-interface WorkingHoursData {
-  [key: string]: DayConfig;
-}
-
-const daysHebrew: { [key: string]: string } = {
-  sunday: 'ראשון',
-  monday: 'שני',
-  tuesday: 'שלישי',
-  wednesday: 'רביעי',
-  thursday: 'חמישי',
-  friday: 'שישי',
-  saturday: 'שבת'
-};
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
+import { 
+  Clock, 
+  Calendar, 
+  CheckCircle2, 
+  Sun, 
+  Moon,
+  Sparkles,
+  AlertTriangle
+} from "lucide-react";
 
 const WorkingHoursStep = () => {
   const { signupData, updateSignupData } = useSignup();
-  const { firstName } = signupData;
-  const [activeTab, setActiveTab] = useState('hours');
   
-  const handleDayToggle = (day: string) => {
-    const updatedHours = { ...signupData.workingHours };
-    updatedHours[day] = {
-      ...updatedHours[day],
-      active: !updatedHours[day].active
+  // Hebrew day names starting with Sunday
+  const daysInHebrew = {
+    sunday: { name: "ראשון", icon: "☀️" },
+    monday: { name: "שני", icon: "💼" },
+    tuesday: { name: "שלישי", icon: "💪" },
+    wednesday: { name: "רביעי", icon: "⚡" },
+    thursday: { name: "חמישי", icon: "🎯" },
+    friday: { name: "שישי", icon: "🌟" },
+    saturday: { name: "שבת", icon: "🌙" }
+  };
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateTime = (day: string, timeType: 'start' | 'end', value: string) => {
+    const newErrors = { ...errors };
+    const errorKey = `${day}_${timeType}`;
+    
+    if (!value) {
+      newErrors[errorKey] = `שעת ${timeType === 'start' ? 'פתיחה' : 'סגירה'} נדרשת`;
+    } else {
+      // Check if end time is after start time for the same day
+      const currentDay = signupData.workingHours[day];
+      if (timeType === 'end' && currentDay.start) {
+        const startTime = new Date(`2000-01-01T${currentDay.start}`);
+        const endTime = new Date(`2000-01-01T${value}`);
+        
+        if (endTime <= startTime) {
+          newErrors[errorKey] = 'שעת הסגירה חייבת להיות אחרי שעת הפתיחה';
+        } else {
+          delete newErrors[errorKey];
+        }
+      } else if (timeType === 'start' && currentDay.end) {
+        const startTime = new Date(`2000-01-01T${value}`);
+        const endTime = new Date(`2000-01-01T${currentDay.end}`);
+        
+        if (endTime <= startTime) {
+          newErrors[`${day}_end`] = 'שעת הסגירה חייבת להיות אחרי שעת הפתיחה';
+        } else {
+          delete newErrors[`${day}_end`];
+        }
+      } else {
+        delete newErrors[errorKey];
+      }
+    }
+    
+    setErrors(newErrors);
+  };
+
+  const updateWorkingHours = (day: string, field: 'active' | 'start' | 'end', value: boolean | string) => {
+    const currentHours = signupData.workingHours || {};
+    const updatedHours = {
+      ...currentHours,
+      [day]: {
+        ...currentHours[day],
+        [field]: value
+      }
     };
     
-    updateSignupData({
-      workingHours: updatedHours
-    });
-  };
-
-  const handleHoursChange = (day: string, field: 'start' | 'end', value: string) => {
-    const updatedHours = { ...signupData.workingHours };
-    updatedHours[day] = {
-      ...updatedHours[day],
-      [field]: value
-    };
+    updateSignupData({ workingHours: updatedHours });
     
-    updateSignupData({
-      workingHours: updatedHours
+    // Validate time if it's a time field
+    if (field === 'start' || field === 'end') {
+      validateTime(day, field, value as string);
+    }
+    
+    // Clear errors if day is deactivated
+    if (field === 'active' && !value) {
+      const newErrors = { ...errors };
+      delete newErrors[`${day}_start`];
+      delete newErrors[`${day}_end`];
+      setErrors(newErrors);
+    }
+  };
+
+  // Quick setup presets
+  const applyPreset = (preset: string) => {
+    let newHours = {};
+    
+    switch (preset) {
+      case 'standard':
+        newHours = {
+          sunday: { active: true, start: "09:00", end: "17:00" },
+          monday: { active: true, start: "09:00", end: "17:00" },
+          tuesday: { active: true, start: "09:00", end: "17:00" },
+          wednesday: { active: true, start: "09:00", end: "17:00" },
+          thursday: { active: true, start: "09:00", end: "17:00" },
+          friday: { active: true, start: "09:00", end: "15:00" },
+          saturday: { active: false, start: "10:00", end: "14:00" }
+        };
+        break;
+      case 'evening':
+        newHours = {
+          sunday: { active: true, start: "16:00", end: "22:00" },
+          monday: { active: true, start: "16:00", end: "22:00" },
+          tuesday: { active: true, start: "16:00", end: "22:00" },
+          wednesday: { active: true, start: "16:00", end: "22:00" },
+          thursday: { active: true, start: "16:00", end: "22:00" },
+          friday: { active: false, start: "16:00", end: "20:00" },
+          saturday: { active: false, start: "18:00", end: "22:00" }
+        };
+        break;
+      case 'weekend':
+        newHours = {
+          sunday: { active: false, start: "09:00", end: "17:00" },
+          monday: { active: false, start: "09:00", end: "17:00" },
+          tuesday: { active: false, start: "09:00", end: "17:00" },
+          wednesday: { active: false, start: "09:00", end: "17:00" },
+          thursday: { active: true, start: "09:00", end: "17:00" },
+          friday: { active: true, start: "09:00", end: "17:00" },
+          saturday: { active: true, start: "10:00", end: "16:00" }
+        };
+        break;
+    }
+    
+    updateSignupData({ workingHours: newHours });
+    setErrors({});
+    
+    toast({
+      title: "שעות העבודה עודכנו",
+      description: `${signupData.firstName}, הגדרת ${preset === 'standard' ? 'שעות רגילות' : preset === 'evening' ? 'שעות ערב' : 'סוף השבוע'} בהצלחה`,
     });
   };
 
-  const handleToggleIntegration = (integration: 'emailIntegration' | 'socialMediaIntegration' | 'whatsappIntegration') => {
-    updateSignupData({
-      [integration]: !signupData[integration]
-    });
+  const getActiveDaysCount = () => {
+    return Object.values(signupData.workingHours || {}).filter(day => day.active).length;
   };
 
-  const handleGoogleCalendarToggle = () => {
-    updateSignupData({
-      googleCalendarConnected: !signupData.googleCalendarConnected
-    });
+  const hasAnyErrors = () => {
+    return Object.keys(errors).length > 0;
   };
 
-  const connectToGoogle = () => {
-    // This would be implemented to connect to Google Calendar
-    // For now, we'll just simulate a connection
-    setTimeout(() => {
-      updateSignupData({
-        googleCalendarConnected: true
-      });
-    }, 1000);
+  const hasIncompleteActiveDays = () => {
+    const activeDays = Object.entries(signupData.workingHours || {}).filter(([_, day]) => day.active);
+    return activeDays.some(([_, day]) => !day.start || !day.end);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-2xl font-medium">
-          {firstName ? `${firstName}, ` : ''}הגדירי את שעות הפעילות והאינטגרציות
-        </h3>
-        <p className="text-muted-foreground mt-2">
-          הגדרות אלו יעזרו לנו להתאים את המערכת לצרכי העסק שלך
-        </p>
-      </div>
-      
-      <Tabs defaultValue="hours" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-2 mb-6">
-          <TabsTrigger value="hours" className="flex items-center gap-2">
-            <CalendarClock className="h-4 w-4" />
-            שעות פעילות
-          </TabsTrigger>
-          <TabsTrigger value="connections" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            חיבורים ואינטגרציות
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="hours" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>שעות פעילות העסק</CardTitle>
-              <CardDescription>הגדירי את השעות בהן העסק שלך פתוח לקביעת תורים</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {Object.entries(signupData.workingHours).map(([day, config]) => (
-                  <div key={day} className="flex flex-wrap items-center gap-4 py-2 border-b last:border-0">
-                    <div className="w-24 flex-none">
-                      <Label className="text-base font-medium">{daysHebrew[day]}</Label>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Switch 
-                        checked={config.active} 
-                        onCheckedChange={() => handleDayToggle(day)}
-                        id={`${day}-active`}
-                      />
-                      <Label htmlFor={`${day}-active`} className={config.active ? "" : "text-muted-foreground"}>
-                        {config.active ? "פתוח" : "סגור"}
-                      </Label>
-                    </div>
-                    
-                    {config.active && (
-                      <div className="flex items-center gap-2 flex-wrap">
+    <div className="space-y-8" dir="rtl">
+      {/* Header */}
+      <Card className="bg-gradient-to-l from-blue-50 to-indigo-50 border-blue-300">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full">
+              <Clock className="h-10 w-10 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-blue-700 flex items-center justify-center gap-2">
+            <Sparkles className="h-6 w-6 animate-pulse" />
+            בואי נגדיר את שעות הפעילות שלך, {signupData.firstName}!
+          </CardTitle>
+          <p className="text-blue-600 mt-2">
+            שעות הפעילות יעזרו ללקוחות לדעת מתי את זמינה ויאפשרו תיאום פגישות בזמנים הנכונים
+          </p>
+        </CardHeader>
+      </Card>
+
+      {/* Quick Setup Presets */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-purple-500" />
+            הגדרה מהירה
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => applyPreset('standard')}
+              className="p-4 h-auto flex flex-col items-center gap-2 hover:border-blue-500"
+            >
+              <Sun className="h-6 w-6 text-yellow-500" />
+              <div>
+                <div className="font-semibold">שעות רגילות</div>
+                <div className="text-xs text-muted-foreground">א'-ה' 9:00-17:00, ו' 9:00-15:00</div>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => applyPreset('evening')}
+              className="p-4 h-auto flex flex-col items-center gap-2 hover:border-purple-500"
+            >
+              <Moon className="h-6 w-6 text-purple-500" />
+              <div>
+                <div className="font-semibold">שעות ערב</div>
+                <div className="text-xs text-muted-foreground">א'-ה' 16:00-22:00</div>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => applyPreset('weekend')}
+              className="p-4 h-auto flex flex-col items-center gap-2 hover:border-green-500"
+            >
+              <Calendar className="h-6 w-6 text-green-500" />
+              <div>
+                <div className="font-semibold">סוף השבוע</div>
+                <div className="text-xs text-muted-foreground">ה'-ש' בלבד</div>
+              </div>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Days Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-blue-500" />
+              הגדרת שעות לפי יום
+            </div>
+            <Badge variant={getActiveDaysCount() > 0 ? "default" : "secondary"}>
+              {getActiveDaysCount()} ימים פעילים
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(daysInHebrew).map(([dayKey, dayInfo]) => {
+              const dayData = signupData.workingHours?.[dayKey] || { active: false, start: "09:00", end: "17:00" };
+              
+              return (
+                <Card key={dayKey} className={`transition-all duration-200 ${dayData.active ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{dayInfo.icon}</span>
                         <div>
-                          <Select
-                            value={config.start}
-                            onValueChange={(value) => handleHoursChange(day, 'start', value)}
-                          >
-                            <SelectTrigger className="w-[100px]">
-                              <SelectValue placeholder="שעת פתיחה" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                {Array.from({ length: 24 }).map((_, hour) => (
-                                  <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
-                                    {`${hour.toString().padStart(2, '0')}:00`}
-                                  </SelectItem>
-                                ))}
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
+                          <Label className="text-lg font-semibold">יום {dayInfo.name}</Label>
+                          <p className="text-sm text-muted-foreground">
+                            {dayData.active 
+                              ? `פעיל: ${dayData.start || '--:--'} - ${dayData.end || '--:--'}`
+                              : 'לא פעיל'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={dayData.active}
+                        onCheckedChange={(checked) => updateWorkingHours(dayKey, 'active', checked)}
+                      />
+                    </div>
+                    
+                    {dayData.active && (
+                      <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                        <div className="space-y-2">
+                          <Label htmlFor={`${dayKey}-start`} className="text-sm font-medium">
+                            שעת פתיחה
+                          </Label>
+                          <Input
+                            id={`${dayKey}-start`}
+                            type="time"
+                            value={dayData.start || ''}
+                            onChange={(e) => updateWorkingHours(dayKey, 'start', e.target.value)}
+                            className={errors[`${dayKey}_start`] ? 'border-red-500' : ''}
+                          />
+                          {errors[`${dayKey}_start`] && (
+                            <p className="text-red-500 text-xs">{errors[`${dayKey}_start`]}</p>
+                          )}
                         </div>
                         
-                        <span className="text-muted-foreground mx-1">עד</span>
-                        
-                        <div>
-                          <Select
-                            value={config.end}
-                            onValueChange={(value) => handleHoursChange(day, 'end', value)}
-                          >
-                            <SelectTrigger className="w-[100px]">
-                              <SelectValue placeholder="שעת סגירה" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                                {Array.from({ length: 24 }).map((_, hour) => (
-                                  <SelectItem key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
-                                    {`${hour.toString().padStart(2, '0')}:00`}
-                                  </SelectItem>
-                                ))}
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
+                        <div className="space-y-2">
+                          <Label htmlFor={`${dayKey}-end`} className="text-sm font-medium">
+                            שעת סגירה
+                          </Label>
+                          <Input
+                            id={`${dayKey}-end`}
+                            type="time"
+                            value={dayData.end || ''}
+                            onChange={(e) => updateWorkingHours(dayKey, 'end', e.target.value)}
+                            className={errors[`${dayKey}_end`] ? 'border-red-500' : ''}
+                          />
+                          {errors[`${dayKey}_end`] && (
+                            <p className="text-red-500 text-xs">{errors[`${dayKey}_end`]}</p>
+                          )}
                         </div>
                       </div>
                     )}
-                  </div>
-                ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Status and Validation */}
+      <Card className={`${hasAnyErrors() || hasIncompleteActiveDays() ? 'bg-yellow-50 border-yellow-300' : 'bg-green-50 border-green-300'}`}>
+        <CardContent className="p-6">
+          {hasAnyErrors() || hasIncompleteActiveDays() ? (
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 text-yellow-600 mt-1" />
+              <div>
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                  יש לתקן את השגיאות הבאות:
+                </h3>
+                <ul className="text-yellow-700 space-y-1">
+                  {hasIncompleteActiveDays() && (
+                    <li>• אנא השלימי שעות פתיחה וסגירה לכל הימים הפעילים</li>
+                  )}
+                  {hasAnyErrors() && (
+                    <li>• יש שגיאות בשעות שהוגדרו - אנא בדקי שכל השעות תקינות</li>
+                  )}
+                  {getActiveDaysCount() === 0 && (
+                    <li>• חובה להגדיר לפחות יום פעילות אחד</li>
+                  )}
+                </ul>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>חיבור ליומן Google</CardTitle>
-              <CardDescription>סנכרני את יומן התורים עם יומן Google שלך</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    checked={signupData.googleCalendarConnected} 
-                    onCheckedChange={handleGoogleCalendarToggle}
-                    id="google-calendar"
-                  />
-                  <Label htmlFor="google-calendar">
-                    סנכרון דו-כיווני עם יומן Google
-                  </Label>
-                </div>
-                
-                {!signupData.googleCalendarConnected && (
-                  <Button variant="outline" className="flex items-center gap-2" onClick={connectToGoogle}>
-                    <svg width="18" height="18" viewBox="0 0 18 18">
-                      <path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.86-1.6 2.43v2h2.6c1.52-1.4 2.4-3.45 2.4-5.88 0-.54-.04-1.06-.12-1.55z"></path>
-                      <path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2c-.71.48-1.63.77-2.7.77-2.08 0-3.85-1.4-4.5-3.3H1.9v2.07C3.18 14.93 5.88 17 8.98 17z"></path>
-                      <path fill="#FBBC05" d="M4.48 10.52c-.14-.43-.22-.88-.22-1.34s.08-.91.22-1.34V5.77H1.9C1.36 6.8 1.03 7.95 1.03 9.18s.33 2.38.87 3.4l2.58-2.06z"></path>
-                      <path fill="#EA4335" d="M8.98 4.52c1.17 0 2.23.4 3.06 1.2l2.3-2.3C12.96 2.06 11.15 1.27 8.98 1.27 5.88 1.27 3.18 3.34 1.9 6.26l2.58 2c.65-1.9 2.42-3.3 4.5-3.3z"></path>
-                    </svg>
-                    התחבר עם חשבון Google
-                  </Button>
-                )}
-                
-                {signupData.googleCalendarConnected && (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="h-5 w-5" />
-                    <span>מחובר בהצלחה</span>
-                  </div>
-                )}
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-6 w-6 text-green-600 mt-1" />
+              <div>
+                <h3 className="text-lg font-semibold text-green-800 mb-2">
+                  מעולה! שעות הפעילות הוגדרו בהצלחה 🎉
+                </h3>
+                <p className="text-green-700">
+                  {signupData.firstName}, הגדרת {getActiveDaysCount()} ימי פעילות.
+                  <br />
+                  הלקוחות שלך יוכלו לקבוע פגישות רק בזמנים שהגדרת כפעילים.
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="connections" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>חיבור לאימייל</CardTitle>
-              <CardDescription>הגדר שליחת אימיילים ללקוחות מחשבון האימייל העסקי שלך</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    checked={signupData.emailIntegration} 
-                    onCheckedChange={() => handleToggleIntegration('emailIntegration')}
-                    id="email-integration"
-                  />
-                  <Label htmlFor="email-integration">
-                    שליחת אימיילים בשם העסק
-                  </Label>
-                </div>
-                
-                {signupData.emailIntegration && (
-                  <div className="w-full md:w-auto">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-5 w-5 text-primary" />
-                      <Input 
-                        placeholder="כתובת האימייל העסקית שלך"
-                        type="email"
-                        className="w-full md:w-[300px]"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>חיבור לרשתות חברתיות</CardTitle>
-              <CardDescription>חבר את חשבונות הרשתות החברתיות של העסק שלך</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    checked={signupData.socialMediaIntegration} 
-                    onCheckedChange={() => handleToggleIntegration('socialMediaIntegration')}
-                    id="social-integration"
-                  />
-                  <Label htmlFor="social-integration">
-                    חיבור לרשתות חברתיות
-                  </Label>
-                </div>
-                
-                {signupData.socialMediaIntegration && (
-                  <div className="space-y-3 w-full">
-                    <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#1877F2]" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/>
-                      </svg>
-                      <Input 
-                        placeholder="כתובת עמוד הפייסבוק"
-                        className="w-full md:w-[300px]"
-                      />
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#C13584]" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153a4.908 4.908 0 0 1 1.153 1.772c.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 0 1-1.153 1.772 4.915 4.915 0 0 1-1.772 1.153c-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 0 1-1.772-1.153 4.904 4.904 0 0 1-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 0 1 1.153-1.772A4.897 4.897 0 0 1 5.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 1.802c-2.67 0-2.987.01-4.04.059-.977.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.88-.344 1.857-.048 1.053-.059 1.37-.059 4.04 0 2.67.01 2.987.059 4.04.045.977.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.88.3 1.857.344 1.054.048 1.37.059 4.04.059 2.67 0 2.987-.01 4.04-.059.977-.045 1.504-.207 1.857-.344.467-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.88.344-1.857.048-1.053.059-1.37.059-4.04 0-2.67-.01-2.987-.059-4.04-.045-.977-.207-1.504-.344-1.857a3.097 3.097 0 0 0-.748-1.15 3.098 3.098 0 0 0-1.15-.748c-.353-.137-.88-.3-1.857-.344-1.053-.048-1.37-.059-4.04-.059zm0 3.064A5.139 5.139 0 0 1 17.134 12a5.139 5.139 0 0 1-10.268 0A5.139 5.139 0 0 1 12 6.866zm0 8.468a3.333 3.333 0 1 0 0-6.666 3.333 3.333 0 0 0 0 6.666zM18.538 6.661a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0z"/>
-                      </svg>
-                      <Input 
-                        placeholder="שם משתמש באינסטגרם"
-                        className="w-full md:w-[300px]"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>חיבור לוואטסאפ</CardTitle>
-              <CardDescription>חבר את מספר הוואטסאפ העסקי שלך</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    checked={signupData.whatsappIntegration} 
-                    onCheckedChange={() => handleToggleIntegration('whatsappIntegration')}
-                    id="whatsapp-integration"
-                  />
-                  <Label htmlFor="whatsapp-integration">
-                    שליחת הודעות וואטסאפ
-                  </Label>
-                </div>
-                
-                {signupData.whatsappIntegration && (
-                  <div className="w-full md:w-auto">
-                    <div className="flex items-center gap-2">
-                      <svg className="h-5 w-5 text-[#25D366]" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                      </svg>
-                      <Input 
-                        placeholder="מספר הוואטסאפ העסקי שלך"
-                        className="w-full md:w-[300px]"
-                        type="tel"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Tips */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="p-6">
+          <h3 className="font-semibold text-blue-800 mb-3">💡 טיפים חשובים:</h3>
+          <ul className="space-y-2 text-blue-700 text-sm">
+            <li>• ניתן לשנות את שעות הפעילות בכל עת מהגדרות העסק</li>
+            <li>• המערכת תאפשר לקוחות לקבוע פגישות רק בזמנים שהגדרת</li>
+            <li>• מומלץ להגדיר זמן נוסף בין פגישות לנקיון וארגון</li>
+            <li>• אפשר להגדיר זמני פעילות שונים לימים שונים לפי הצורך</li>
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, Home } from "lucide-react";
 import { useSignup } from "@/contexts/SignupContext";
@@ -15,9 +14,8 @@ export const steps = [
   { title: "פרטים אישיים" },
   { title: "בחירת תכנית" },
   { title: "אימות חשבון" },
-  { title: "הגדרות עסק" },
-  { title: "זהות ויזואלית" },
   { title: "הגדרות מותג" },
+  { title: "זהות ויזואלית" },
   { title: "אינטגרציות" },
   { title: "שעות פעילות" },
   { title: "סיום" },
