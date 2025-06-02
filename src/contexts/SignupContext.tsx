@@ -19,6 +19,8 @@ export interface SignupData {
   confirmPassword?: string;
   phone: string;
   businessName: string;
+  profileImage?: File;
+  profileImageUrl?: string;
   logo?: File;
   logoUrl?: string;
   usesDefaultLogo: boolean;

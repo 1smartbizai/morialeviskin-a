@@ -7,12 +7,13 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSignup } from "@/contexts/SignupContext";
-import { CheckCircle2, XCircle, Eye, EyeOff, Info, Home } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, EyeOff, Home, Upload, User } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { checkEmailExists, checkPhoneExists } from "@/utils/signup/authUtils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Create the validation schema with Hebrew error messages
 const phoneRegex = /^0\d{8,9}$/;
@@ -34,7 +35,6 @@ const personalInfoSchema = z.object({
   phone: z.string().refine((val) => phoneRegex.test(val), {
     message: "מספר טלפון לא תקין - יש להזין מספר ישראלי תקין (מתחיל ב-0 ומכיל 9-10 ספרות)",
   }),
-  businessName: z.string().min(2, "שם העסק חייב להכיל לפחות 2 תווים"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "הסיסמאות אינן תואמות",
   path: ["confirmPassword"],
@@ -79,6 +79,9 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
   const [phoneExists, setPhoneExists] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isCheckingPhone, setIsCheckingPhone] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>("");
+  const navigate = useNavigate();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(personalInfoSchema),
@@ -89,7 +92,6 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
       password: signupData.password || "",
       confirmPassword: signupData.password || "",
       phone: signupData.phone || "",
-      businessName: signupData.businessName || "",
     },
     mode: "onChange",
   });
@@ -117,7 +119,7 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
         if (exists) {
           toast({
             title: "אימייל כבר רשום",
-            description: "כתובת האימייל הזו כבר רשומה במערכת. אפשר להתחבר או לבחור כתובת אחרת.",
+            description: "כתובת האימייל הזו כבר רשומה במערכת. נא להתחבר או לבחור כתובת אחרת.",
             variant: "destructive"
           });
         }
@@ -146,7 +148,7 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
         if (exists) {
           toast({
             title: "מספר טלפון כבר רשום",
-            description: "מספר הטלפון הזה כבר רשום במערכת. אפשר להתחבר או לבחור מספר אחר.",
+            description: "מספר הטלפון הזה כבר רשום במערכת. נא להתחבר או לבחור מספר אחר.",
             variant: "destructive"
           });
         }
@@ -171,6 +173,47 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
     }
   };
 
+  // Handle profile image upload
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "הקובץ גדול מדי",
+          description: "גודל התמונה חייב להיות פחות מ-5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImageUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      updateSignupData({ profileImage: file });
+    }
+  };
+
+  // Handle returning to home page and clearing data
+  const handleReturnHome = () => {
+    // Clear all form data
+    form.reset();
+    updateSignupData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      phone: "",
+      isPersonalInfoValid: false
+    });
+    
+    // Navigate to home
+    navigate("/");
+  };
+
   // Get strength label and color based on password strength
   const getPasswordStrengthInfo = (strength: number) => {
     if (strength === 0) return { label: "", color: "bg-gray-200" };
@@ -181,6 +224,31 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
 
   const strengthInfo = getPasswordStrengthInfo(passwordStrength);
 
+  const handleContinue = () => {
+    if (!isValid || emailExists || phoneExists) {
+      toast({
+        title: "נא להשלים את כל השדות",
+        description: "יש למלא את כל השדות בצורה תקינה לפני המעבר לשלב הבא. אנא בדקי שכל השדות מלאים והמייל ומספר הטלפון תקינים.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Save form data to context
+    const formData = form.getValues();
+    updateSignupData({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password,
+      phone: formData.phone
+    });
+    
+    if (onCreateAccount) {
+      onCreateAccount();
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
       {/* Header Section */}
@@ -189,7 +257,7 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
           בואי ניצור חשבון ב-Bellevo
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          מלאי את הפרטים הבאים כדי להתחיל את המסע שלך עם Bellevo - הפלטפורמה שמעצימה את העסק שלך
+          מלאי את הפרטים הבאים כדי להתחיל את המסע שלך עם Bellevo - הפלטפורמה שמכוונת לכיוון הצלחה, טכנולוגיה ושיפור תהליכים
         </p>
       </div>
 
@@ -197,7 +265,7 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
         <form className="space-y-6 max-w-2xl mx-auto">
           {(emailExists || phoneExists) && (
             <Alert className="bg-blue-50 border-blue-200 animate-fade-in">
-              <Info className="h-4 w-4 text-blue-500" />
+              <XCircle className="h-4 w-4 text-blue-500" />
               <AlertDescription>
                 נראה שיש לך כבר משתמש במערכת.{" "}
                 <Link to="/admin/login" className="text-primary font-semibold hover:underline">
@@ -206,6 +274,34 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
               </AlertDescription>
             </Alert>
           )}
+
+          {/* Profile Image Upload */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <Avatar className="w-24 h-24">
+                <AvatarImage src={profileImageUrl} alt="Profile" />
+                <AvatarFallback>
+                  <User className="w-12 h-12" />
+                </AvatarFallback>
+              </Avatar>
+              <label 
+                htmlFor="profile-upload" 
+                className="absolute -bottom-2 -right-2 bg-primary text-white rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+              </label>
+              <input
+                id="profile-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            העלאת תמונת פרופיל (אופציונלי) - עד 5MB
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
@@ -255,28 +351,6 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
 
           <FormField
             control={form.control}
-            name="businessName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-medium">שם העסק *</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    placeholder="הכניסי את שם העסק שלך"
-                    className="h-12 text-base"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      handleFormChange("businessName", e.target.value);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
@@ -308,6 +382,9 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
                   </div>
                 </FormControl>
                 {emailExists && <p className="text-xs text-red-500 mt-1">כתובת אימייל זו כבר רשומה במערכת</p>}
+                <p className="text-xs text-muted-foreground mt-1">
+                  הכניסי כתובת אימייל תקינה שאליה יש לך גישה לצורך אימות
+                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -437,6 +514,9 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
                   </div>
                 </FormControl>
                 {phoneExists && <p className="text-xs text-red-500 mt-1">מספר טלפון זה כבר רשום במערכת</p>}
+                <p className="text-xs text-muted-foreground mt-1">
+                  הכניסי מספר טלפון ישראלי תקין (לדוגמה: 0501234567) לצורך אימות במהלך ההרשמה
+                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -450,45 +530,22 @@ const PersonalInfoStep = ({ onCreateAccount }: PersonalInfoStepProps) => {
 
       {/* Navigation Buttons */}
       <div className="flex justify-between items-center pt-6 border-t">
-        <Link to="/">
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2 hover-scale"
-          >
-            <Home className="h-4 w-4" />
-            חזרה לעמוד הבית
-          </Button>
-        </Link>
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2 hover-scale"
+          onClick={handleReturnHome}
+        >
+          <Home className="h-4 w-4" />
+          חזרה לעמוד הבית
+        </Button>
 
         <Button 
-          onClick={() => {
-            if (!isValid || emailExists || phoneExists) {
-              toast({
-                title: "אנא השלימי את כל השדות",
-                description: "יש למלא את כל השדות בצורה תקינה לפני המעבר לשלב הבא",
-                variant: "destructive"
-              });
-              return;
-            }
-            // Save form data to context
-            const formData = form.getValues();
-            updateSignupData({
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              email: formData.email,
-              password: formData.password,
-              phone: formData.phone,
-              businessName: formData.businessName
-            });
-            if (onCreateAccount) {
-              onCreateAccount();
-            }
-          }}
+          onClick={handleContinue}
           disabled={!isValid || emailExists || phoneExists}
           className="px-8 py-3 text-lg font-semibold hover-scale"
           size="lg"
         >
-          המשך לבחירת תכנית
+          המשך לבחירת מסלול
         </Button>
       </div>
     </div>
