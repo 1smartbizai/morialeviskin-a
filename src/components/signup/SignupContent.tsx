@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -287,12 +288,12 @@ const SignupContent = () => {
           return;
         }
       }
-      // If this is the visual identity step, handle logo upload
-      else if (currentStep === STEP_COMPONENTS.VISUAL_IDENTITY && session?.user?.id) {
+      // If this is the brand identity step, handle logo upload
+      else if (currentStep === STEP_COMPONENTS.BRAND_IDENTITY && session?.user?.id) {
         // Update metadata with current step
         const metadata = {
           isSignupComplete: false,
-          currentStep: STEP_COMPONENTS.BRAND_SETTINGS,
+          currentStep: STEP_COMPONENTS.INTEGRATIONS,
           lastUpdated: new Date().toISOString()
         };
         

@@ -1,480 +1,516 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSignup } from "@/contexts/SignupContext";
-import { toast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle2, Star, Crown, Gem, Info, CreditCard, ArrowRight, Sparkles } from "lucide-react";
-import { plans } from "./payment/planData";
-import PaymentDetails from "./payment/PaymentDetails";
-import { PaymentInfoState } from "./payment/types";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/use-toast";
+import { 
+  Crown, 
+  Star, 
+  Zap, 
+  Shield, 
+  Check, 
+  CreditCard, 
+  Calendar,
+  Users,
+  MessageSquare,
+  BarChart3,
+  Palette,
+  Smartphone,
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight
+} from "lucide-react";
+import { PLAN_INFO, type PlanType } from "@/utils/planPermissions";
 
-interface PlanSelectionStepProps {
-  data: any;
-  updateData: (data: any) => void;
-}
-
-const PlanSelectionStep = ({ data, updateData }: PlanSelectionStepProps) => {
-  const { signupData } = useSignup();
-  const [selectedPlan, setSelectedPlan] = useState<string>("pro"); // Pro as recommended default
-  const [showPaymentInfo, setShowPaymentInfo] = useState<boolean>(false);
-  const [paymentInfo, setPaymentInfo] = useState<PaymentInfoState>({
-    cardNumber: "",
-    cardExpiry: "",
-    cardCvv: "",
-    cardholderName: "",
-    errors: {}
+const PlanSelectionStep = () => {
+  const { signupData, updateSignupData } = useSignup();
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>(signupData.subscriptionLevel as PlanType || 'pro');
+  const [showComparison, setShowComparison] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    holderName: ''
   });
-  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
-  const [marketingConsent, setMarketingConsent] = useState<boolean>(false);
-  const [showComparison, setShowComparison] = useState<boolean>(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
-  // Check if the selected plan requires payment
-  const selectedPlanDetails = plans.find(plan => plan.id === selectedPlan);
-  const isPaidPlan = selectedPlanDetails && !selectedPlanDetails.isFree;
-
-  // Show payment info for paid plans
-  useEffect(() => {
-    if (isPaidPlan) {
-      setShowPaymentInfo(true);
-    } else {
-      setShowPaymentInfo(false);
+  const plans = [
+    {
+      id: 'starter' as PlanType,
+      name: 'Starter',
+      price: 0,
+      currency: '₪',
+      period: 'חינם לתמיד',
+      badge: '🌱 להתחלה',
+      color: 'bg-green-500',
+      description: 'מושלם למי שמתחילה',
+      features: [
+        'עד 50 לקוחות',
+        'ניהול תורים בסיסי',
+        'תזכורות SMS',
+        'דוחות בסיסיים',
+        'תמיכה במייל'
+      ],
+      limitations: [
+        'ללא אינטגרציות',
+        'ללא מיתוג מותאם',
+        'תמיכה מוגבלת'
+      ]
+    },
+    {
+      id: 'pro' as PlanType,
+      name: 'Pro',
+      price: 149,
+      currency: '₪',
+      period: 'לחודש',
+      badge: '⭐ הכי פופולרי',
+      color: 'bg-blue-500',
+      description: 'האידיאלי לעסקים מתפתחים',
+      features: [
+        'לקוחות ללא הגבלה',
+        'תוכנית נאמנות',
+        'סנכרון יומן Google',
+        'הודעות SMS מתקדמות',
+        'אנליטיקה מתקדמת',
+        'תמיכה טלפונית'
+      ],
+      popular: true
+    },
+    {
+      id: 'gold' as PlanType,
+      name: 'Gold',
+      price: 249,
+      currency: '₪',
+      period: 'לחודש',
+      badge: '👑 מומלץ',
+      color: 'bg-yellow-500',
+      description: 'לעסקים שרוצים לבלוט',
+      features: [
+        'כל התכונות של Pro',
+        'מיתוג מותאם אישית',
+        'אוטומציות מתקדמות',
+        'דוחות מותאמים',
+        'תובנות AI',
+        'אינטגרציות רשתות חברתיות',
+        'תמיכה VIP'
+      ]
+    },
+    {
+      id: 'premium' as PlanType,
+      name: 'Premium',
+      price: 399,
+      currency: '₪',
+      period: 'לחודש',
+      badge: '💎 פרמיום',
+      color: 'bg-purple-500',
+      description: 'הפתרון המלא לעסקים גדולים',
+      features: [
+        'כל התכונות של Gold',
+        'צוות מרובה',
+        'WhatsApp Business',
+        'גישה ל-API',
+        'מנהל חשבון ייעודי',
+        'הדרכות מותאמות',
+        'גיבויים מתקדמים'
+      ]
     }
-  }, [selectedPlan, isPaidPlan]);
+  ];
 
-  // Update context when plan changes
-  useEffect(() => {
-    updateData({ 
-      subscriptionLevel: selectedPlan,
-      trialEndDate: selectedPlan === 'starter' ? 
-        new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() : 
-        undefined
-    });
-  }, [selectedPlan, updateData]);
+  const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
+  const isFreeplan = selectedPlan === 'starter';
 
-  const handlePlanChange = (planId: string) => {
+  const handlePlanSelect = (planId: PlanType) => {
     setSelectedPlan(planId);
+    updateSignupData({ subscriptionLevel: planId });
+    
+    // Reset payment details if switching to free plan
+    if (planId === 'starter') {
+      setPaymentDetails({
+        cardNumber: '',
+        expiryDate: '',
+        cvv: '',
+        holderName: ''
+      });
+    }
   };
 
-  // Handle payment info changes
-  const handlePaymentInfoChange = (field: string, value: string) => {
-    setPaymentInfo(prev => ({
-      ...prev,
-      [field]: value,
-      errors: {
-        ...prev.errors,
-        [field]: undefined
-      }
-    }));
+  const handleTermsChange = (checked: boolean | 'indeterminate') => {
+    setTermsAccepted(checked === true);
   };
 
-  // Validate payment information with HYP integration requirements
-  const validatePaymentInfo = () => {
-    if (selectedPlan === 'starter') {
-      return true; // No payment needed for free plan
-    }
-
-    const { cardNumber, cardExpiry, cardCvv, cardholderName } = paymentInfo;
-    const errors: PaymentInfoState['errors'] = {};
-    
-    if (!cardholderName.trim()) {
-      errors.cardholderName = "אנא הזיני את שם בעל/ת הכרטיס כפי שמופיע על הכרטיס";
-    }
-    
-    const cleanCardNumber = cardNumber.replace(/\s/g, '');
-    if (!cleanCardNumber) {
-      errors.cardNumber = "אנא הזיני את מספר הכרטיס";
-    } else if (cleanCardNumber.length !== 16 || !/^\d+$/.test(cleanCardNumber)) {
-      errors.cardNumber = "מספר כרטיס לא תקין - יש להזין 16 ספרות בדיוק";
-    }
-    
-    if (!cardExpiry) {
-      errors.cardExpiry = "אנא הזיני את תוקף הכרטיס";
-    } else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry)) {
-      errors.cardExpiry = "פורמט תוקף לא תקין - יש להזין MM/YY";
-    } else {
-      // Check if card is expired
-      const [month, year] = cardExpiry.split('/');
-      const expiryDate = new Date(2000 + parseInt(year), parseInt(month) - 1);
-      const today = new Date();
-      if (expiryDate < today) {
-        errors.cardExpiry = "הכרטיס פג תוקף - אנא השתמשי בכרטיס תקף";
-      }
-    }
-    
-    if (!cardCvv) {
-      errors.cardCvv = "אנא הזיני את קוד האבטחה";
-    } else if (!/^\d{3,4}$/.test(cardCvv)) {
-      errors.cardCvv = "קוד אבטחה לא תקין - יש להזין 3-4 ספרות";
-    }
-    
-    setPaymentInfo(prev => ({ ...prev, errors }));
-    return Object.keys(errors).length === 0;
+  const handleMarketingChange = (checked: boolean | 'indeterminate') => {
+    setMarketingConsent(checked === true);
   };
 
-  const getPlanIcon = (planId: string) => {
-    switch (planId) {
-      case 'starter': return <Star className="h-8 w-8" />;
-      case 'pro': return <CheckCircle2 className="h-8 w-8" />;
-      case 'gold': return <Crown className="h-8 w-8" />;
-      case 'premium': return <Gem className="h-8 w-8" />;
-      default: return <Star className="h-8 w-8" />;
+  const validatePaymentForm = () => {
+    if (isFreeplan) return true;
+    
+    const { cardNumber, expiryDate, cvv, holderName } = paymentDetails;
+    
+    if (!cardNumber.trim()) {
+      toast({
+        variant: "destructive",
+        title: "מספר כרטיס נדרש",
+        description: "אנא הזיני מספר כרטיס אשראי תקין"
+      });
+      return false;
     }
+    
+    if (!expiryDate.trim() || !cvv.trim() || !holderName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "פרטי תשלום חסרים",
+        description: "אנא השלימי את כל פרטי התשלום"
+      });
+      return false;
+    }
+    
+    return true;
   };
 
   const canProceed = () => {
-    if (selectedPlan === 'starter') {
-      return true; // Free plan doesn't need payment or consent
-    }
-    return validatePaymentInfo() && termsAccepted && marketingConsent;
-  };
-
-  const handleFinish = async () => {
-    if (!canProceed()) {
-      if (isPaidPlan && !termsAccepted) {
-        toast({
-          title: "נדרש אישור תנאי השימוש",
-          description: `${signupData.firstName}, עליך לאשר את תנאי השימוש כדי להמשיך`,
-          variant: "destructive"
-        });
-        return;
-      }
-      if (isPaidPlan && !marketingConsent) {
-        toast({
-          title: "נדרש אישור קבלת דיוור",
-          description: `${signupData.firstName}, עליך לאשר קבלת דיוור שיווקי כדי להמשיך`,
-          variant: "destructive"
-        });
-        return;
-      }
-      if (isPaidPlan && !validatePaymentInfo()) {
-        toast({
-          title: "פרטי התשלום שגויים",
-          description: `${signupData.firstName}, אנא ודאי שכל פרטי התשלום הוזנו בצורה נכונה`,
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
-    // Process payment through HYP if needed
-    if (isPaidPlan) {
-      try {
-        // Here would be the HYP payment integration
-        // Using the API key: f1c85d16fc1acd369a93f0489f4615d93371632d97a9b0a197de6d4dc0da51bf
-        console.log("Processing payment through HYP with API key");
-        
-        toast({
-          title: `ברוכה הבאה, ${signupData.firstName}!`,
-          description: `התשלום בוצע בהצלחה. נרשמת לתכנית ${selectedPlanDetails?.name}`,
-        });
-      } catch (error) {
-        toast({
-          title: "שגיאה בביצוע התשלום",
-          description: `${signupData.firstName}, אנא נסי שוב או בחרי אמצעי תשלום אחר`,
-          variant: "destructive"
-        });
-        return;
-      }
-    } else {
-      toast({
-        title: `ברוכה הבאה, ${signupData.firstName}!`,
-        description: "נרשמת בהצלחה לתכנית הניסיון החינמית של 14 יום",
-      });
-    }
-
-    // Continue to next step (verification)
-    // This will be handled by the parent component
+    if (!termsAccepted) return false;
+    if (!isFreeplan && !validatePaymentForm()) return false;
+    return true;
   };
 
   return (
-    <div className="space-y-8 animate-fade-in" dir="rtl">
+    <div className="space-y-8" dir="rtl">
       {/* Header */}
       <div className="text-center space-y-3">
-        <h2 className="text-3xl font-bold text-primary flex items-center justify-center gap-2">
-          <Sparkles className="h-8 w-8 text-primary animate-pulse" />
-          {signupData.firstName ? `${signupData.firstName}, ` : ''}בחרי את התכנית המושלמת עבורך
+        <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+          <Crown className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="text-3xl font-bold text-primary">
+          בחרי את התכנית המתאימה לך, {signupData.firstName}
         </h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          כל תכנית מותאמת לקצב הצמיחה שלך ומספקת את הכלים המתקדמים לניהול מותג יעיל
+          כל התכניות כוללות 14 ימי ניסיון חינם. ניתן לשנות או לבטל בכל עת
         </p>
-        
-        {/* Plan Comparison Toggle */}
-        <Button 
-          variant="outline" 
-          onClick={() => setShowComparison(!showComparison)}
-          className="mt-4 hover-scale"
-        >
-          {showComparison ? 'הסתר השוואה' : 'השווה תכניות'}
-        </Button>
       </div>
 
       {/* Plans Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {plans.map((plan, index) => (
-          <Card 
-            key={plan.id} 
-            className={`relative cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${
+        {plans.map((plan) => (
+          <Card
+            key={plan.id}
+            className={`cursor-pointer transition-all duration-300 hover:shadow-lg relative ${
               selectedPlan === plan.id 
-                ? 'ring-4 ring-primary shadow-2xl scale-105 bg-gradient-to-b from-primary/5 to-primary/10' 
-                : 'hover:ring-2 hover:ring-primary/50'
-            } ${plan.recommended ? 'border-primary border-2' : ''}`}
-            onClick={() => handlePlanChange(plan.id)}
-            style={{ animationDelay: `${index * 100}ms` }}
+                ? 'ring-2 ring-primary bg-primary/5' 
+                : 'hover:ring-1 hover:ring-primary/20'
+            } ${plan.popular ? 'scale-105 z-10' : ''}`}
+            onClick={() => handlePlanSelect(plan.id)}
           >
-            {plan.recommended && (
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                <Badge className="bg-gradient-to-r from-primary to-purple-600 text-white px-6 py-2 text-sm font-bold animate-pulse">
-                  🌟 המומלצת ביותר
+            {plan.popular && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-primary text-white px-4 py-1">
+                  הכי פופולרי
                 </Badge>
               </div>
             )}
             
-            {plan.isFree && (
-              <div className="absolute -top-4 right-4 z-10">
-                <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 text-sm font-bold">
-                  חינם!
-                </Badge>
-              </div>
-            )}
-            
-            <CardHeader className="text-center pb-4 pt-8">
-              <div className={`mx-auto mb-4 p-4 rounded-full transition-all duration-300 ${
-                selectedPlan === plan.id 
-                  ? 'bg-gradient-to-br from-primary to-purple-600 text-white scale-110' 
-                  : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 hover:scale-105'
-              }`}>
-                {getPlanIcon(plan.id)}
-              </div>
-              <CardTitle className="text-2xl font-bold text-primary">{plan.name}</CardTitle>
-              <div className="space-y-2">
-                <div className="text-4xl font-bold text-primary">
-                  {plan.isFree ? (
-                    <span className="text-green-600">חינם</span>
-                  ) : (
-                    <>₪{plan.price}<span className="text-lg font-normal text-muted-foreground">/חודש</span></>
-                  )}
+            <CardHeader className="pb-4">
+              <div className="text-center space-y-2">
+                <span className="text-2xl">{plan.badge.split(' ')[0]}</span>
+                <CardTitle className="text-xl">{plan.name}</CardTitle>
+                <div className="space-y-1">
+                  <div className="text-3xl font-bold">
+                    {plan.currency}{plan.price}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {plan.period}
+                  </div>
                 </div>
-                {plan.isFree && (
-                  <p className="text-sm text-orange-600 font-medium bg-orange-50 px-3 py-1 rounded-full">
-                    ⏰ 14 ימי ניסיון בלבד
-                  </p>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  {plan.description}
+                </p>
               </div>
             </CardHeader>
             
-            <CardContent className="pt-0">
-              <p className="text-sm text-center text-muted-foreground mb-6 leading-relaxed">
-                {plan.description}
-              </p>
-              
-              <ul className="space-y-3 text-sm">
+            <CardContent>
+              <div className="space-y-3">
                 {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3 group">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                    <span className="group-hover:text-primary transition-colors">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              {selectedPlan === plan.id && (
-                <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-purple-600/10 rounded-lg border border-primary/20 animate-fade-in">
-                  <div className="flex items-center gap-2 text-primary font-bold text-sm">
-                    <CheckCircle2 className="h-5 w-5" />
-                    התכנית שבחרת
-                    <ArrowRight className="h-4 w-4 animate-bounce" />
+                  <div key={index} className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    <span>{feature}</span>
                   </div>
-                </div>
-              )}
+                ))}
+                
+                {plan.limitations && (
+                  <div className="pt-2 border-t">
+                    {plan.limitations.map((limitation, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                        <span>{limitation}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <Button
+                  variant={selectedPlan === plan.id ? "default" : "outline"}
+                  className="w-full mt-4"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePlanSelect(plan.id);
+                  }}
+                >
+                  {selectedPlan === plan.id ? 'נבחר' : 'בחירה'}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* Comparison Button */}
+      <div className="text-center">
+        <Button
+          variant="outline"
+          onClick={() => setShowComparison(!showComparison)}
+          className="gap-2"
+        >
+          <BarChart3 className="h-4 w-4" />
+          {showComparison ? 'הסתר השוואה' : 'השוואת תכניות'}
+        </Button>
+      </div>
+
       {/* Comparison Table */}
       {showComparison && (
-        <div className="animate-fade-in">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center">השוואת תכניות מפורטת</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-right p-3">תכונה</th>
-                      {plans.map(plan => (
-                        <th key={plan.id} className="text-center p-3 font-bold">{plan.name}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b">
-                      <td className="p-3 font-medium">מחיר חודשי</td>
-                      {plans.map(plan => (
-                        <td key={plan.id} className="text-center p-3">
-                          {plan.isFree ? 'חינם' : `₪${plan.price}`}
-                        </td>
-                      ))}
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-3 font-medium">מספר לקוחות</td>
-                      <td className="text-center p-3">עד 50</td>
-                      <td className="text-center p-3">ללא הגבלה</td>
-                      <td className="text-center p-3">ללא הגבלה</td>
-                      <td className="text-center p-3">ללא הגבלה</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-3 font-medium">הודעות SMS</td>
-                      <td className="text-center p-3">❌</td>
-                      <td className="text-center p-3">✅</td>
-                      <td className="text-center p-3">✅</td>
-                      <td className="text-center p-3">✅</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-3 font-medium">מיתוג מותאם</td>
-                      <td className="text-center p-3">❌</td>
-                      <td className="text-center p-3">❌</td>
-                      <td className="text-center p-3">✅</td>
-                      <td className="text-center p-3">✅</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Free Plan Information */}
-      {selectedPlan === 'starter' && (
-        <Alert className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 animate-fade-in">
-          <Info className="h-5 w-5 text-green-600" />
-          <AlertDescription className="text-green-800">
-            <div className="space-y-2">
-              <div className="font-bold text-lg">🎉 תכנית הניסיון החינמית</div>
-              <p>קיבלת גישה ל-14 ימי ניסיון חינם עם כל התכונות הבסיסיות!</p>
-              <p className="text-sm">
-                בכל עת תוכלי לשדרג לתכנית בתשלום ולהמשיך ליהנות מהפלטפורמה ללא הגבלות.
-              </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2 border-green-500 text-green-700 hover:bg-green-100"
-              >
-                למה כדאי לשדרג מאוחר יותר?
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Payment Details for Paid Plans */}
-      {showPaymentInfo && isPaidPlan && (
-        <div className="animate-fade-in space-y-6">
-          <div className="flex items-center gap-3 mb-4">
-            <CreditCard className="h-6 w-6 text-primary" />
-            <h3 className="text-2xl font-semibold">פרטי תשלום מאובטח</h3>
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
-              מוגן על ידי HYP
-            </Badge>
-          </div>
-          
-          <PaymentDetails 
-            paymentInfo={paymentInfo}
-            onPaymentInfoChange={handlePaymentInfoChange}
-            onValidate={validatePaymentInfo}
-          />
-
-          {/* Terms and Marketing Consent */}
-          <Card className="bg-gray-50">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  id="terms"
-                  checked={termsAccepted}
-                  onCheckedChange={setTermsAccepted}
-                  className="mt-1"
-                />
-                <label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
-                  <span className="font-semibold">אני מאשרת את תנאי השימוש ומדיניות הפרטיות</span>
-                  <br />
-                  <span className="text-muted-foreground">
-                    קראתי והסכמתי לתנאי השימוש של Bellevo ומדיניות הפרטיות
-                  </span>
-                </label>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  id="marketing"
-                  checked={marketingConsent}
-                  onCheckedChange={setMarketingConsent}
-                  className="mt-1"
-                />
-                <label htmlFor="marketing" className="text-sm leading-relaxed cursor-pointer">
-                  <span className="font-semibold">אני מאשרת קבלת דיוור שיווקי</span>
-                  <br />
-                  <span className="text-muted-foreground">
-                    אני מעוניינת לקבל עדכונים, טיפים וייעוץ מקצועי לפיתוח העסק שלי
-                  </span>
-                </label>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Selected Plan Summary */}
-      {selectedPlanDetails && (
-        <Card className="bg-gradient-to-l from-purple-50 to-pink-50 border-primary/30 animate-fade-in">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-primary">
-                  התכנית שנבחרה: {selectedPlanDetails.name}
-                </h3>
-                <p className="text-muted-foreground text-lg">
-                  {selectedPlanDetails.isFree ? 
-                    '🎉 חינם ל-14 ימי ניסיון' : 
-                    `💎 ₪${selectedPlanDetails.price} לחודש`
-                  }
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedPlanDetails.description}
-                </p>
-              </div>
-              <div className="text-primary">
-                {getPlanIcon(selectedPlan)}
-              </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>השוואת תכניות</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-right p-3">תכונה</th>
+                    {plans.map(plan => (
+                      <th key={plan.id} className="text-center p-3">{plan.name}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b">
+                    <td className="p-3 font-medium">מספר לקוחות</td>
+                    <td className="text-center p-3">50</td>
+                    <td className="text-center p-3">ללא הגבלה</td>
+                    <td className="text-center p-3">ללא הגבלה</td>
+                    <td className="text-center p-3">ללא הגבלה</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3 font-medium">אינטגרציות</td>
+                    <td className="text-center p-3">❌</td>
+                    <td className="text-center p-3">✅</td>
+                    <td className="text-center p-3">✅</td>
+                    <td className="text-center p-3">✅</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3 font-medium">מיתוג מותאם</td>
+                    <td className="text-center p-3">❌</td>
+                    <td className="text-center p-3">❌</td>
+                    <td className="text-center p-3">✅</td>
+                    <td className="text-center p-3">✅</td>
+                  </tr>
+                  <tr className="border-b">
+                    <td className="p-3 font-medium">צוות מרובה</td>
+                    <td className="text-center p-3">❌</td>
+                    <td className="text-center p-3">❌</td>
+                    <td className="text-center p-3">❌</td>
+                    <td className="text-center p-3">✅</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Navigation Buttons */}
-      <div className="flex justify-between items-center pt-6 border-t">
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-2 hover-scale"
-        >
-          חזרה לפרטים האישיים
-        </Button>
+      {/* Payment Section */}
+      {!isFreeplan && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              פרטי תשלום
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cardNumber">מספר כרטיס אשראי *</Label>
+                <Input
+                  id="cardNumber"
+                  placeholder="0000 0000 0000 0000"
+                  value={paymentDetails.cardNumber}
+                  onChange={(e) => setPaymentDetails(prev => ({
+                    ...prev,
+                    cardNumber: e.target.value
+                  }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="holderName">שם בעל הכרטיס *</Label>
+                <Input
+                  id="holderName"
+                  placeholder="שם מלא"
+                  value={paymentDetails.holderName}
+                  onChange={(e) => setPaymentDetails(prev => ({
+                    ...prev,
+                    holderName: e.target.value
+                  }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="expiryDate">תוקף *</Label>
+                <Input
+                  id="expiryDate"
+                  placeholder="MM/YY"
+                  value={paymentDetails.expiryDate}
+                  onChange={(e) => setPaymentDetails(prev => ({
+                    ...prev,
+                    expiryDate: e.target.value
+                  }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cvv">CVV *</Label>
+                <Input
+                  id="cvv"
+                  placeholder="123"
+                  value={paymentDetails.cvv}
+                  onChange={(e) => setPaymentDetails(prev => ({
+                    ...prev,
+                    cvv: e.target.value
+                  }))}
+                />
+              </div>
+            </div>
 
-        <Button 
-          onClick={handleFinish}
-          disabled={!canProceed()}
-          className="px-8 py-3 text-lg font-semibold hover-scale bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
-          size="lg"
-        >
-          {isPaidPlan ? 'השלם תשלום והמשך' : 'התחל עם התכנית החינמית'}
-          <ArrowRight className="h-5 w-5 mr-2" />
-        </Button>
-      </div>
+            {/* Security Notice */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-green-800">
+                <Shield className="h-5 w-5" />
+                <span className="font-medium">תשלום מאובטח</span>
+              </div>
+              <p className="text-green-700 text-sm mt-1">
+                פרטי התשלום שלך מוגנים בהצפנה ברמה הגבוהה ביותר
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Summary */}
+      <Card className="bg-gradient-to-l from-blue-50 to-purple-50 border-blue-200">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-lg">
+                סיכום התכנית שנבחרה: {selectedPlanData?.name}
+              </h3>
+              <p className="text-muted-foreground">
+                {selectedPlanData?.description}
+              </p>
+              {isFreeplan && (
+                <p className="text-green-600 font-medium mt-2">
+                  🎉 תכנית חינמית - ללא עלות!
+                </p>
+              )}
+            </div>
+            <div className="text-left">
+              <div className="text-2xl font-bold">
+                {selectedPlanData?.currency}{selectedPlanData?.price}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {selectedPlanData?.period}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Terms and Conditions */}
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="terms"
+              checked={termsAccepted}
+              onCheckedChange={(checked: boolean | "indeterminate") => {
+                if (checked !== "indeterminate") {
+                  setTermsAccepted(checked);
+                }
+              }}
+            />
+            <div className="text-sm">
+              <Label htmlFor="terms" className="cursor-pointer">
+                אני מסכימה ל
+                <Button variant="link" className="p-0 h-auto underline">
+                  תנאי השימוש
+                </Button>
+                {" "}ול
+                <Button variant="link" className="p-0 h-auto underline">
+                  מדיניות הפרטיות
+                </Button>
+                {" "}של Bellevo *
+              </Label>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="marketing"
+              checked={marketingConsent}
+              onCheckedChange={(checked: boolean | "indeterminate") => {
+                if (checked !== "indeterminate") {
+                  setMarketingConsent(checked);
+                }
+              }}
+            />
+            <Label htmlFor="marketing" className="text-sm cursor-pointer">
+              אני מסכימה לקבל עדכונים שיווקיים ותוכן מועיל ממערכת Bellevo
+            </Label>
+          </div>
+
+          {!termsAccepted && (
+            <div className="text-red-600 text-sm">
+              * חובה לאשר את תנאי השימוש כדי להמשיך
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Free Plan Message */}
+      {isFreeplan && (
+        <Card className="bg-gradient-to-l from-green-50 to-blue-50 border-green-200">
+          <CardContent className="p-6 text-center">
+            <div className="space-y-3">
+              <div className="text-4xl">🎉</div>
+              <h3 className="text-xl font-semibold text-green-800">
+                מעולה! בחרת בתכנית החינמית
+              </h3>
+              <p className="text-green-700">
+                תוכלי להתחיל מיד ללא עלות. בכל עת ניתן לשדרג לתכנית מתקדמת יותר
+              </p>
+              <p className="text-sm text-green-600">
+                💡 המלצה: נסי את המערכת וכשתרצי יותר תכונות, פשוט שדרגי לתכנית Pro
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
