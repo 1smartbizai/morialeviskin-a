@@ -2,6 +2,7 @@
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
 import PlanSelectionStep from "@/components/signup/PlanSelectionStep";
 import { VerificationStep } from "@/components/signup/verification";
+import WelcomeVerificationStep from "@/components/signup/verification/WelcomeVerificationStep";
 import VisualIdentityStep from "@/components/signup/VisualIdentityStep";
 import BrandSettingsStep from "@/components/signup/BrandSettingsStep";
 import BusinessSetupStep from "@/components/signup/BusinessSetupStep";
