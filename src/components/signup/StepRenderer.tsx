@@ -1,3 +1,4 @@
+
 import PersonalInfoStep from "@/components/signup/PersonalInfoStep";
 import PlanSelectionStep from "@/components/signup/PlanSelectionStep";
 import { VerificationStep } from "@/components/signup/verification";
@@ -57,12 +58,7 @@ const StepRenderer = ({
       );
       
     case STEP_COMPONENTS.PLAN_SELECTION:
-      return (
-        <PlanSelectionStep 
-          data={signupData}
-          updateData={updateSignupData}
-        />
-      );
+      return <PlanSelectionStep />;
       
     case STEP_COMPONENTS.VERIFICATION:
       return <VerificationStep />;
